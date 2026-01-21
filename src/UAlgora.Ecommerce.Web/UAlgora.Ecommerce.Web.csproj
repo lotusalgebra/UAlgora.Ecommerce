@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>13.0</LangVersion>
+    <RootNamespace>UAlgora.Ecommerce.Web</RootNamespace>
+    <AssemblyName>UAlgora.Ecommerce.Web</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>Lotus Algebra</Authors>
+    <Description>Umbraco integration layer with controllers, composers, and backoffice extensions</Description>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms" Version="15.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UAlgora.Ecommerce.Core\UAlgora.Ecommerce.Core.csproj" />
+    <ProjectReference Include="..\UAlgora.Ecommerce.Infrastructure\UAlgora.Ecommerce.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <!-- wwwroot content is automatically included by the SDK -->
+
+</Project>

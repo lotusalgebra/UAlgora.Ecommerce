@@ -1,0 +1,4413 @@
+{
+  "$schema": "../../umbraco-package-schema.json",
+  "id": "UAlgora.Ecommerce",
+  "name": "UAlgora E-commerce",
+  "version": "1.0.0",
+  "extensions": [
+    {
+      "type": "section",
+      "alias": "Umb.Section.Ecommerce",
+      "name": "E-commerce",
+      "meta": {
+        "label": "E-commerce",
+        "pathname": "ecommerce"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionUserPermission",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionSidebarApp",
+      "kind": "menuWithEntityActions",
+      "alias": "Umb.SectionSidebarApp.Ecommerce.Menu",
+      "name": "E-commerce Menu",
+      "meta": {
+        "label": "E-commerce",
+        "menu": "Umb.Menu.Ecommerce"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "menu",
+      "alias": "Umb.Menu.Ecommerce",
+      "name": "E-commerce Menu"
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Dashboard",
+      "name": "Dashboard",
+      "meta": {
+        "label": "Dashboard",
+        "icon": "icon-dashboard",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-dashboard"
+      }
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Products",
+      "name": "Products",
+      "meta": {
+        "label": "Products",
+        "icon": "icon-box",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-product"
+      }
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Categories",
+      "name": "Categories",
+      "meta": {
+        "label": "Categories",
+        "icon": "icon-folders",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-category"
+      }
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Orders",
+      "name": "Orders",
+      "meta": {
+        "label": "Orders",
+        "icon": "icon-receipt-dollar",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-order"
+      }
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Customers",
+      "name": "Customers",
+      "meta": {
+        "label": "Customers",
+        "icon": "icon-users",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-customer"
+      }
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Discounts",
+      "name": "Discounts",
+      "meta": {
+        "label": "Discounts",
+        "icon": "icon-tag",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-discount"
+      }
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Shipping",
+      "name": "Shipping",
+      "meta": {
+        "label": "Shipping",
+        "icon": "icon-truck",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-shipping"
+      }
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Tax",
+      "name": "Tax",
+      "meta": {
+        "label": "Tax",
+        "icon": "icon-bill-dollar",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-tax"
+      }
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Inventory",
+      "name": "Inventory",
+      "meta": {
+        "label": "Inventory",
+        "icon": "icon-box-open",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-inventory"
+      }
+    },
+    {
+      "type": "dashboard",
+      "alias": "Umb.Dashboard.Ecommerce",
+      "name": "E-commerce Dashboard",
+      "element": "/App_Plugins/Ecommerce/views/dashboard.js",
+      "meta": {
+        "label": "Overview",
+        "pathname": "overview"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.Product",
+      "name": "Product Workspace",
+      "element": "/App_Plugins/Ecommerce/views/product-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-product"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Product.Edit",
+      "name": "Product Editor",
+      "element": "/App_Plugins/Ecommerce/views/product-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Product",
+        "pathname": "product",
+        "icon": "icon-box"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Product.Variants",
+      "name": "Product Variants",
+      "element": "/App_Plugins/Ecommerce/views/product-variants.js",
+      "weight": 90,
+      "meta": {
+        "label": "Variants",
+        "pathname": "variants",
+        "icon": "icon-layers"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Product.Inventory",
+      "name": "Product Inventory",
+      "element": "/App_Plugins/Ecommerce/views/product-inventory.js",
+      "weight": 80,
+      "meta": {
+        "label": "Inventory",
+        "pathname": "inventory",
+        "icon": "icon-box-open"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Product.SEO",
+      "name": "Product SEO",
+      "element": "/App_Plugins/Ecommerce/views/product-seo.js",
+      "weight": 70,
+      "meta": {
+        "label": "SEO",
+        "pathname": "seo",
+        "icon": "icon-search"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Product.Media",
+      "name": "Product Media",
+      "element": "/App_Plugins/Ecommerce/views/product-media.js",
+      "weight": 85,
+      "meta": {
+        "label": "Media",
+        "pathname": "media",
+        "icon": "icon-picture"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Product.Pricing",
+      "name": "Product Pricing",
+      "element": "/App_Plugins/Ecommerce/views/product-pricing.js",
+      "weight": 95,
+      "meta": {
+        "label": "Pricing",
+        "pathname": "pricing",
+        "icon": "icon-coins-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Product.Save",
+      "name": "Save Product",
+      "element": "/App_Plugins/Ecommerce/views/actions/product-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Product.Duplicate",
+      "name": "Duplicate Product",
+      "element": "/App_Plugins/Ecommerce/views/actions/product-duplicate.js",
+      "weight": 90,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Product.Publish",
+      "name": "Publish Product",
+      "element": "/App_Plugins/Ecommerce/views/actions/product-publish.js",
+      "weight": 85,
+      "meta": {
+        "label": "Publish",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Product.Archive",
+      "name": "Archive Product",
+      "element": "/App_Plugins/Ecommerce/views/actions/product-archive.js",
+      "weight": 80,
+      "meta": {
+        "label": "Archive",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Product.Featured",
+      "name": "Toggle Featured",
+      "element": "/App_Plugins/Ecommerce/views/actions/product-featured.js",
+      "weight": 75,
+      "meta": {
+        "label": "Featured",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Product.Visibility",
+      "name": "Toggle Visibility",
+      "element": "/App_Plugins/Ecommerce/views/actions/product-visibility.js",
+      "weight": 70,
+      "meta": {
+        "label": "Visibility",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Product.Stock",
+      "name": "Adjust Stock",
+      "element": "/App_Plugins/Ecommerce/views/actions/product-stock.js",
+      "weight": 65,
+      "meta": {
+        "label": "Stock",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Product.Sale",
+      "name": "Sale Price",
+      "element": "/App_Plugins/Ecommerce/views/actions/product-sale.js",
+      "weight": 60,
+      "meta": {
+        "label": "Sale",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Product"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Product.Create",
+      "name": "Create Product",
+      "forEntityTypes": ["ecommerce-product-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Product"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Product.Delete",
+      "name": "Delete Product",
+      "forEntityTypes": ["ecommerce-product"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Products",
+      "name": "Products Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/product-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Product"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Products",
+      "name": "Products Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/product-collection.js",
+      "meta": {
+        "label": "Products",
+        "icon": "icon-box",
+        "entityType": "ecommerce-product",
+        "pathname": "products"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.Category",
+      "name": "Category Workspace",
+      "element": "/App_Plugins/Ecommerce/views/category-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-category"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Category.Edit",
+      "name": "Category Editor",
+      "element": "/App_Plugins/Ecommerce/views/category-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Category",
+        "pathname": "category",
+        "icon": "icon-folder"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Category.Products",
+      "name": "Category Products",
+      "element": "/App_Plugins/Ecommerce/views/category-products.js",
+      "weight": 90,
+      "meta": {
+        "label": "Products",
+        "pathname": "products",
+        "icon": "icon-box"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Category.Subcategories",
+      "name": "Category Subcategories",
+      "element": "/App_Plugins/Ecommerce/views/category-subcategories.js",
+      "weight": 85,
+      "meta": {
+        "label": "Subcategories",
+        "pathname": "subcategories",
+        "icon": "icon-folders"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Category.SEO",
+      "name": "Category SEO",
+      "element": "/App_Plugins/Ecommerce/views/category-seo.js",
+      "weight": 80,
+      "meta": {
+        "label": "SEO",
+        "pathname": "seo",
+        "icon": "icon-search"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Category.Save",
+      "name": "Save Category",
+      "element": "/App_Plugins/Ecommerce/views/actions/category-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Category.Toggle",
+      "name": "Toggle Category Visibility",
+      "element": "/App_Plugins/Ecommerce/views/actions/category-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Category.Move",
+      "name": "Move Category",
+      "element": "/App_Plugins/Ecommerce/views/actions/category-move.js",
+      "weight": 80,
+      "meta": {
+        "label": "Move",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Category.Duplicate",
+      "name": "Duplicate Category",
+      "element": "/App_Plugins/Ecommerce/views/actions/category-duplicate.js",
+      "weight": 75,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Category.Featured",
+      "name": "Toggle Featured",
+      "element": "/App_Plugins/Ecommerce/views/actions/category-featured.js",
+      "weight": 70,
+      "meta": {
+        "label": "Featured",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Category.Root",
+      "name": "Move to Root",
+      "element": "/App_Plugins/Ecommerce/views/actions/category-root.js",
+      "weight": 65,
+      "meta": {
+        "label": "To Root",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Category.Sort",
+      "name": "Change Sort Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/category-sort.js",
+      "weight": 60,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Category"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Category.Create",
+      "name": "Create Category",
+      "forEntityTypes": ["ecommerce-category-root", "ecommerce-category"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Category"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Category.Delete",
+      "name": "Delete Category",
+      "forEntityTypes": ["ecommerce-category"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Categories",
+      "name": "Categories Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/category-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Category"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Categories",
+      "name": "Categories Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/category-collection.js",
+      "meta": {
+        "label": "Categories",
+        "icon": "icon-folders",
+        "entityType": "ecommerce-category",
+        "pathname": "categories"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.Order",
+      "name": "Order Workspace",
+      "element": "/App_Plugins/Ecommerce/views/order-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-order"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Order.Details",
+      "name": "Order Details",
+      "element": "/App_Plugins/Ecommerce/views/order-details.js",
+      "weight": 100,
+      "meta": {
+        "label": "Details",
+        "pathname": "details",
+        "icon": "icon-receipt-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Order.Items",
+      "name": "Order Items",
+      "element": "/App_Plugins/Ecommerce/views/order-items.js",
+      "weight": 90,
+      "meta": {
+        "label": "Items",
+        "pathname": "items",
+        "icon": "icon-box"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Order.Customer",
+      "name": "Order Customer",
+      "element": "/App_Plugins/Ecommerce/views/order-customer.js",
+      "weight": 80,
+      "meta": {
+        "label": "Customer",
+        "pathname": "customer",
+        "icon": "icon-user"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Order.History",
+      "name": "Order History",
+      "element": "/App_Plugins/Ecommerce/views/order-history.js",
+      "weight": 70,
+      "meta": {
+        "label": "History",
+        "pathname": "history",
+        "icon": "icon-calendar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Order.Shipping",
+      "name": "Order Shipping",
+      "element": "/App_Plugins/Ecommerce/views/order-shipping.js",
+      "weight": 60,
+      "meta": {
+        "label": "Shipping",
+        "pathname": "shipping",
+        "icon": "icon-truck"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Order.Payments",
+      "name": "Order Payments",
+      "element": "/App_Plugins/Ecommerce/views/order-payments.js",
+      "weight": 50,
+      "meta": {
+        "label": "Payments",
+        "pathname": "payments",
+        "icon": "icon-credit-card"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.UpdateStatus",
+      "name": "Update Order Status",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-status.js",
+      "meta": {
+        "label": "Update Status",
+        "look": "primary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.CreateShipment",
+      "name": "Create Shipment",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-create-shipment.js",
+      "weight": 90,
+      "meta": {
+        "label": "Ship",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.Refund",
+      "name": "Refund Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-refund.js",
+      "weight": 80,
+      "meta": {
+        "label": "Refund",
+        "look": "secondary",
+        "color": "warning"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.Cancel",
+      "name": "Cancel Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-cancel.js",
+      "weight": 75,
+      "meta": {
+        "label": "Cancel",
+        "look": "secondary",
+        "color": "danger"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.Ship",
+      "name": "Mark Shipped",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-ship.js",
+      "weight": 70,
+      "meta": {
+        "label": "Ship",
+        "look": "secondary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.Deliver",
+      "name": "Mark Delivered",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-deliver.js",
+      "weight": 65,
+      "meta": {
+        "label": "Deliver",
+        "look": "secondary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.Complete",
+      "name": "Complete Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-complete.js",
+      "weight": 60,
+      "meta": {
+        "label": "Complete",
+        "look": "secondary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.Hold",
+      "name": "Hold Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-hold.js",
+      "weight": 55,
+      "meta": {
+        "label": "Hold",
+        "look": "secondary",
+        "color": "warning"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.Note",
+      "name": "Add Note",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-note.js",
+      "weight": 50,
+      "meta": {
+        "label": "Note",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Order.Print",
+      "name": "Print Invoice",
+      "element": "/App_Plugins/Ecommerce/views/actions/order-print.js",
+      "weight": 45,
+      "meta": {
+        "label": "Print",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Order"
+        }
+      ]
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Orders",
+      "name": "Orders Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/order-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Order"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Orders",
+      "name": "Orders Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/order-collection.js",
+      "meta": {
+        "label": "Orders",
+        "icon": "icon-receipt-dollar",
+        "entityType": "ecommerce-order",
+        "pathname": "orders"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.Customer",
+      "name": "Customer Workspace",
+      "element": "/App_Plugins/Ecommerce/views/customer-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-customer"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Customer.Edit",
+      "name": "Customer Editor",
+      "element": "/App_Plugins/Ecommerce/views/customer-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Customer",
+        "pathname": "customer",
+        "icon": "icon-user"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Customer.Addresses",
+      "name": "Customer Addresses",
+      "element": "/App_Plugins/Ecommerce/views/customer-addresses.js",
+      "weight": 90,
+      "meta": {
+        "label": "Addresses",
+        "pathname": "addresses",
+        "icon": "icon-home"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Customer.Orders",
+      "name": "Customer Orders",
+      "element": "/App_Plugins/Ecommerce/views/customer-orders.js",
+      "weight": 80,
+      "meta": {
+        "label": "Orders",
+        "pathname": "orders",
+        "icon": "icon-receipt-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Customer.Activity",
+      "name": "Customer Activity",
+      "element": "/App_Plugins/Ecommerce/views/customer-activity.js",
+      "weight": 70,
+      "meta": {
+        "label": "Activity",
+        "pathname": "activity",
+        "icon": "icon-chart-line"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Customer.Loyalty",
+      "name": "Customer Loyalty",
+      "element": "/App_Plugins/Ecommerce/views/customer-loyalty.js",
+      "weight": 60,
+      "meta": {
+        "label": "Loyalty",
+        "pathname": "loyalty",
+        "icon": "icon-medal"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Customer.Save",
+      "name": "Save Customer",
+      "element": "/App_Plugins/Ecommerce/views/actions/customer-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Customer.AddCredit",
+      "name": "Add Store Credit",
+      "element": "/App_Plugins/Ecommerce/views/actions/customer-add-credit.js",
+      "weight": 90,
+      "meta": {
+        "label": "Add Credit",
+        "look": "secondary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Customer.AddPoints",
+      "name": "Add Loyalty Points",
+      "element": "/App_Plugins/Ecommerce/views/actions/customer-add-points.js",
+      "weight": 80,
+      "meta": {
+        "label": "Add Points",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Customer.Status",
+      "name": "Customer Status",
+      "element": "/App_Plugins/Ecommerce/views/actions/customer-status.js",
+      "weight": 75,
+      "meta": {
+        "label": "Status",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Customer.Marketing",
+      "name": "Toggle Marketing",
+      "element": "/App_Plugins/Ecommerce/views/actions/customer-marketing.js",
+      "weight": 70,
+      "meta": {
+        "label": "Marketing",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Customer.Verify",
+      "name": "Verify Email",
+      "element": "/App_Plugins/Ecommerce/views/actions/customer-verify.js",
+      "weight": 65,
+      "meta": {
+        "label": "Verify Email",
+        "look": "secondary",
+        "color": "warning"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Customer"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Customer.Create",
+      "name": "Create Customer",
+      "forEntityTypes": ["ecommerce-customer-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Customer"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Customer.Delete",
+      "name": "Delete Customer",
+      "forEntityTypes": ["ecommerce-customer"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Customers",
+      "name": "Customers Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/customer-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Customer"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Customers",
+      "name": "Customers Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/customer-collection.js",
+      "meta": {
+        "label": "Customers",
+        "icon": "icon-users",
+        "entityType": "ecommerce-customer",
+        "pathname": "customers"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.Discount",
+      "name": "Discount Workspace",
+      "element": "/App_Plugins/Ecommerce/views/discount-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-discount"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Discount.Edit",
+      "name": "Discount Editor",
+      "element": "/App_Plugins/Ecommerce/views/discount-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Discount",
+        "pathname": "discount",
+        "icon": "icon-tag"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Discount.Conditions",
+      "name": "Discount Conditions",
+      "element": "/App_Plugins/Ecommerce/views/discount-conditions.js",
+      "weight": 90,
+      "meta": {
+        "label": "Conditions",
+        "pathname": "conditions",
+        "icon": "icon-filter"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Discount.Limits",
+      "name": "Discount Limits",
+      "element": "/App_Plugins/Ecommerce/views/discount-limits.js",
+      "weight": 80,
+      "meta": {
+        "label": "Limits",
+        "pathname": "limits",
+        "icon": "icon-lock"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Discount.Products",
+      "name": "Discount Products",
+      "element": "/App_Plugins/Ecommerce/views/discount-products.js",
+      "weight": 75,
+      "meta": {
+        "label": "Products",
+        "pathname": "products",
+        "icon": "icon-box"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Discount.Usage",
+      "name": "Discount Usage",
+      "element": "/App_Plugins/Ecommerce/views/discount-usage.js",
+      "weight": 70,
+      "meta": {
+        "label": "Usage",
+        "pathname": "usage",
+        "icon": "icon-chart-line"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Discount.Save",
+      "name": "Save Discount",
+      "element": "/App_Plugins/Ecommerce/views/actions/discount-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Discount.Toggle",
+      "name": "Toggle Discount",
+      "element": "/App_Plugins/Ecommerce/views/actions/discount-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Discount.Duplicate",
+      "name": "Duplicate Discount",
+      "element": "/App_Plugins/Ecommerce/views/actions/discount-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Discount.Extend",
+      "name": "Extend Discount",
+      "element": "/App_Plugins/Ecommerce/views/actions/discount-extend.js",
+      "weight": 75,
+      "meta": {
+        "label": "Extend",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Discount.ResetUsage",
+      "name": "Reset Usage",
+      "element": "/App_Plugins/Ecommerce/views/actions/discount-reset-usage.js",
+      "weight": 70,
+      "meta": {
+        "label": "Reset Usage",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Discount.Priority",
+      "name": "Discount Priority",
+      "element": "/App_Plugins/Ecommerce/views/actions/discount-priority.js",
+      "weight": 65,
+      "meta": {
+        "label": "Priority",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Discount.Combine",
+      "name": "Toggle Combine",
+      "element": "/App_Plugins/Ecommerce/views/actions/discount-combine.js",
+      "weight": 60,
+      "meta": {
+        "label": "Combine",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Discount.CopyCode",
+      "name": "Copy Code",
+      "element": "/App_Plugins/Ecommerce/views/actions/discount-copy-code.js",
+      "weight": 55,
+      "meta": {
+        "label": "Copy Code",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Discount"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Discount.Create",
+      "name": "Create Discount",
+      "forEntityTypes": ["ecommerce-discount-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Discount"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Discount.Delete",
+      "name": "Delete Discount",
+      "forEntityTypes": ["ecommerce-discount"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Discounts",
+      "name": "Discounts Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/discount-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Discount"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Discounts",
+      "name": "Discounts Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/discount-collection.js",
+      "meta": {
+        "label": "Discounts",
+        "icon": "icon-tag",
+        "entityType": "ecommerce-discount",
+        "pathname": "discounts"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.ShippingMethod",
+      "name": "Shipping Method Workspace",
+      "element": "/App_Plugins/Ecommerce/views/shipping-method-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-shipping-method"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.ShippingMethod.Edit",
+      "name": "Shipping Method Editor",
+      "element": "/App_Plugins/Ecommerce/views/shipping-method-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Method",
+        "pathname": "method",
+        "icon": "icon-truck"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.ShippingMethod.Rates",
+      "name": "Shipping Method Rates",
+      "element": "/App_Plugins/Ecommerce/views/shipping-method-rates.js",
+      "weight": 90,
+      "meta": {
+        "label": "Rates",
+        "pathname": "rates",
+        "icon": "icon-coins-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingMethod.Save",
+      "name": "Save Shipping Method",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-method-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingMethod.Toggle",
+      "name": "Toggle Shipping Method",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-method-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingMethod.Duplicate",
+      "name": "Duplicate Shipping Method",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-method-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingMethod.Sort",
+      "name": "Sort Shipping Method",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-method-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingMethod.Taxable",
+      "name": "Toggle Taxable",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-method-taxable.js",
+      "weight": 70,
+      "meta": {
+        "label": "Taxable",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingMethod.Delivery",
+      "name": "Delivery Estimate",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-method-delivery.js",
+      "weight": 65,
+      "meta": {
+        "label": "Delivery",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingMethod.FreeThreshold",
+      "name": "Free Shipping Threshold",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-method-free-threshold.js",
+      "weight": 60,
+      "meta": {
+        "label": "Free Threshold",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingMethod"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.ShippingMethod.Create",
+      "name": "Create Shipping Method",
+      "forEntityTypes": ["ecommerce-shipping-method-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Method"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.ShippingMethod.Delete",
+      "name": "Delete Shipping Method",
+      "forEntityTypes": ["ecommerce-shipping-method"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.ShippingZone",
+      "name": "Shipping Zone Workspace",
+      "element": "/App_Plugins/Ecommerce/views/shipping-zone-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-shipping-zone"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.ShippingZone.Edit",
+      "name": "Shipping Zone Editor",
+      "element": "/App_Plugins/Ecommerce/views/shipping-zone-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Zone",
+        "pathname": "zone",
+        "icon": "icon-globe"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.ShippingZone.Regions",
+      "name": "Shipping Zone Regions",
+      "element": "/App_Plugins/Ecommerce/views/shipping-zone-regions.js",
+      "weight": 90,
+      "meta": {
+        "label": "Regions",
+        "pathname": "regions",
+        "icon": "icon-map-location"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.ShippingZone.Rates",
+      "name": "Shipping Zone Rates",
+      "element": "/App_Plugins/Ecommerce/views/shipping-zone-rates.js",
+      "weight": 80,
+      "meta": {
+        "label": "Rates",
+        "pathname": "rates",
+        "icon": "icon-coins-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingZone.Save",
+      "name": "Save Shipping Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-zone-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingZone.Toggle",
+      "name": "Toggle Shipping Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-zone-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingZone.Default",
+      "name": "Set Default Shipping Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-zone-default.js",
+      "weight": 85,
+      "meta": {
+        "label": "Set Default",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingZone.Duplicate",
+      "name": "Duplicate Shipping Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-zone-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingZone.Sort",
+      "name": "Sort Shipping Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-zone-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ShippingZone.ClearRegions",
+      "name": "Clear Regions",
+      "element": "/App_Plugins/Ecommerce/views/actions/shipping-zone-clear-regions.js",
+      "weight": 70,
+      "meta": {
+        "label": "Clear Regions",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ShippingZone"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.ShippingZone.Create",
+      "name": "Create Shipping Zone",
+      "forEntityTypes": ["ecommerce-shipping-zone-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Zone"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.ShippingZone.Delete",
+      "name": "Delete Shipping Zone",
+      "forEntityTypes": ["ecommerce-shipping-zone"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Shipping",
+      "name": "Shipping Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/shipping-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Shipping"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Shipping",
+      "name": "Shipping Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/shipping-collection.js",
+      "meta": {
+        "label": "Shipping",
+        "icon": "icon-truck",
+        "entityType": "ecommerce-shipping",
+        "pathname": "shipping"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.TaxCategory",
+      "name": "Tax Category Workspace",
+      "element": "/App_Plugins/Ecommerce/views/tax-category-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-tax-category"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.TaxCategory.Edit",
+      "name": "Tax Category Editor",
+      "element": "/App_Plugins/Ecommerce/views/tax-category-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Category",
+        "pathname": "category",
+        "icon": "icon-bill-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxCategory"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.TaxCategory.Rates",
+      "name": "Tax Category Rates",
+      "element": "/App_Plugins/Ecommerce/views/tax-category-rates.js",
+      "weight": 90,
+      "meta": {
+        "label": "Rates",
+        "pathname": "rates",
+        "icon": "icon-percentage"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxCategory"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxCategory.Save",
+      "name": "Save Tax Category",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-category-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxCategory"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxCategory.Toggle",
+      "name": "Toggle Tax Category",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-category-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxCategory"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxCategory.Default",
+      "name": "Set Default Tax Category",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-category-default.js",
+      "weight": 85,
+      "meta": {
+        "label": "Set Default",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxCategory"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxCategory.Duplicate",
+      "name": "Duplicate Tax Category",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-category-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxCategory"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxCategory.Sort",
+      "name": "Sort Tax Category",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-category-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxCategory"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxCategory.Exempt",
+      "name": "Toggle Tax Exempt",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-category-exempt.js",
+      "weight": 70,
+      "meta": {
+        "label": "Exempt",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxCategory"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.TaxCategory.Create",
+      "name": "Create Tax Category",
+      "forEntityTypes": ["ecommerce-tax-category-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Category"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.TaxCategory.Delete",
+      "name": "Delete Tax Category",
+      "forEntityTypes": ["ecommerce-tax-category"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.TaxZone",
+      "name": "Tax Zone Workspace",
+      "element": "/App_Plugins/Ecommerce/views/tax-zone-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-tax-zone"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.TaxZone.Edit",
+      "name": "Tax Zone Editor",
+      "element": "/App_Plugins/Ecommerce/views/tax-zone-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Zone",
+        "pathname": "zone",
+        "icon": "icon-globe"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.TaxZone.Regions",
+      "name": "Tax Zone Regions",
+      "element": "/App_Plugins/Ecommerce/views/tax-zone-regions.js",
+      "weight": 90,
+      "meta": {
+        "label": "Regions",
+        "pathname": "regions",
+        "icon": "icon-map-location"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.TaxZone.Rates",
+      "name": "Tax Zone Rates",
+      "element": "/App_Plugins/Ecommerce/views/tax-zone-rates.js",
+      "weight": 80,
+      "meta": {
+        "label": "Rates",
+        "pathname": "rates",
+        "icon": "icon-percentage"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxZone.Save",
+      "name": "Save Tax Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-zone-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxZone.Toggle",
+      "name": "Toggle Tax Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-zone-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxZone.Default",
+      "name": "Set Default Tax Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-zone-default.js",
+      "weight": 85,
+      "meta": {
+        "label": "Set Default",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxZone.Duplicate",
+      "name": "Duplicate Tax Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-zone-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxZone.Sort",
+      "name": "Sort Tax Zone",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-zone-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxZone.Priority",
+      "name": "Tax Zone Priority",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-zone-priority.js",
+      "weight": 70,
+      "meta": {
+        "label": "Priority",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.TaxZone.ClearRegions",
+      "name": "Clear Regions",
+      "element": "/App_Plugins/Ecommerce/views/actions/tax-zone-clear-regions.js",
+      "weight": 65,
+      "meta": {
+        "label": "Clear Regions",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.TaxZone"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.TaxZone.Create",
+      "name": "Create Tax Zone",
+      "forEntityTypes": ["ecommerce-tax-zone-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Zone"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.TaxZone.Delete",
+      "name": "Delete Tax Zone",
+      "forEntityTypes": ["ecommerce-tax-zone"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Tax",
+      "name": "Tax Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/tax-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Tax"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Tax",
+      "name": "Tax Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/tax-collection.js",
+      "meta": {
+        "label": "Tax",
+        "icon": "icon-bill-dollar",
+        "entityType": "ecommerce-tax",
+        "pathname": "tax"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "menuItem",
+      "alias": "Umb.MenuItem.Ecommerce.Payments",
+      "name": "Payments",
+      "meta": {
+        "label": "Payments",
+        "icon": "icon-credit-card",
+        "menus": ["Umb.Menu.Ecommerce"],
+        "entityType": "ecommerce-payment"
+      }
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.PaymentMethod",
+      "name": "Payment Method Workspace",
+      "element": "/App_Plugins/Ecommerce/views/payment-method-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-payment-method"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PaymentMethod.Edit",
+      "name": "Payment Method Editor",
+      "element": "/App_Plugins/Ecommerce/views/payment-method-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Method",
+        "pathname": "method",
+        "icon": "icon-credit-card"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PaymentMethod.Fees",
+      "name": "Payment Method Fees",
+      "element": "/App_Plugins/Ecommerce/views/payment-method-fees.js",
+      "weight": 90,
+      "meta": {
+        "label": "Fees",
+        "pathname": "fees",
+        "icon": "icon-coins-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PaymentMethod.Restrictions",
+      "name": "Payment Method Restrictions",
+      "element": "/App_Plugins/Ecommerce/views/payment-method-restrictions.js",
+      "weight": 80,
+      "meta": {
+        "label": "Restrictions",
+        "pathname": "restrictions",
+        "icon": "icon-lock"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentMethod.Save",
+      "name": "Save Payment Method",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-method-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentMethod.Toggle",
+      "name": "Toggle Payment Method",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-method-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentMethod.Default",
+      "name": "Set Default Payment Method",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-method-default.js",
+      "weight": 85,
+      "meta": {
+        "label": "Set Default",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentMethod.Duplicate",
+      "name": "Duplicate Payment Method",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-method-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentMethod.Sort",
+      "name": "Payment Method Sort Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-method-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentMethod.3DSecure",
+      "name": "Toggle 3D Secure",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-method-3dsecure.js",
+      "weight": 70,
+      "meta": {
+        "label": "3D Secure",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentMethod.Refunds",
+      "name": "Toggle Refunds",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-method-refunds.js",
+      "weight": 65,
+      "meta": {
+        "label": "Refunds",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentMethod.Fee",
+      "name": "Update Fee Settings",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-method-fee.js",
+      "weight": 60,
+      "meta": {
+        "label": "Fee",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentMethod"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.PaymentMethod.Create",
+      "name": "Create Payment Method",
+      "forEntityTypes": ["ecommerce-payment-method-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Method"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.PaymentMethod.Delete",
+      "name": "Delete Payment Method",
+      "forEntityTypes": ["ecommerce-payment-method"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.PaymentGateway",
+      "name": "Payment Gateway Workspace",
+      "element": "/App_Plugins/Ecommerce/views/payment-gateway-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-payment-gateway"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PaymentGateway.Edit",
+      "name": "Payment Gateway Editor",
+      "element": "/App_Plugins/Ecommerce/views/payment-gateway-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Gateway",
+        "pathname": "gateway",
+        "icon": "icon-server"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PaymentGateway.Credentials",
+      "name": "Payment Gateway Credentials",
+      "element": "/App_Plugins/Ecommerce/views/payment-gateway-credentials.js",
+      "weight": 90,
+      "meta": {
+        "label": "Credentials",
+        "pathname": "credentials",
+        "icon": "icon-key"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PaymentGateway.Webhooks",
+      "name": "Payment Gateway Webhooks",
+      "element": "/App_Plugins/Ecommerce/views/payment-gateway-webhooks.js",
+      "weight": 80,
+      "meta": {
+        "label": "Webhooks",
+        "pathname": "webhooks",
+        "icon": "icon-webhook"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentGateway.Save",
+      "name": "Save Payment Gateway",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-gateway-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentGateway.Toggle",
+      "name": "Toggle Payment Gateway",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-gateway-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentGateway.Sandbox",
+      "name": "Toggle Sandbox Mode",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-gateway-sandbox.js",
+      "weight": 88,
+      "meta": {
+        "label": "Sandbox",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentGateway.Test",
+      "name": "Test Gateway Connection",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-gateway-test.js",
+      "weight": 85,
+      "meta": {
+        "label": "Test",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentGateway.Duplicate",
+      "name": "Duplicate Payment Gateway",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-gateway-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentGateway.Sort",
+      "name": "Payment Gateway Sort Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-gateway-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PaymentGateway.Webhooks",
+      "name": "Toggle Webhooks",
+      "element": "/App_Plugins/Ecommerce/views/actions/payment-gateway-webhooks.js",
+      "weight": 70,
+      "meta": {
+        "label": "Webhooks",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PaymentGateway"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.PaymentGateway.Create",
+      "name": "Create Payment Gateway",
+      "forEntityTypes": ["ecommerce-payment-gateway-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Gateway"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.PaymentGateway.Delete",
+      "name": "Delete Payment Gateway",
+      "forEntityTypes": ["ecommerce-payment-gateway"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Payment",
+      "name": "Payment Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/payment-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Payment"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Payment",
+      "name": "Payment Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/payment-collection.js",
+      "meta": {
+        "label": "Payments",
+        "icon": "icon-credit-card",
+        "entityType": "ecommerce-payment",
+        "pathname": "payments"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.Warehouse",
+      "name": "Warehouse Workspace",
+      "element": "/App_Plugins/Ecommerce/views/warehouse-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-warehouse"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Warehouse.Edit",
+      "name": "Warehouse Editor",
+      "element": "/App_Plugins/Ecommerce/views/warehouse-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Warehouse",
+        "pathname": "warehouse",
+        "icon": "icon-box-open"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Warehouse.Stock",
+      "name": "Warehouse Stock Levels",
+      "element": "/App_Plugins/Ecommerce/views/warehouse-stock.js",
+      "weight": 90,
+      "meta": {
+        "label": "Stock Levels",
+        "pathname": "stock",
+        "icon": "icon-layers"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Warehouse.Settings",
+      "name": "Warehouse Settings",
+      "element": "/App_Plugins/Ecommerce/views/warehouse-settings.js",
+      "weight": 80,
+      "meta": {
+        "label": "Settings",
+        "pathname": "settings",
+        "icon": "icon-settings"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Warehouse.Save",
+      "name": "Save Warehouse",
+      "element": "/App_Plugins/Ecommerce/views/actions/warehouse-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Warehouse.Toggle",
+      "name": "Toggle Warehouse",
+      "element": "/App_Plugins/Ecommerce/views/actions/warehouse-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Warehouse.Default",
+      "name": "Set Default Warehouse",
+      "element": "/App_Plugins/Ecommerce/views/actions/warehouse-default.js",
+      "weight": 85,
+      "meta": {
+        "label": "Set Default",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Warehouse.Duplicate",
+      "name": "Duplicate Warehouse",
+      "element": "/App_Plugins/Ecommerce/views/actions/warehouse-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Warehouse.Sort",
+      "name": "Warehouse Sort Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/warehouse-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Warehouse.Priority",
+      "name": "Warehouse Priority",
+      "element": "/App_Plugins/Ecommerce/views/actions/warehouse-priority.js",
+      "weight": 70,
+      "meta": {
+        "label": "Priority",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Warehouse.Fulfillment",
+      "name": "Toggle Fulfillment",
+      "element": "/App_Plugins/Ecommerce/views/actions/warehouse-fulfillment.js",
+      "weight": 65,
+      "meta": {
+        "label": "Fulfillment",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Warehouse.Returns",
+      "name": "Toggle Returns",
+      "element": "/App_Plugins/Ecommerce/views/actions/warehouse-returns.js",
+      "weight": 60,
+      "meta": {
+        "label": "Returns",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Warehouse"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Warehouse.Create",
+      "name": "Create Warehouse",
+      "forEntityTypes": ["ecommerce-warehouse-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Warehouse"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Warehouse.Delete",
+      "name": "Delete Warehouse",
+      "forEntityTypes": ["ecommerce-warehouse"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.Supplier",
+      "name": "Supplier Workspace",
+      "element": "/App_Plugins/Ecommerce/views/supplier-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-supplier"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Supplier.Edit",
+      "name": "Supplier Editor",
+      "element": "/App_Plugins/Ecommerce/views/supplier-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Supplier",
+        "pathname": "supplier",
+        "icon": "icon-truck"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Supplier.Products",
+      "name": "Supplier Products",
+      "element": "/App_Plugins/Ecommerce/views/supplier-products.js",
+      "weight": 90,
+      "meta": {
+        "label": "Products",
+        "pathname": "products",
+        "icon": "icon-box"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.Supplier.Orders",
+      "name": "Supplier Purchase Orders",
+      "element": "/App_Plugins/Ecommerce/views/supplier-orders.js",
+      "weight": 80,
+      "meta": {
+        "label": "Purchase Orders",
+        "pathname": "orders",
+        "icon": "icon-receipt-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Supplier.Save",
+      "name": "Save Supplier",
+      "element": "/App_Plugins/Ecommerce/views/actions/supplier-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Supplier.Toggle",
+      "name": "Toggle Supplier",
+      "element": "/App_Plugins/Ecommerce/views/actions/supplier-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Supplier.Duplicate",
+      "name": "Duplicate Supplier",
+      "element": "/App_Plugins/Ecommerce/views/actions/supplier-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Supplier.Sort",
+      "name": "Supplier Sort Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/supplier-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Supplier.LeadTime",
+      "name": "Supplier Lead Time",
+      "element": "/App_Plugins/Ecommerce/views/actions/supplier-lead-time.js",
+      "weight": 70,
+      "meta": {
+        "label": "Lead Time",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Supplier.Rating",
+      "name": "Supplier Rating",
+      "element": "/App_Plugins/Ecommerce/views/actions/supplier-rating.js",
+      "weight": 65,
+      "meta": {
+        "label": "Rating",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Supplier"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Supplier.Create",
+      "name": "Create Supplier",
+      "forEntityTypes": ["ecommerce-supplier-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Supplier"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.Supplier.Delete",
+      "name": "Delete Supplier",
+      "forEntityTypes": ["ecommerce-supplier"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.PurchaseOrder",
+      "name": "Purchase Order Workspace",
+      "element": "/App_Plugins/Ecommerce/views/purchase-order-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-purchase-order"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PurchaseOrder.Edit",
+      "name": "Purchase Order Editor",
+      "element": "/App_Plugins/Ecommerce/views/purchase-order-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Order",
+        "pathname": "order",
+        "icon": "icon-receipt-dollar"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PurchaseOrder"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PurchaseOrder.Items",
+      "name": "Purchase Order Items",
+      "element": "/App_Plugins/Ecommerce/views/purchase-order-items.js",
+      "weight": 90,
+      "meta": {
+        "label": "Items",
+        "pathname": "items",
+        "icon": "icon-box"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PurchaseOrder"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.PurchaseOrder.Receiving",
+      "name": "Purchase Order Receiving",
+      "element": "/App_Plugins/Ecommerce/views/purchase-order-receiving.js",
+      "weight": 80,
+      "meta": {
+        "label": "Receiving",
+        "pathname": "receiving",
+        "icon": "icon-download-alt"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PurchaseOrder"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PurchaseOrder.Save",
+      "name": "Save Purchase Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/purchase-order-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PurchaseOrder"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.PurchaseOrder.Approve",
+      "name": "Approve Purchase Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/purchase-order-approve.js",
+      "meta": {
+        "label": "Approve",
+        "look": "secondary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.PurchaseOrder"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.PurchaseOrder.Create",
+      "name": "Create Purchase Order",
+      "forEntityTypes": ["ecommerce-purchase-order-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Order"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.PurchaseOrder.Delete",
+      "name": "Delete Purchase Order",
+      "forEntityTypes": ["ecommerce-purchase-order"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.StockAdjustment",
+      "name": "Stock Adjustment Workspace",
+      "element": "/App_Plugins/Ecommerce/views/stock-adjustment-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-stock-adjustment"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.StockAdjustment.Edit",
+      "name": "Stock Adjustment Editor",
+      "element": "/App_Plugins/Ecommerce/views/stock-adjustment-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Adjustment",
+        "pathname": "adjustment",
+        "icon": "icon-axis-rotation"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.StockAdjustment.Items",
+      "name": "Stock Adjustment Items",
+      "element": "/App_Plugins/Ecommerce/views/stock-adjustment-items.js",
+      "weight": 90,
+      "meta": {
+        "label": "Items",
+        "pathname": "items",
+        "icon": "icon-box"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockAdjustment.Save",
+      "name": "Save Stock Adjustment",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-adjustment-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockAdjustment.Complete",
+      "name": "Complete Stock Adjustment",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-adjustment-complete.js",
+      "meta": {
+        "label": "Complete",
+        "look": "secondary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockAdjustment.Submit",
+      "name": "Submit Stock Adjustment",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-adjustment-submit.js",
+      "weight": 85,
+      "meta": {
+        "label": "Submit",
+        "look": "primary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockAdjustment.Approve",
+      "name": "Approve Stock Adjustment",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-adjustment-approve.js",
+      "weight": 80,
+      "meta": {
+        "label": "Approve",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockAdjustment.Reject",
+      "name": "Reject Stock Adjustment",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-adjustment-reject.js",
+      "weight": 75,
+      "meta": {
+        "label": "Reject",
+        "look": "secondary",
+        "color": "danger"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockAdjustment.Cancel",
+      "name": "Cancel Stock Adjustment",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-adjustment-cancel.js",
+      "weight": 70,
+      "meta": {
+        "label": "Cancel",
+        "look": "secondary",
+        "color": "warning"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockAdjustment.Type",
+      "name": "Stock Adjustment Type",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-adjustment-type.js",
+      "weight": 65,
+      "meta": {
+        "label": "Type",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockAdjustment"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.StockAdjustment.Create",
+      "name": "Create Stock Adjustment",
+      "forEntityTypes": ["ecommerce-stock-adjustment-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Adjustment"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.StockAdjustment.Delete",
+      "name": "Delete Stock Adjustment",
+      "forEntityTypes": ["ecommerce-stock-adjustment"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "workspace",
+      "alias": "Ecommerce.Workspace.StockTransfer",
+      "name": "Stock Transfer Workspace",
+      "element": "/App_Plugins/Ecommerce/views/stock-transfer-workspace.js",
+      "meta": {
+        "entityType": "ecommerce-stock-transfer"
+      }
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.StockTransfer.Edit",
+      "name": "Stock Transfer Editor",
+      "element": "/App_Plugins/Ecommerce/views/stock-transfer-editor.js",
+      "weight": 100,
+      "meta": {
+        "label": "Transfer",
+        "pathname": "transfer",
+        "icon": "icon-split"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.StockTransfer.Items",
+      "name": "Stock Transfer Items",
+      "element": "/App_Plugins/Ecommerce/views/stock-transfer-items.js",
+      "weight": 90,
+      "meta": {
+        "label": "Items",
+        "pathname": "items",
+        "icon": "icon-box"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceView",
+      "alias": "Ecommerce.WorkspaceView.StockTransfer.Shipping",
+      "name": "Stock Transfer Shipping",
+      "element": "/App_Plugins/Ecommerce/views/stock-transfer-shipping.js",
+      "weight": 80,
+      "meta": {
+        "label": "Shipping",
+        "pathname": "shipping",
+        "icon": "icon-truck"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockTransfer.Save",
+      "name": "Save Stock Transfer",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-transfer-save.js",
+      "meta": {
+        "label": "Save",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockTransfer.Ship",
+      "name": "Ship Stock Transfer",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-transfer-ship.js",
+      "meta": {
+        "label": "Mark Shipped",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockTransfer.Receive",
+      "name": "Receive Stock Transfer",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-transfer-receive.js",
+      "meta": {
+        "label": "Receive",
+        "look": "secondary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockTransfer.Submit",
+      "name": "Submit Stock Transfer",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-transfer-submit.js",
+      "weight": 85,
+      "meta": {
+        "label": "Submit",
+        "look": "primary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockTransfer.Approve",
+      "name": "Approve Stock Transfer",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-transfer-approve.js",
+      "weight": 80,
+      "meta": {
+        "label": "Approve",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockTransfer.Cancel",
+      "name": "Cancel Stock Transfer",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-transfer-cancel.js",
+      "weight": 75,
+      "meta": {
+        "label": "Cancel",
+        "look": "secondary",
+        "color": "warning"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.StockTransfer.Tracking",
+      "name": "Stock Transfer Tracking",
+      "element": "/App_Plugins/Ecommerce/views/actions/stock-transfer-tracking.js",
+      "weight": 70,
+      "meta": {
+        "label": "Tracking",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.StockTransfer"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Currency.Toggle",
+      "name": "Toggle Currency",
+      "element": "/App_Plugins/Ecommerce/views/actions/currency-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Currency"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Currency.Default",
+      "name": "Set Default Currency",
+      "element": "/App_Plugins/Ecommerce/views/actions/currency-default.js",
+      "weight": 85,
+      "meta": {
+        "label": "Set Default",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Currency"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Currency.Duplicate",
+      "name": "Duplicate Currency",
+      "element": "/App_Plugins/Ecommerce/views/actions/currency-duplicate.js",
+      "weight": 80,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Currency"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Currency.Sort",
+      "name": "Currency Sort Order",
+      "element": "/App_Plugins/Ecommerce/views/actions/currency-sort.js",
+      "weight": 75,
+      "meta": {
+        "label": "Sort",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Currency"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Currency.Decimals",
+      "name": "Currency Decimal Places",
+      "element": "/App_Plugins/Ecommerce/views/actions/currency-decimals.js",
+      "weight": 70,
+      "meta": {
+        "label": "Decimals",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Currency"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Currency.SymbolPosition",
+      "name": "Currency Symbol Position",
+      "element": "/App_Plugins/Ecommerce/views/actions/currency-symbol-position.js",
+      "weight": 65,
+      "meta": {
+        "label": "Symbol",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Currency"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Currency.Rounding",
+      "name": "Currency Rounding Mode",
+      "element": "/App_Plugins/Ecommerce/views/actions/currency-rounding.js",
+      "weight": 60,
+      "meta": {
+        "label": "Rounding",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Currency"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ExchangeRate.Toggle",
+      "name": "Toggle Exchange Rate",
+      "element": "/App_Plugins/Ecommerce/views/actions/exchange-rate-toggle.js",
+      "weight": 90,
+      "meta": {
+        "label": "Toggle",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ExchangeRate"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ExchangeRate.Value",
+      "name": "Update Exchange Rate",
+      "element": "/App_Plugins/Ecommerce/views/actions/exchange-rate-value.js",
+      "weight": 85,
+      "meta": {
+        "label": "Rate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ExchangeRate"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ExchangeRate.Markup",
+      "name": "Exchange Rate Markup",
+      "element": "/App_Plugins/Ecommerce/views/actions/exchange-rate-markup.js",
+      "weight": 80,
+      "meta": {
+        "label": "Markup",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ExchangeRate"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.ExchangeRate.Dates",
+      "name": "Exchange Rate Dates",
+      "element": "/App_Plugins/Ecommerce/views/actions/exchange-rate-dates.js",
+      "weight": 75,
+      "meta": {
+        "label": "Dates",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.ExchangeRate"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Review.Approve",
+      "name": "Approve Review",
+      "element": "/App_Plugins/Ecommerce/views/actions/review-approve.js",
+      "weight": 100,
+      "meta": {
+        "label": "Approve",
+        "look": "primary",
+        "color": "positive"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Review"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Review.Reject",
+      "name": "Reject Review",
+      "element": "/App_Plugins/Ecommerce/views/actions/review-reject.js",
+      "weight": 95,
+      "meta": {
+        "label": "Reject",
+        "look": "secondary",
+        "color": "danger"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Review"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Review.Featured",
+      "name": "Toggle Featured Review",
+      "element": "/App_Plugins/Ecommerce/views/actions/review-featured.js",
+      "weight": 90,
+      "meta": {
+        "label": "Featured",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Review"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Review.Verified",
+      "name": "Toggle Verified Purchase",
+      "element": "/App_Plugins/Ecommerce/views/actions/review-verified.js",
+      "weight": 85,
+      "meta": {
+        "label": "Verified",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Review"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Review.Respond",
+      "name": "Respond to Review",
+      "element": "/App_Plugins/Ecommerce/views/actions/review-respond.js",
+      "weight": 80,
+      "meta": {
+        "label": "Respond",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Review"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Review.RemoveResponse",
+      "name": "Remove Response",
+      "element": "/App_Plugins/Ecommerce/views/actions/review-remove-response.js",
+      "weight": 75,
+      "meta": {
+        "label": "Remove Response",
+        "look": "secondary",
+        "color": "warning"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Review"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Review.Rating",
+      "name": "Update Review Rating",
+      "element": "/App_Plugins/Ecommerce/views/actions/review-rating.js",
+      "weight": 70,
+      "meta": {
+        "label": "Rating",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Review"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Review.ResetVotes",
+      "name": "Reset Review Votes",
+      "element": "/App_Plugins/Ecommerce/views/actions/review-reset-votes.js",
+      "weight": 65,
+      "meta": {
+        "label": "Reset Votes",
+        "look": "secondary",
+        "color": "warning"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Review"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Wishlist.Default",
+      "name": "Set Default Wishlist",
+      "element": "/App_Plugins/Ecommerce/views/actions/wishlist-default.js",
+      "weight": 100,
+      "meta": {
+        "label": "Set Default",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Wishlist"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Wishlist.Public",
+      "name": "Toggle Public Wishlist",
+      "element": "/App_Plugins/Ecommerce/views/actions/wishlist-public.js",
+      "weight": 95,
+      "meta": {
+        "label": "Toggle Public",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Wishlist"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Wishlist.Share",
+      "name": "Generate Share Link",
+      "element": "/App_Plugins/Ecommerce/views/actions/wishlist-share.js",
+      "weight": 90,
+      "meta": {
+        "label": "Share Link",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Wishlist"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Wishlist.RemoveShare",
+      "name": "Remove Share Link",
+      "element": "/App_Plugins/Ecommerce/views/actions/wishlist-remove-share.js",
+      "weight": 85,
+      "meta": {
+        "label": "Remove Share",
+        "look": "secondary",
+        "color": "warning"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Wishlist"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Wishlist.Rename",
+      "name": "Rename Wishlist",
+      "element": "/App_Plugins/Ecommerce/views/actions/wishlist-rename.js",
+      "weight": 80,
+      "meta": {
+        "label": "Rename",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Wishlist"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Wishlist.Duplicate",
+      "name": "Duplicate Wishlist",
+      "element": "/App_Plugins/Ecommerce/views/actions/wishlist-duplicate.js",
+      "weight": 75,
+      "meta": {
+        "label": "Duplicate",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Wishlist"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Wishlist.Clear",
+      "name": "Clear Wishlist",
+      "element": "/App_Plugins/Ecommerce/views/actions/wishlist-clear.js",
+      "weight": 70,
+      "meta": {
+        "label": "Clear Items",
+        "look": "secondary",
+        "color": "danger"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Wishlist"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Cart.Clear",
+      "name": "Clear Cart",
+      "element": "/App_Plugins/Ecommerce/views/actions/cart-clear.js",
+      "weight": 100,
+      "meta": {
+        "label": "Clear Cart",
+        "look": "secondary",
+        "color": "danger"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Cart"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Cart.Notes",
+      "name": "Cart Notes",
+      "element": "/App_Plugins/Ecommerce/views/actions/cart-notes.js",
+      "weight": 95,
+      "meta": {
+        "label": "Notes",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Cart"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Cart.Expiration",
+      "name": "Cart Expiration",
+      "element": "/App_Plugins/Ecommerce/views/actions/cart-expiration.js",
+      "weight": 90,
+      "meta": {
+        "label": "Expiration",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Cart"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Cart.Assign",
+      "name": "Assign Cart to Customer",
+      "element": "/App_Plugins/Ecommerce/views/actions/cart-assign.js",
+      "weight": 85,
+      "meta": {
+        "label": "Assign Customer",
+        "look": "secondary",
+        "color": "default"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Cart"
+        }
+      ]
+    },
+    {
+      "type": "workspaceAction",
+      "alias": "Ecommerce.WorkspaceAction.Cart.Delete",
+      "name": "Delete Cart",
+      "element": "/App_Plugins/Ecommerce/views/actions/cart-delete.js",
+      "weight": 80,
+      "meta": {
+        "label": "Delete",
+        "look": "secondary",
+        "color": "danger"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.WorkspaceAlias",
+          "match": "Ecommerce.Workspace.Cart"
+        }
+      ]
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.StockTransfer.Create",
+      "name": "Create Stock Transfer",
+      "forEntityTypes": ["ecommerce-stock-transfer-root"],
+      "meta": {
+        "icon": "icon-add",
+        "label": "Create Transfer"
+      }
+    },
+    {
+      "type": "entityAction",
+      "kind": "default",
+      "alias": "Ecommerce.EntityAction.StockTransfer.Delete",
+      "name": "Delete Stock Transfer",
+      "forEntityTypes": ["ecommerce-stock-transfer"],
+      "meta": {
+        "icon": "icon-delete",
+        "label": "Delete"
+      }
+    },
+    {
+      "type": "tree",
+      "alias": "Ecommerce.Tree.Inventory",
+      "name": "Inventory Tree",
+      "element": "/App_Plugins/Ecommerce/views/trees/inventory-tree.js",
+      "meta": {
+        "repositoryAlias": "Ecommerce.Repository.Inventory"
+      }
+    },
+    {
+      "type": "collectionView",
+      "alias": "Ecommerce.CollectionView.Inventory",
+      "name": "Inventory Collection",
+      "element": "/App_Plugins/Ecommerce/views/collections/inventory-collection.js",
+      "meta": {
+        "label": "Inventory",
+        "icon": "icon-box-open",
+        "entityType": "ecommerce-inventory",
+        "pathname": "inventory"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    }
+  ]
+}

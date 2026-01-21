@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>13.0</LangVersion>
+    <RootNamespace>UAlgora.Ecommerce.Core</RootNamespace>
+    <AssemblyName>UAlgora.Ecommerce.Core</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>Lotus Algebra</Authors>
+    <Description>Core domain models, interfaces, and events for UAlgora E-commerce plugin</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="11.*" />
+    <PackageReference Include="Mapster" Version="7.*" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>13.0</LangVersion>
+    <RootNamespace>UAlgora.Ecommerce.Site</RootNamespace>
+    <AssemblyName>UAlgora.Ecommerce.Site</AssemblyName>
+    <Version>1.0.0</Version>
+    <Authors>Lotus Algebra</Authors>
+    <Description>Umbraco host site for UAlgora E-commerce plugin</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms" Version="15.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\UAlgora.Ecommerce.Core\UAlgora.Ecommerce.Core.csproj" />
+    <ProjectReference Include="..\UAlgora.Ecommerce.Infrastructure\UAlgora.Ecommerce.Infrastructure.csproj" />
+    <ProjectReference Include="..\UAlgora.Ecommerce.Web\UAlgora.Ecommerce.Web.csproj" />
+  </ItemGroup>
+
+</Project>
