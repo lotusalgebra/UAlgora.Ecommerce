@@ -5,6 +5,14 @@ using UAlgora.Ecommerce.Infrastructure.Data;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+// Workaround for Umbraco 15.4.4 service scope validation bug
+// See: https://github.com/umbraco/Umbraco-CMS/issues/
+builder.Host.UseDefaultServiceProvider(options =>
+{
+    options.ValidateScopes = false;
+    options.ValidateOnBuild = false;
+});
+
 // Add E-commerce services
 var connectionString = builder.Configuration.GetConnectionString("umbracoDbDSN")
     ?? builder.Configuration.GetConnectionString("DefaultConnection")
