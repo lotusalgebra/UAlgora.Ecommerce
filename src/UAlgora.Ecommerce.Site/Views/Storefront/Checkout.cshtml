@@ -1,0 +1,394 @@
+@model CheckoutViewModel
+
+<div class="bg-gray-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="checkoutPage()">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <a href="/" class="flex items-center">
+                <svg class="h-8 w-8 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <span class="ml-2 text-xl font-bold text-gray-900">UAlgora</span>
+            </a>
+            <a href="/cart" class="text-primary-600 hover:text-primary-700 font-medium flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to Cart
+            </a>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="mb-8">
+            <div class="flex items-center justify-center">
+                <template x-for="(stepName, index) in ['Information', 'Shipping', 'Payment', 'Review']" :key="index">
+                    <div class="flex items-center">
+                        <div class="flex items-center">
+                            <div :class="step > index ? 'bg-primary-600 text-white' : step === index ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-500'"
+                                 class="w-8 h-8 rounded-full flex items-center justify-center font-medium text-sm">
+                                <template x-if="step > index">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </template>
+                                <template x-if="step <= index">
+                                    <span x-text="index + 1"></span>
+                                </template>
+                            </div>
+                            <span :class="step >= index ? 'text-gray-900' : 'text-gray-500'" class="ml-2 font-medium hidden sm:inline" x-text="stepName"></span>
+                        </div>
+                        <template x-if="index < 3">
+                            <div :class="step > index ? 'bg-primary-600' : 'bg-gray-200'" class="w-12 sm:w-24 h-1 mx-2 sm:mx-4"></div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2">
+                <!-- Step 1: Information -->
+                <div x-show="step === 0" class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Contact Information</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <input type="email" x-model="info.email" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="your@email.com">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                <input type="text" x-model="info.firstName" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                <input type="text" x-model="info.lastName" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            <input type="tel" x-model="info.phone" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="(555) 123-4567">
+                        </div>
+                    </div>
+
+                    <h2 class="text-xl font-semibold text-gray-900 mt-8 mb-6">Shipping Address</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <input type="text" x-model="shipping.address1" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="Street address">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Apartment, suite, etc. (optional)</label>
+                            <input type="text" x-model="shipping.address2" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <input type="text" x-model="shipping.city" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                <select x-model="shipping.state" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="">Select state</option>
+                                    <option value="AL">Alabama</option><option value="AK">Alaska</option><option value="AZ">Arizona</option>
+                                    <option value="CA">California</option><option value="CO">Colorado</option><option value="CT">Connecticut</option>
+                                    <option value="FL">Florida</option><option value="GA">Georgia</option><option value="IL">Illinois</option>
+                                    <option value="NY">New York</option><option value="TX">Texas</option><option value="WA">Washington</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                                <input type="text" x-model="shipping.postalCode" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500" placeholder="12345">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+                                <select x-model="shipping.country" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="US">United States</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="UK">United Kingdom</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-end">
+                        <button @@click="nextStep()" class="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition">
+                            Continue to Shipping
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Shipping Method -->
+                <div x-show="step === 1" x-cloak class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Shipping Method</h2>
+                    <div class="space-y-3">
+                        @foreach (var method in Model.ShippingMethods)
+                        {
+                            <label class="flex items-center justify-between p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition"
+                                   :class="{ 'border-primary-500 bg-primary-50': selectedShipping === '@method.Id' }">
+                                <div class="flex items-center gap-4">
+                                    <input type="radio" name="shipping" value="@method.Id" x-model="selectedShipping" class="text-primary-600">
+                                    <div>
+                                        <p class="font-medium text-gray-900">@method.Name</p>
+                                        <p class="text-sm text-gray-500">@method.EstimatedDelivery</p>
+                                    </div>
+                                </div>
+                                <span class="font-semibold text-gray-900">@(method.Price == 0 ? "Free" : $"${method.Price:F2}")</span>
+                            </label>
+                        }
+                    </div>
+
+                    <div class="mt-8 flex justify-between">
+                        <button @@click="prevStep()" class="text-gray-600 hover:text-gray-900 font-medium flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button @@click="nextStep()" class="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition">
+                            Continue to Payment
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Payment -->
+                <div x-show="step === 2" x-cloak class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Payment Method</h2>
+
+                    <!-- Payment Options -->
+                    <div class="space-y-3 mb-6">
+                        <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition"
+                               :class="{ 'border-primary-500 bg-primary-50': paymentMethod === 'card' }">
+                            <input type="radio" name="payment" value="card" x-model="paymentMethod" class="text-primary-600">
+                            <span class="ml-3 font-medium">Credit / Debit Card</span>
+                            <div class="ml-auto flex gap-2">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/60px-Visa_Inc._logo.svg.png" alt="Visa" class="h-6">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/60px-Mastercard-logo.svg.png" alt="Mastercard" class="h-6">
+                            </div>
+                        </label>
+                        <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:border-primary-500 transition"
+                               :class="{ 'border-primary-500 bg-primary-50': paymentMethod === 'paypal' }">
+                            <input type="radio" name="payment" value="paypal" x-model="paymentMethod" class="text-primary-600">
+                            <span class="ml-3 font-medium">PayPal</span>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/80px-PayPal.svg.png" alt="PayPal" class="h-6 ml-auto">
+                        </label>
+                    </div>
+
+                    <!-- Card Form -->
+                    <div x-show="paymentMethod === 'card'" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                            <input type="text" x-model="card.number" maxlength="19" placeholder="1234 5678 9012 3456" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Name on Card</label>
+                            <input type="text" x-model="card.name" placeholder="John Doe" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
+                                <input type="text" x-model="card.expiry" maxlength="5" placeholder="MM/YY" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                                <input type="text" x-model="card.cvv" maxlength="4" placeholder="123" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Billing Address -->
+                    <div class="mt-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" x-model="sameAsShipping" class="rounded text-primary-600">
+                            <span class="ml-2 text-sm text-gray-600">Billing address same as shipping</span>
+                        </label>
+                    </div>
+
+                    <div class="mt-8 flex justify-between">
+                        <button @@click="prevStep()" class="text-gray-600 hover:text-gray-900 font-medium flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button @@click="nextStep()" class="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition">
+                            Review Order
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Review -->
+                <div x-show="step === 3" x-cloak class="bg-white rounded-xl shadow-sm p-6">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Review Your Order</h2>
+
+                    <!-- Contact & Shipping -->
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h3 class="font-medium text-gray-900 mb-2">Contact</h3>
+                            <p class="text-gray-600" x-text="info.email"></p>
+                            <p class="text-gray-600" x-text="info.phone"></p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h3 class="font-medium text-gray-900 mb-2">Ship to</h3>
+                            <p class="text-gray-600" x-text="`${info.firstName} ${info.lastName}`"></p>
+                            <p class="text-gray-600" x-text="shipping.address1"></p>
+                            <p class="text-gray-600" x-text="`${shipping.city}, ${shipping.state} ${shipping.postalCode}`"></p>
+                        </div>
+                    </div>
+
+                    <!-- Order Items -->
+                    <div class="border-t pt-6">
+                        <h3 class="font-medium text-gray-900 mb-4">Order Items</h3>
+                        <div class="space-y-4">
+                            <template x-for="item in cart.items" :key="item.id">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                                        <img :src="item.image || 'https://placehold.co/64x64/e2e8f0/64748b?text=Product'" :alt="item.name" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-medium" x-text="item.name"></p>
+                                        <p class="text-sm text-gray-500" x-text="`Qty: ${item.quantity}`"></p>
+                                    </div>
+                                    <p class="font-medium" x-text="'$' + (item.price * item.quantity).toFixed(2)"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-between">
+                        <button @@click="prevStep()" class="text-gray-600 hover:text-gray-900 font-medium flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button @@click="placeOrder()" :disabled="processing" class="bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2">
+                            <template x-if="processing">
+                                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </template>
+                            <span x-text="processing ? 'Processing...' : 'Place Order'"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm p-6 sticky top-8">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
+
+                    <!-- Items -->
+                    <div class="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                        <template x-for="item in cart.items" :key="item.id">
+                            <div class="flex items-center gap-3">
+                                <div class="relative">
+                                    <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden">
+                                        <img :src="item.image || 'https://placehold.co/48x48/e2e8f0/64748b?text=P'" :alt="item.name" class="w-full h-full object-cover">
+                                    </div>
+                                    <span class="absolute -top-2 -right-2 bg-gray-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center" x-text="item.quantity"></span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium truncate" x-text="item.name"></p>
+                                </div>
+                                <p class="text-sm font-medium" x-text="'$' + (item.price * item.quantity).toFixed(2)"></p>
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="border-t pt-4 space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span x-text="'$' + cart.subtotal.toFixed(2)"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Shipping</span>
+                            <span x-text="shippingCost > 0 ? '$' + shippingCost.toFixed(2) : 'Free'"></span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Tax</span>
+                            <span x-text="'$' + (cart.subtotal * 0.08).toFixed(2)"></span>
+                        </div>
+                    </div>
+
+                    <div class="border-t mt-4 pt-4">
+                        <div class="flex justify-between text-lg font-semibold">
+                            <span>Total</span>
+                            <span x-text="'$' + orderTotal.toFixed(2)"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function checkoutPage() {
+    return {
+        step: 0,
+        processing: false,
+        cart: JSON.parse(localStorage.getItem('cart') || '{"items":[],"subtotal":0}'),
+
+        info: { email: '', firstName: '', lastName: '', phone: '' },
+        shipping: { address1: '', address2: '', city: '', state: '', postalCode: '', country: 'US' },
+        selectedShipping: 'standard',
+        paymentMethod: 'card',
+        card: { number: '', name: '', expiry: '', cvv: '' },
+        sameAsShipping: true,
+
+        get shippingCost() {
+            const costs = { standard: 5.99, express: 12.99, overnight: 24.99 };
+            return this.cart.subtotal >= 50 && this.selectedShipping === 'standard' ? 0 : costs[this.selectedShipping] || 5.99;
+        },
+
+        get orderTotal() {
+            return this.cart.subtotal + this.shippingCost + (this.cart.subtotal * 0.08);
+        },
+
+        nextStep() {
+            if (this.step === 0 && !this.validateInfo()) return;
+            if (this.step < 3) this.step++;
+        },
+
+        prevStep() {
+            if (this.step > 0) this.step--;
+        },
+
+        validateInfo() {
+            if (!this.info.email || !this.info.firstName || !this.info.lastName) {
+                alert('Please fill in all required fields');
+                return false;
+            }
+            if (!this.shipping.address1 || !this.shipping.city || !this.shipping.state || !this.shipping.postalCode) {
+                alert('Please fill in all shipping address fields');
+                return false;
+            }
+            return true;
+        },
+
+        async placeOrder() {
+            this.processing = true;
+
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Generate order number
+            const orderNumber = 'ORD-' + Date.now().toString(36).toUpperCase();
+
+            // Clear cart
+            localStorage.removeItem('cart');
+
+            // Redirect to confirmation
+            window.location.href = `/order-confirmation/${orderNumber}`;
+        }
+    };
+}
+</script>
+}

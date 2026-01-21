@@ -1,0 +1,239 @@
+@model ProductListViewModel
+
+<div class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <!-- Breadcrumb -->
+        <nav class="flex text-sm text-gray-500">
+            <a href="/" class="hover:text-primary-600">Home</a>
+            <span class="mx-2">/</span>
+            <a href="/products" class="hover:text-primary-600">Products</a>
+            @if (!string.IsNullOrEmpty(Model.CategoryName))
+            {
+                <span class="mx-2">/</span>
+                <span class="text-gray-900">@Model.CategoryName</span>
+            }
+        </nav>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Filters Sidebar -->
+        <aside class="lg:w-64 flex-shrink-0">
+            <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+                <h3 class="font-semibold text-gray-900 mb-4">Filters</h3>
+
+                <!-- Categories -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">Categories</h4>
+                    <div class="space-y-2">
+                        <a href="/products" class="block text-sm @(Model.CategoryId == null ? "text-primary-600 font-medium" : "text-gray-600 hover:text-primary-600")">
+                            All Categories
+                        </a>
+                        @foreach (var category in Model.Categories.Where(c => c.ParentId == null).Take(10))
+                        {
+                            <a href="/products?category=@category.Id"
+                               class="block text-sm @(Model.CategoryId == category.Id ? "text-primary-600 font-medium" : "text-gray-600 hover:text-primary-600")">
+                                @category.Name
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <!-- Price Range -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">Price Range</h4>
+                    <form method="get" class="space-y-3">
+                        @if (Model.CategoryId.HasValue)
+                        {
+                            <input type="hidden" name="category" value="@Model.CategoryId" />
+                        }
+                        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                        {
+                            <input type="hidden" name="search" value="@Model.SearchTerm" />
+                        }
+                        <div class="flex gap-2">
+                            <input type="number" name="minPrice" value="@Model.MinPrice" placeholder="Min" class="w-full px-3 py-2 border rounded-lg text-sm">
+                            <input type="number" name="maxPrice" value="@Model.MaxPrice" placeholder="Max" class="w-full px-3 py-2 border rounded-lg text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
+                            Apply
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Availability -->
+                <div class="mb-6">
+                    <h4 class="font-medium text-gray-700 mb-3">Availability</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" @(Model.InStock == true ? "checked" : "")
+                                   onchange="applyFilter('inStock', this.checked)" class="rounded text-primary-600 mr-2">
+                            <span class="text-sm text-gray-600">In Stock</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" @(Model.OnSale == true ? "checked" : "")
+                                   onchange="applyFilter('sale', this.checked)" class="rounded text-primary-600 mr-2">
+                            <span class="text-sm text-gray-600">On Sale</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Clear Filters -->
+                <a href="/products" class="block text-center text-sm text-primary-600 hover:text-primary-700 font-medium">
+                    Clear All Filters
+                </a>
+            </div>
+        </aside>
+
+        <!-- Products Grid -->
+        <main class="flex-1">
+            <!-- Header -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">
+                        @(Model.CategoryName ?? (Model.OnSale == true ? "Deals & Offers" : "All Products"))
+                    </h1>
+                    <p class="text-gray-600">@Model.TotalCount products found</p>
+                </div>
+                @{
+                    var sortOptions = new[] {
+                        ("", "Sort by: Default"),
+                        ("newest", "Newest First"),
+                        ("price-asc", "Price: Low to High"),
+                        ("price-desc", "Price: High to Low"),
+                        ("name", "Name: A to Z"),
+                        ("rating", "Top Rated")
+                    };
+                }
+                <div class="flex items-center gap-4">
+                    <select onchange="window.location.href=updateQueryParam('sort', this.value)"
+                            class="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        @foreach (var (value, text) in sortOptions)
+                        {
+                            if ((string.IsNullOrEmpty(value) && string.IsNullOrEmpty(Model.SortBy)) || value == Model.SortBy)
+                            {
+                                <option value="@value" selected>@text</option>
+                            }
+                            else
+                            {
+                                <option value="@value">@text</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Search Results Message -->
+            @if (!string.IsNullOrEmpty(Model.SearchTerm))
+            {
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <p class="text-blue-800">
+                        Showing results for "<strong>@Model.SearchTerm</strong>"
+                        <a href="/products" class="ml-2 text-blue-600 hover:underline">Clear search</a>
+                    </p>
+                </div>
+            }
+
+            @if (Model.Products.Any())
+            {
+                <!-- Products Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    @foreach (var product in Model.Products)
+                    {
+                        <partial name="_ProductCard" model="product" />
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="flex justify-center mt-12">
+                        <ul class="flex items-center gap-1">
+                            @if (Model.Page > 1)
+                            {
+                                <li>
+                                    <a href="@updatePageUrl(Model.Page - 1)" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                        </svg>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                            {
+                                <li>
+                                    <a href="@updatePageUrl(i)"
+                                       class="px-4 py-2 rounded-lg transition @(i == Model.Page ? "bg-primary-600 text-white" : "border hover:bg-gray-50")">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            @if (Model.Page < Model.TotalPages)
+                            {
+                                <li>
+                                    <a href="@updatePageUrl(Model.Page + 1)" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <!-- No Products -->
+                <div class="text-center py-16">
+                    <svg class="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+                    <p class="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
+                    <a href="/products" class="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition">
+                        View All Products
+                    </a>
+                </div>
+            }
+        </main>
+    </div>
+</div>
+
+@functions {
+    string updatePageUrl(int page)
+    {
+        var query = new List<string>();
+        if (Model.CategoryId.HasValue) query.Add($"category={Model.CategoryId}");
+        if (!string.IsNullOrEmpty(Model.SearchTerm)) query.Add($"search={Model.SearchTerm}");
+        if (!string.IsNullOrEmpty(Model.SortBy)) query.Add($"sort={Model.SortBy}");
+        if (Model.MinPrice.HasValue) query.Add($"minPrice={Model.MinPrice}");
+        if (Model.MaxPrice.HasValue) query.Add($"maxPrice={Model.MaxPrice}");
+        if (Model.OnSale == true) query.Add("sale=true");
+        if (Model.InStock == true) query.Add("inStock=true");
+        query.Add($"page={page}");
+        return "/products?" + string.Join("&", query);
+    }
+}
+
+@section Scripts {
+<script>
+function updateQueryParam(key, value) {
+    const url = new URL(window.location.href);
+    if (value) {
+        url.searchParams.set(key, value);
+    } else {
+        url.searchParams.delete(key);
+    }
+    url.searchParams.delete('page'); // Reset to page 1
+    return url.toString();
+}
+
+function applyFilter(key, value) {
+    window.location.href = updateQueryParam(key, value ? 'true' : '');
+}
+</script>
+}

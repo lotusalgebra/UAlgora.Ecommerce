@@ -1,0 +1,364 @@
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - UAlgora Store</title>
+    <meta name="description" content="@ViewData["Description"]" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"},
+                        secondary: {"50":"#f8fafc","100":"#f1f5f9","200":"#e2e8f0","300":"#cbd5e1","400":"#94a3b8","500":"#64748b","600":"#475569","700":"#334155","800":"#1e293b","900":"#0f172a","950":"#020617"}
+                    }
+                },
+                fontFamily: {
+                    'body': ['Inter', 'ui-sans-serif', 'system-ui'],
+                    'sans': ['Inter', 'ui-sans-serif', 'system-ui']
+                }
+            }
+        }
+    </script>
+
+    <!-- Flowbite CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <style>
+        [x-cloak] { display: none !important; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="bg-gray-50 font-body" x-data="{ cartOpen: false, mobileMenuOpen: false }">
+    <!-- Top Banner -->
+    <div class="bg-primary-600 text-white text-center py-2 text-sm">
+        <p>Free shipping on orders over $50! Use code <span class="font-semibold">FREESHIP</span> at checkout.</p>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="/" class="flex items-center">
+                        <svg class="h-8 w-8 text-primary-600" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        <span class="ml-2 text-xl font-bold text-gray-900">UAlgora</span>
+                    </a>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="/" class="text-gray-700 hover:text-primary-600 font-medium transition">Home</a>
+                    <a href="/products" class="text-gray-700 hover:text-primary-600 font-medium transition">Products</a>
+                    <div class="relative" x-data="{ open: false }">
+                        <button @@click="open = !open" class="text-gray-700 hover:text-primary-600 font-medium transition flex items-center">
+                            Categories
+                            <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="open" @@click.away="open = false" x-cloak
+                             class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                            <a href="/products?category=electronics" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Electronics</a>
+                            <a href="/products?category=clothing" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Clothing</a>
+                            <a href="/products?category=home-garden" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Home & Garden</a>
+                            <a href="/products?category=sports" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Sports</a>
+                            <a href="/products?category=books" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Books</a>
+                        </div>
+                    </div>
+                    <a href="/deals" class="text-red-600 hover:text-red-700 font-medium transition">Deals</a>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="hidden lg:flex flex-1 max-w-md mx-8">
+                    <form action="/products" method="get" class="w-full">
+                        <div class="relative">
+                            <input type="text" name="search" placeholder="Search products..."
+                                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Icons -->
+                <div class="flex items-center space-x-4">
+                    <!-- Account -->
+                    <a href="/account" class="text-gray-700 hover:text-primary-600 transition">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Wishlist -->
+                    <a href="/wishlist" class="text-gray-700 hover:text-primary-600 transition relative">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                    </a>
+
+                    <!-- Cart -->
+                    <button @@click="cartOpen = true" class="text-gray-700 hover:text-primary-600 transition relative">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </button>
+
+                    <!-- Mobile Menu Button -->
+                    <button @@click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden text-gray-700">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu -->
+        <div x-show="mobileMenuOpen" x-cloak class="md:hidden bg-white border-t">
+            <div class="px-4 py-3 space-y-3">
+                <form action="/products" method="get">
+                    <input type="text" name="search" placeholder="Search..." class="w-full px-4 py-2 border rounded-lg">
+                </form>
+                <a href="/" class="block text-gray-700 hover:text-primary-600">Home</a>
+                <a href="/products" class="block text-gray-700 hover:text-primary-600">Products</a>
+                <a href="/deals" class="block text-red-600 hover:text-red-700">Deals</a>
+                <a href="/account" class="block text-gray-700 hover:text-primary-600">My Account</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Cart Sidebar -->
+    <div x-show="cartOpen" x-cloak class="fixed inset-0 z-50 overflow-hidden">
+        <div class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @@click="cartOpen = false"></div>
+        <div class="fixed inset-y-0 right-0 max-w-md w-full bg-white shadow-xl flex flex-col">
+            <div class="flex items-center justify-between px-4 py-3 border-b">
+                <h2 class="text-lg font-semibold">Shopping Cart</h2>
+                <button @@click="cartOpen = false" class="text-gray-400 hover:text-gray-500">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto px-4 py-4">
+                <div class="text-center text-gray-500 py-8">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <p class="mt-2">Your cart is empty</p>
+                    <a href="/products" class="mt-4 inline-block text-primary-600 hover:text-primary-700">Continue Shopping</a>
+                </div>
+            </div>
+            <div class="border-t px-4 py-4">
+                <div class="flex justify-between text-lg font-semibold mb-4">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal">$0.00</span>
+                </div>
+                <a href="/cart" class="block w-full bg-gray-200 text-gray-800 text-center py-3 rounded-lg font-medium hover:bg-gray-300 mb-2">View Cart</a>
+                <a href="/checkout" class="block w-full bg-primary-600 text-white text-center py-3 rounded-lg font-medium hover:bg-primary-700">Checkout</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div>
+                    <div class="flex items-center mb-4">
+                        <svg class="h-8 w-8 text-primary-400" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        <span class="ml-2 text-xl font-bold">UAlgora</span>
+                    </div>
+                    <p class="text-gray-400 text-sm">Your one-stop shop for quality products at amazing prices. We deliver happiness to your doorstep.</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg></a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/products" class="hover:text-white transition">All Products</a></li>
+                        <li><a href="/deals" class="hover:text-white transition">Deals & Offers</a></li>
+                        <li><a href="/products?featured=true" class="hover:text-white transition">Featured Items</a></li>
+                        <li><a href="/products?new=true" class="hover:text-white transition">New Arrivals</a></li>
+                    </ul>
+                </div>
+
+                <!-- Customer Service -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Customer Service</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="/contact" class="hover:text-white transition">Contact Us</a></li>
+                        <li><a href="/faq" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/shipping" class="hover:text-white transition">Shipping Info</a></li>
+                        <li><a href="/returns" class="hover:text-white transition">Returns & Exchanges</a></li>
+                        <li><a href="/track-order" class="hover:text-white transition">Track Order</a></li>
+                    </ul>
+                </div>
+
+                <!-- Newsletter -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Newsletter</h3>
+                    <p class="text-gray-400 text-sm mb-4">Subscribe to get special offers and updates.</p>
+                    <form class="flex">
+                        <input type="email" placeholder="Your email" class="flex-1 px-4 py-2 rounded-l-lg text-gray-900 focus:outline-none">
+                        <button type="submit" class="bg-primary-600 px-4 py-2 rounded-r-lg hover:bg-primary-700 transition">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">&copy; 2024 UAlgora Store. All rights reserved.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/100px-Visa_Inc._logo.svg.png" alt="Visa" class="h-6 object-contain opacity-75">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/100px-Mastercard-logo.svg.png" alt="Mastercard" class="h-6 object-contain opacity-75">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/PayPal.svg/100px-PayPal.svg.png" alt="PayPal" class="h-6 object-contain opacity-75">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+
+    <!-- Cart JS -->
+    <script>
+        const CartManager = {
+            cart: JSON.parse(localStorage.getItem('cart') || '{"items":[],"subtotal":0}'),
+
+            init() {
+                this.updateUI();
+            },
+
+            addItem(product) {
+                const existing = this.cart.items.find(i => i.id === product.id);
+                if (existing) {
+                    existing.quantity += product.quantity || 1;
+                } else {
+                    this.cart.items.push({ ...product, quantity: product.quantity || 1 });
+                }
+                this.save();
+                this.updateUI();
+                this.showNotification('Added to cart!');
+            },
+
+            removeItem(productId) {
+                this.cart.items = this.cart.items.filter(i => i.id !== productId);
+                this.save();
+                this.updateUI();
+            },
+
+            updateQuantity(productId, quantity) {
+                const item = this.cart.items.find(i => i.id === productId);
+                if (item) {
+                    item.quantity = Math.max(1, quantity);
+                    this.save();
+                    this.updateUI();
+                }
+            },
+
+            clear() {
+                this.cart = { items: [], subtotal: 0 };
+                this.save();
+                this.updateUI();
+            },
+
+            save() {
+                this.cart.subtotal = this.cart.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+                localStorage.setItem('cart', JSON.stringify(this.cart));
+            },
+
+            updateUI() {
+                const countEl = document.getElementById('cart-count');
+                const itemsEl = document.getElementById('cart-items');
+                const subtotalEl = document.getElementById('cart-subtotal');
+
+                const totalItems = this.cart.items.reduce((sum, i) => sum + i.quantity, 0);
+                if (countEl) countEl.textContent = totalItems;
+                if (subtotalEl) subtotalEl.textContent = '$' + this.cart.subtotal.toFixed(2);
+
+                if (itemsEl) {
+                    if (this.cart.items.length === 0) {
+                        itemsEl.innerHTML = `
+                            <div class="text-center text-gray-500 py-8">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                <p class="mt-2">Your cart is empty</p>
+                                <a href="/products" class="mt-4 inline-block text-primary-600 hover:text-primary-700">Continue Shopping</a>
+                            </div>
+                        `;
+                    } else {
+                        itemsEl.innerHTML = this.cart.items.map(item => `
+                            <div class="flex items-center py-4 border-b">
+                                <img src="${item.image || 'https://placehold.co/80x80/e2e8f0/64748b?text=Product'}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                                <div class="ml-4 flex-1">
+                                    <h4 class="font-medium text-gray-900">${item.name}</h4>
+                                    <p class="text-sm text-gray-500">$${item.price.toFixed(2)} x ${item.quantity}</p>
+                                </div>
+                                <button onclick="CartManager.removeItem('${item.id}')" class="text-gray-400 hover:text-red-500">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        `).join('');
+                    }
+                }
+            },
+
+            showNotification(message) {
+                const notification = document.createElement('div');
+                notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-pulse';
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 2000);
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => CartManager.init());
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

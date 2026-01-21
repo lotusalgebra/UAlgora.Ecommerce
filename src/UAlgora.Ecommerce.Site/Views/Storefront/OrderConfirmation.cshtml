@@ -1,0 +1,108 @@
+@model OrderConfirmationViewModel
+
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Success Message -->
+        <div class="text-center mb-12">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
+            <p class="text-gray-600 text-lg">Thank you for your purchase.</p>
+        </div>
+
+        <!-- Order Details Card -->
+        <div class="bg-white rounded-xl shadow-sm p-8 mb-8">
+            <div class="flex items-center justify-between border-b pb-6 mb-6">
+                <div>
+                    <p class="text-sm text-gray-500">Order Number</p>
+                    <p class="text-xl font-bold text-gray-900">@Model.OrderNumber</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Order Date</p>
+                    <p class="text-gray-900">@DateTime.Now.ToString("MMMM dd, yyyy")</p>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <p class="text-gray-600">
+                    We've sent a confirmation email to <strong>@(Model.Email ?? "your email")</strong> with your order details and tracking information.
+                </p>
+            </div>
+
+            <!-- Order Status -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <h3 class="font-semibold text-gray-900 mb-4">Order Status</h3>
+                <div class="flex items-center">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <span class="ml-2 text-sm font-medium text-gray-900">Confirmed</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-4">
+                        <div class="h-1 bg-green-500 w-0"></div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <span class="text-gray-500 text-sm">2</span>
+                        </div>
+                        <span class="ml-2 text-sm text-gray-500">Processing</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-4"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <span class="text-gray-500 text-sm">3</span>
+                        </div>
+                        <span class="ml-2 text-sm text-gray-500">Shipped</span>
+                    </div>
+                    <div class="flex-1 h-1 bg-gray-200 mx-4"></div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                            <span class="text-gray-500 text-sm">4</span>
+                        </div>
+                        <span class="ml-2 text-sm text-gray-500">Delivered</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estimated Delivery -->
+            <div class="flex items-center gap-4 p-4 bg-primary-50 rounded-lg">
+                <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                </svg>
+                <div>
+                    <p class="font-medium text-gray-900">Estimated Delivery</p>
+                    <p class="text-gray-600">@DateTime.Now.AddDays(5).ToString("MMMM dd") - @DateTime.Now.AddDays(7).ToString("MMMM dd, yyyy")</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/account/orders/@Model.OrderNumber" class="inline-flex items-center justify-center px-6 py-3 border border-primary-600 text-primary-600 rounded-lg font-medium hover:bg-primary-50 transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                View Order Details
+            </a>
+            <a href="/products" class="inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition">
+                Continue Shopping
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-12 text-center">
+            <p class="text-gray-600">
+                Need help? <a href="/contact" class="text-primary-600 hover:text-primary-700">Contact our support team</a>
+            </p>
+        </div>
+    </div>
+</div>

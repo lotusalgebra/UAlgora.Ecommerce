@@ -1,0 +1,216 @@
+@model CartViewModel
+
+<div class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <nav class="flex text-sm text-gray-500">
+            <a href="/" class="hover:text-primary-600">Home</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900">Shopping Cart</span>
+        </nav>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="cartPage()">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+
+    <template x-if="cart.items.length === 0">
+        <div class="text-center py-16">
+            <svg class="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
+            <p class="text-gray-600 mb-6">Looks like you haven't added any items to your cart yet.</p>
+            <a href="/products" class="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition">
+                Continue Shopping
+            </a>
+        </div>
+    </template>
+
+    <template x-if="cart.items.length > 0">
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Cart Items -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <!-- Header -->
+                    <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b text-sm font-medium text-gray-500">
+                        <div class="col-span-6">Product</div>
+                        <div class="col-span-2 text-center">Price</div>
+                        <div class="col-span-2 text-center">Quantity</div>
+                        <div class="col-span-2 text-right">Total</div>
+                    </div>
+
+                    <!-- Items -->
+                    <div class="divide-y">
+                        <template x-for="item in cart.items" :key="item.id">
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 p-6 items-center">
+                                <!-- Product -->
+                                <div class="md:col-span-6 flex items-center gap-4">
+                                    <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                        <img :src="item.image || 'https://placehold.co/80x80/e2e8f0/64748b?text=Product'" :alt="item.name" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-gray-900" x-text="item.name"></h3>
+                                        <button @@click="removeItem(item.id)" class="text-sm text-red-600 hover:text-red-700 mt-1">Remove</button>
+                                    </div>
+                                </div>
+
+                                <!-- Price -->
+                                <div class="md:col-span-2 text-center">
+                                    <span class="md:hidden text-sm text-gray-500">Price: </span>
+                                    <span class="text-gray-900" x-text="'$' + item.price.toFixed(2)"></span>
+                                </div>
+
+                                <!-- Quantity -->
+                                <div class="md:col-span-2 flex justify-center">
+                                    <div class="flex items-center border rounded-lg">
+                                        <button @@click="updateQuantity(item.id, item.quantity - 1)" class="px-3 py-2 hover:bg-gray-100 transition">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                            </svg>
+                                        </button>
+                                        <span class="px-4 py-2" x-text="item.quantity"></span>
+                                        <button @@click="updateQuantity(item.id, item.quantity + 1)" class="px-3 py-2 hover:bg-gray-100 transition">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Total -->
+                                <div class="md:col-span-2 text-right">
+                                    <span class="md:hidden text-sm text-gray-500">Total: </span>
+                                    <span class="font-semibold text-gray-900" x-text="'$' + (item.price * item.quantity).toFixed(2)"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
+                    <a href="/products" class="text-primary-600 hover:text-primary-700 font-medium flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                        </svg>
+                        Continue Shopping
+                    </a>
+                    <button @@click="clearCart()" class="text-gray-500 hover:text-gray-700 font-medium">
+                        Clear Cart
+                    </button>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
+                    <h2 class="text-lg font-semibold text-gray-900 mb-6">Order Summary</h2>
+
+                    <!-- Discount Code -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Discount Code</label>
+                        <div class="flex gap-2">
+                            <input type="text" x-model="discountCode" placeholder="Enter code" class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <button @@click="applyDiscount()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
+                                Apply
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mb-6">
+                        <div class="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span x-text="'$' + cart.subtotal.toFixed(2)"></span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Shipping</span>
+                            <span x-text="shipping > 0 ? '$' + shipping.toFixed(2) : 'Calculated at checkout'"></span>
+                        </div>
+                        <template x-if="discount > 0">
+                            <div class="flex justify-between text-green-600">
+                                <span>Discount</span>
+                                <span x-text="'-$' + discount.toFixed(2)"></span>
+                            </div>
+                        </template>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Estimated Tax</span>
+                            <span x-text="'$' + tax.toFixed(2)"></span>
+                        </div>
+                    </div>
+
+                    <div class="border-t pt-4 mb-6">
+                        <div class="flex justify-between text-lg font-semibold">
+                            <span>Total</span>
+                            <span x-text="'$' + total.toFixed(2)"></span>
+                        </div>
+                    </div>
+
+                    <a href="/checkout" class="block w-full bg-primary-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-primary-700 transition">
+                        Proceed to Checkout
+                    </a>
+
+                    <div class="mt-6 flex items-center justify-center gap-2 text-sm text-gray-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                        Secure checkout
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</div>
+
+@section Scripts {
+<script>
+function cartPage() {
+    return {
+        cart: JSON.parse(localStorage.getItem('cart') || '{"items":[],"subtotal":0}'),
+        discountCode: '',
+        discount: 0,
+        shipping: 0,
+        tax: 0,
+
+        get total() {
+            const subtotal = this.cart.subtotal;
+            this.tax = subtotal * 0.08; // 8% tax
+            this.shipping = subtotal >= 50 ? 0 : 5.99;
+            return subtotal + this.tax + this.shipping - this.discount;
+        },
+
+        updateQuantity(id, quantity) {
+            if (quantity < 1) {
+                this.removeItem(id);
+                return;
+            }
+            CartManager.updateQuantity(id, quantity);
+            this.cart = JSON.parse(localStorage.getItem('cart'));
+        },
+
+        removeItem(id) {
+            CartManager.removeItem(id);
+            this.cart = JSON.parse(localStorage.getItem('cart'));
+        },
+
+        clearCart() {
+            if (confirm('Are you sure you want to clear your cart?')) {
+                CartManager.clear();
+                this.cart = { items: [], subtotal: 0 };
+            }
+        },
+
+        applyDiscount() {
+            if (this.discountCode.toUpperCase() === 'SAVE10') {
+                this.discount = this.cart.subtotal * 0.1;
+                alert('Discount applied! 10% off');
+            } else if (this.discountCode.toUpperCase() === 'FREESHIP') {
+                this.shipping = 0;
+                alert('Free shipping applied!');
+            } else {
+                alert('Invalid discount code');
+            }
+        }
+    };
+}
+</script>
+}

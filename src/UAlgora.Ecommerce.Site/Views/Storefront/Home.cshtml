@@ -1,0 +1,269 @@
+@model HomeViewModel
+
+<!-- Hero Section -->
+<section class="relative bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <h1 class="text-4xl lg:text-6xl font-bold leading-tight mb-6">
+                    Discover Amazing Products at Unbeatable Prices
+                </h1>
+                <p class="text-xl text-primary-100 mb-8">
+                    Shop the latest trends in electronics, fashion, home decor, and more. Free shipping on orders over $50!
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="/products" class="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg">
+                        Shop Now
+                    </a>
+                    <a href="/deals" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition">
+                        View Deals
+                    </a>
+                </div>
+            </div>
+            <div class="hidden lg:block">
+                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop" alt="Shopping" class="rounded-2xl shadow-2xl">
+            </div>
+        </div>
+    </div>
+    <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-gray-50 to-transparent"></div>
+</section>
+
+<!-- Categories Section -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
+            <p class="text-gray-600">Browse our wide selection of categories</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            @if (Model.Categories.Any())
+            {
+                @foreach (var category in Model.Categories)
+                {
+                    <a href="/products?category=@category.Id" class="group">
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition">
+                            <div class="aspect-square bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+                                <svg class="w-16 h-16 text-primary-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                            </div>
+                            <div class="p-4 text-center">
+                                <h3 class="font-semibold text-gray-900 group-hover:text-primary-600 transition">@category.Name</h3>
+                            </div>
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                @for (int i = 0; i < 8; i++)
+                {
+                    var categories = new[] { "Electronics", "Clothing", "Home & Garden", "Sports", "Books", "Beauty", "Toys", "Automotive" };
+                    var icons = new[] { "M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z",
+                        "M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z",
+                        "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+                        "M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+                        "M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253",
+                        "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+                        "M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5",
+                        "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" };
+                    <a href="/products?category=@categories[i].ToLower().Replace(" & ", "-").Replace(" ", "-")" class="group">
+                        <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition">
+                            <div class="aspect-square bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+                                <svg class="w-16 h-16 text-primary-600 group-hover:scale-110 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="@icons[i]"/>
+                                </svg>
+                            </div>
+                            <div class="p-4 text-center">
+                                <h3 class="font-semibold text-gray-900 group-hover:text-primary-600 transition">@categories[i]</h3>
+                            </div>
+                        </div>
+                    </a>
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">Featured Products</h2>
+                <p class="text-gray-600 mt-2">Handpicked products just for you</p>
+            </div>
+            <a href="/products?featured=true" class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                View All
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            @if (Model.FeaturedProducts.Any())
+            {
+                @foreach (var product in Model.FeaturedProducts)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            }
+            else
+            {
+                @for (int i = 0; i < 8; i++)
+                {
+                    <partial name="_ProductCardPlaceholder" />
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Deals Banner -->
+<section class="py-16 bg-gradient-to-r from-red-600 to-orange-500 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid lg:grid-cols-2 gap-8 items-center">
+            <div>
+                <span class="inline-block bg-white/20 text-white px-4 py-1 rounded-full text-sm font-medium mb-4">Limited Time Offer</span>
+                <h2 class="text-4xl lg:text-5xl font-bold mb-4">Up to 50% Off!</h2>
+                <p class="text-xl text-red-100 mb-6">Don't miss out on our biggest sale of the season. Shop now and save big on your favorite products.</p>
+                <a href="/deals" class="inline-block bg-white text-red-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg">
+                    Shop Deals Now
+                </a>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                @if (Model.DealsOfTheDay.Any())
+                {
+                    @foreach (var product in Model.DealsOfTheDay.Take(4))
+                    {
+                        <div class="bg-white/10 backdrop-blur rounded-xl p-4">
+                            <div class="aspect-square bg-white rounded-lg mb-3 flex items-center justify-center overflow-hidden">
+                                @if (!string.IsNullOrEmpty(product.PrimaryImageUrl))
+                                {
+                                    <img src="@product.PrimaryImageUrl" alt="@product.Name" class="w-full h-full object-cover">
+                                }
+                                else
+                                {
+                                    <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                }
+                            </div>
+                            <h4 class="font-medium text-sm line-clamp-2">@product.Name</h4>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="font-bold">$@product.CurrentPrice.ToString("F2")</span>
+                                @if (product.SalePrice.HasValue)
+                                {
+                                    <span class="text-sm line-through opacity-75">$@product.BasePrice.ToString("F2")</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    @for (int i = 0; i < 4; i++)
+                    {
+                        <div class="bg-white/10 backdrop-blur rounded-xl p-4 animate-pulse">
+                            <div class="aspect-square bg-white/20 rounded-lg mb-3"></div>
+                            <div class="h-4 bg-white/20 rounded mb-2"></div>
+                            <div class="h-4 bg-white/20 rounded w-1/2"></div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- New Arrivals -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900">New Arrivals</h2>
+                <p class="text-gray-600 mt-2">Check out the latest additions</p>
+            </div>
+            <a href="/products?sort=newest" class="text-primary-600 hover:text-primary-700 font-medium flex items-center">
+                View All
+                <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            @if (Model.NewArrivals.Any())
+            {
+                @foreach (var product in Model.NewArrivals)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            }
+            else
+            {
+                @for (int i = 0; i < 8; i++)
+                {
+                    <partial name="_ProductCardPlaceholder" />
+                }
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid md:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                    </svg>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-2">Free Shipping</h3>
+                <p class="text-gray-600 text-sm">On orders over $50</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-2">Easy Returns</h3>
+                <p class="text-gray-600 text-sm">30-day return policy</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-2">Secure Payment</h3>
+                <p class="text-gray-600 text-sm">100% secure checkout</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-2">24/7 Support</h3>
+                <p class="text-gray-600 text-sm">Dedicated customer service</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter -->
+<section class="py-16 bg-primary-600 text-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 class="text-3xl font-bold mb-4">Subscribe to Our Newsletter</h2>
+        <p class="text-primary-100 mb-8 max-w-2xl mx-auto">Get the latest updates on new products, exclusive offers, and more delivered straight to your inbox.</p>
+        <form class="flex flex-col sm:flex-row max-w-md mx-auto gap-4">
+            <input type="email" placeholder="Enter your email" class="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white">
+            <button type="submit" class="bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                Subscribe
+            </button>
+        </form>
+    </div>
+</section>

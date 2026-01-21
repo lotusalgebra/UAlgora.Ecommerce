@@ -1,0 +1,98 @@
+@model List<Order>
+
+<div class="bg-white border-b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <nav class="flex text-sm text-gray-500">
+            <a href="/" class="hover:text-primary-600">Home</a>
+            <span class="mx-2">/</span>
+            <a href="/account" class="hover:text-primary-600">Account</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-900">Orders</span>
+        </nav>
+    </div>
+</div>
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">My Orders</h1>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-16">
+            <svg class="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">No orders yet</h2>
+            <p class="text-gray-600 mb-6">When you place orders, they'll appear here</p>
+            <a href="/products" class="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition">
+                Start Shopping
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="space-y-6">
+            @foreach (var order in Model)
+            {
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="p-6 border-b bg-gray-50">
+                        <div class="flex flex-wrap justify-between items-center gap-4">
+                            <div class="flex flex-wrap gap-6 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Order Number</span>
+                                    <p class="font-semibold text-gray-900">@order.OrderNumber</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Date</span>
+                                    <p class="font-semibold text-gray-900">@order.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Total</span>
+                                    <p class="font-semibold text-gray-900">$@order.GrandTotal.ToString("F2")</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium @GetStatusColor(order.Status)">
+                                    @order.Status
+                                </span>
+                                <a href="/account/orders/@order.OrderNumber" class="text-primary-600 hover:text-primary-700 font-medium">
+                                    View Details →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex flex-wrap gap-4">
+                            @foreach (var line in order.Lines.Take(4))
+                            {
+                                <div class="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden">
+                                    <img src="@(line.ImageUrl ?? "https://placehold.co/64x64/e2e8f0/64748b?text=P")" alt="@line.ProductName" class="w-full h-full object-cover">
+                                </div>
+                            }
+                            @if (order.Lines.Count > 4)
+                            {
+                                <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 font-medium">
+                                    +@(order.Lines.Count - 4)
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusColor(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "bg-yellow-100 text-yellow-800",
+            OrderStatus.Processing => "bg-blue-100 text-blue-800",
+            OrderStatus.Shipped => "bg-purple-100 text-purple-800",
+            OrderStatus.Delivered => "bg-green-100 text-green-800",
+            OrderStatus.Cancelled => "bg-red-100 text-red-800",
+            _ => "bg-gray-100 text-gray-800"
+        };
+    }
+}
