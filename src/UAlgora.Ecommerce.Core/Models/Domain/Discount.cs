@@ -8,6 +8,16 @@ namespace UAlgora.Ecommerce.Core.Models.Domain;
 public class Discount : SoftDeleteEntity
 {
     /// <summary>
+    /// Umbraco content node ID for CMS sync.
+    /// </summary>
+    public int? UmbracoNodeId { get; set; }
+
+    /// <summary>
+    /// Store this discount belongs to.
+    /// </summary>
+    public Guid? StoreId { get; set; }
+
+    /// <summary>
     /// Discount name.
     /// </summary>
     public string Name { get; set; } = string.Empty;

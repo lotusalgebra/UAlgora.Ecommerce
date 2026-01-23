@@ -1,0 +1,233 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Extensions
+@{
+    Layout = "_Layout.cshtml";
+
+    var categoryName = Model.Value<string>("categoryName") ?? Model.Name;
+    var description = Model.Value<string>("description");
+    var categoryImage = Model.Value<IPublishedContent>("image");
+
+    ViewData["Title"] = Model.Value<string>("metaTitle") ?? categoryName;
+    ViewData["Description"] = Model.Value<string>("metaDescription") ?? description;
+
+    // Get products in this category
+    var products = Model.Children()?.Where(c => c.ContentType.Alias == "algoraProduct" && c.Value<bool>("isVisible")) ?? Enumerable.Empty<IPublishedContent>();
+
+    // Get subcategories
+    var subcategories = Model.Children()?.Where(c => c.ContentType.Alias == "algoraCategory" && c.Value<bool>("isVisible")) ?? Enumerable.Empty<IPublishedContent>();
+
+    // Sorting
+    var sortOrder = Context.Request.Query["sort"].FirstOrDefault() ?? "newest";
+    products = sortOrder switch
+    {
+        "price-asc" => products.OrderBy(p => p.Value<decimal>("basePrice")),
+        "price-desc" => products.OrderByDescending(p => p.Value<decimal>("basePrice")),
+        "name-asc" => products.OrderBy(p => p.Value<string>("productName") ?? p.Name),
+        "name-desc" => products.OrderByDescending(p => p.Value<string>("productName") ?? p.Name),
+        "featured" => products.OrderByDescending(p => p.Value<bool>("isFeatured")).ThenByDescending(p => p.CreateDate),
+        _ => products.OrderByDescending(p => p.CreateDate) // newest
+    };
+
+    // Pagination
+    var pageSize = 12;
+    var currentPage = int.TryParse(Context.Request.Query["page"].FirstOrDefault(), out var p) ? Math.Max(1, p) : 1;
+    var totalProducts = products.Count();
+    var totalPages = (int)Math.Ceiling((double)totalProducts / pageSize);
+    var pagedProducts = products.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
+
+    // Breadcrumb
+    var ancestors = Model.Ancestors().Reverse().ToList();
+}
+
+<!-- Breadcrumb -->
+<nav class="bg-gray-100 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ol class="flex items-center space-x-2 text-sm">
+            <li>
+                <a href="/" class="text-gray-500 hover:text-primary-600">Home</a>
+            </li>
+            @foreach (var ancestor in ancestors)
+            {
+                <li class="flex items-center">
+                    <svg class="w-4 h-4 text-gray-400 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                    <a href="@ancestor.Url()" class="text-gray-500 hover:text-primary-600">@ancestor.Name</a>
+                </li>
+            }
+            <li class="flex items-center">
+                <svg class="w-4 h-4 text-gray-400 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <span class="text-gray-900 font-medium">@categoryName</span>
+            </li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Category Hero -->
+<section class="relative py-12 bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+    @if (categoryImage != null)
+    {
+        <div class="absolute inset-0">
+            <img src="@categoryImage.Url()" alt="@categoryName" class="w-full h-full object-cover opacity-20">
+        </div>
+    }
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-bold mb-4">@categoryName</h1>
+        @if (!string.IsNullOrEmpty(description))
+        {
+            <div class="text-primary-100 max-w-2xl">
+                @Html.Raw(description)
+            </div>
+        }
+        <p class="mt-4 text-primary-200">@totalProducts @(totalProducts == 1 ? "product" : "products")</p>
+    </div>
+</section>
+
+<!-- Subcategories (if any) -->
+@if (subcategories.Any())
+{
+    <section class="py-8 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Subcategories</h2>
+            <div class="flex flex-wrap gap-3">
+                @foreach (var subcategory in subcategories)
+                {
+                    var subName = subcategory.Value<string>("categoryName") ?? subcategory.Name;
+                    var subProductCount = subcategory.Descendants().Count(d => d.ContentType.Alias == "algoraProduct");
+                    <a href="@subcategory.Url()"
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-primary-500 hover:bg-primary-50 transition">
+                        <span class="font-medium text-gray-700">@subName</span>
+                        <span class="text-xs text-gray-400">(@subProductCount)</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- Products Section -->
+<section class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Toolbar -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <p class="text-gray-600">
+                Showing @(Math.Min((currentPage - 1) * pageSize + 1, totalProducts)) - @(Math.Min(currentPage * pageSize, totalProducts)) of @totalProducts products
+            </p>
+
+            <div class="flex items-center gap-4">
+                <!-- Sort Dropdown -->
+                <div class="flex items-center gap-2">
+                    <label for="sort" class="text-sm text-gray-600">Sort by:</label>
+                    <select id="sort" name="sort"
+                            class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-primary-500 focus:border-primary-500"
+                            onchange="window.location.href = updateQueryParam(window.location.href, 'sort', this.value)">
+                        @{
+                            var sortOptions = new[] {
+                                ("newest", "Newest"),
+                                ("featured", "Featured"),
+                                ("price-asc", "Price: Low to High"),
+                                ("price-desc", "Price: High to Low"),
+                                ("name-asc", "Name: A to Z"),
+                                ("name-desc", "Name: Z to A")
+                            };
+                            foreach (var (value, label) in sortOptions)
+                            {
+                                if (sortOrder == value)
+                                {
+                                    <option value="@value" selected>@label</option>
+                                }
+                                else
+                                {
+                                    <option value="@value">@label</option>
+                                }
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        @if (pagedProducts.Any())
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                @foreach (var product in pagedProducts)
+                {
+                    @await Html.PartialAsync("_UmbracoProductCard", product)
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <nav class="mt-12 flex justify-center">
+                    <ul class="flex items-center gap-1">
+                        @if (currentPage > 1)
+                        {
+                            <li>
+                                <a href="@(Model.Url() + "?page=" + (currentPage - 1) + "&sort=" + sortOrder)"
+                                   class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
+
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            var isCurrentPage = i == currentPage;
+                            <li>
+                                <a href="@(Model.Url() + "?page=" + i + "&sort=" + sortOrder)"
+                                   class="px-4 py-2 border rounded-lg transition @(isCurrentPage ? "bg-primary-600 text-white border-primary-600" : "border-gray-300 hover:bg-gray-50")">
+                                    @i
+                                </a>
+                            </li>
+                        }
+
+                        @if (currentPage < totalPages)
+                        {
+                            <li>
+                                <a href="@(Model.Url() + "?page=" + (currentPage + 1) + "&sort=" + sortOrder)"
+                                   class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-16">
+                <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                </svg>
+                <p class="text-gray-500 text-lg">No products found in this category.</p>
+                <a href="/" class="inline-flex items-center mt-4 text-primary-600 hover:text-primary-700">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Continue Shopping
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function updateQueryParam(url, key, value) {
+            var urlObj = new URL(url);
+            urlObj.searchParams.set(key, value);
+            urlObj.searchParams.delete('page'); // Reset page when sorting changes
+            return urlObj.toString();
+        }
+    </script>
+}

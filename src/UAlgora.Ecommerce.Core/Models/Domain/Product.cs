@@ -8,6 +8,11 @@ namespace UAlgora.Ecommerce.Core.Models.Domain;
 public class Product : SoftDeleteEntity
 {
     /// <summary>
+    /// Store this product belongs to.
+    /// </summary>
+    public Guid? StoreId { get; set; }
+
+    /// <summary>
     /// Reference to the Umbraco content node ID.
     /// </summary>
     public int? UmbracoNodeId { get; set; }

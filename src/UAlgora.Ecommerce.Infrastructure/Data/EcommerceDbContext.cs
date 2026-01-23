@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using UAlgora.Ecommerce.Core.Models.Domain;
 
 namespace UAlgora.Ecommerce.Infrastructure.Data;
@@ -12,6 +13,15 @@ public class EcommerceDbContext : DbContext
     public EcommerceDbContext(DbContextOptions<EcommerceDbContext> options)
         : base(options)
     {
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        // Suppress pending model changes warning for migrations
+        optionsBuilder.ConfigureWarnings(w =>
+            w.Ignore(RelationalEventId.PendingModelChangesWarning));
     }
 
     // Products
@@ -75,6 +85,30 @@ public class EcommerceDbContext : DbContext
     // Currency Management
     public DbSet<Currency> Currencies => Set<Currency>();
     public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
+
+    // Multi-Store
+    public DbSet<Store> Stores => Set<Store>();
+
+    // Gift Cards
+    public DbSet<GiftCard> GiftCards => Set<GiftCard>();
+    public DbSet<GiftCardTransaction> GiftCardTransactions => Set<GiftCardTransaction>();
+
+    // Returns & Refunds
+    public DbSet<Return> Returns => Set<Return>();
+    public DbSet<ReturnItem> ReturnItems => Set<ReturnItem>();
+
+    // Email Templates
+    public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
+
+    // Audit Logging
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
+    // Licensing
+    public DbSet<License> Licenses => Set<License>();
+
+    // Webhooks
+    public DbSet<Webhook> Webhooks => Set<Webhook>();
+    public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

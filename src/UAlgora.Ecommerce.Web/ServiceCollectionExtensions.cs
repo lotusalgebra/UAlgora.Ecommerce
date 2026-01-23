@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using UAlgora.Ecommerce.Core.Interfaces.Services;
 using UAlgora.Ecommerce.Web.Authorization;
 using UAlgora.Ecommerce.Web.Providers;
+using UAlgora.Ecommerce.Web.Services;
 
 namespace UAlgora.Ecommerce.Web;
 
@@ -29,6 +30,12 @@ public static class ServiceCollectionExtensions
 
         // Register cart context provider
         services.AddScoped<ICartContextProvider, HttpCartContextProvider>();
+
+        // Register content sync service for syncing products to Umbraco content tree
+        services.AddScoped<ProductContentSyncService>();
+
+        // Register catalog content seeder for demo/testing
+        services.AddScoped<CatalogContentSeeder>();
 
         return services;
     }

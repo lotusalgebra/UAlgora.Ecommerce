@@ -56,28 +56,14 @@ public class ProductRepository : SoftDeleteRepository<Product>, IProductReposito
                 (p.Description != null && p.Description.ToLower().Contains(term)));
         }
 
-        if (parameters.CategoryId.HasValue)
-        {
-            if (parameters.IncludeSubcategories)
-            {
-                // Get category and its descendant IDs
-                var categoryIds = await GetCategoryWithDescendantIds(parameters.CategoryId.Value, ct);
-                query = query.Where(p => p.CategoryIds.Any(cid => categoryIds.Contains(cid)));
-            }
-            else
-            {
-                query = query.Where(p => p.CategoryIds.Contains(parameters.CategoryId.Value));
-            }
-        }
+        // Category and Tag filtering is done client-side because they are stored as JSON
+        // These filters will be applied after loading the data
+        var categoryId = parameters.CategoryId;
+        var tags = parameters.Tags;
 
         if (!string.IsNullOrWhiteSpace(parameters.Brand))
         {
             query = query.Where(p => p.Brand == parameters.Brand);
-        }
-
-        if (parameters.Tags?.Any() == true)
-        {
-            query = query.Where(p => p.Tags.Any(t => parameters.Tags.Contains(t)));
         }
 
         if (parameters.MinPrice.HasValue)
@@ -136,14 +122,32 @@ public class ProductRepository : SoftDeleteRepository<Product>, IProductReposito
             _ => query.OrderByDescending(p => p.CreatedAt)
         };
 
-        // Get total count
-        var totalCount = await query.CountAsync(ct);
+        // Load all products matching server-side filters
+        var allItems = await query.ToListAsync(ct);
 
-        // Apply pagination
-        var items = await query
+        // Apply client-side filters for JSON-stored collections
+        IEnumerable<Product> filteredItems = allItems;
+
+        if (categoryId.HasValue)
+        {
+            filteredItems = filteredItems.Where(p => p.CategoryIds.Contains(categoryId.Value));
+        }
+
+        if (tags?.Any() == true)
+        {
+            filteredItems = filteredItems.Where(p => p.Tags.Any(t => tags.Contains(t)));
+        }
+
+        var filteredList = filteredItems.ToList();
+
+        // Get total count after all filters
+        var totalCount = filteredList.Count;
+
+        // Apply pagination on filtered results
+        var items = filteredList
             .Skip((parameters.Page - 1) * parameters.PageSize)
             .Take(parameters.PageSize)
-            .ToListAsync(ct);
+            .ToList();
 
         if (parameters.IncludeVariants && items.Any())
         {
@@ -172,21 +176,13 @@ public class ProductRepository : SoftDeleteRepository<Product>, IProductReposito
         bool includeSubcategories = false,
         CancellationToken ct = default)
     {
-        if (includeSubcategories)
-        {
-            var categoryIds = await GetCategoryWithDescendantIds(categoryId, ct);
-            return await DbSet
-                .Where(p => p.CategoryIds.Any(cid => categoryIds.Contains(cid)))
-                .Where(p => p.Status == ProductStatus.Published && p.IsVisible)
-                .OrderBy(p => p.SortOrder)
-                .ToListAsync(ct);
-        }
-
-        return await DbSet
-            .Where(p => p.CategoryIds.Contains(categoryId))
+        // Load products and filter client-side for JSON-stored CategoryIds
+        var products = await DbSet
             .Where(p => p.Status == ProductStatus.Published && p.IsVisible)
             .OrderBy(p => p.SortOrder)
             .ToListAsync(ct);
+
+        return products.Where(p => p.CategoryIds.Contains(categoryId)).ToList();
     }
 
     public async Task<IReadOnlyList<Product>> GetFeaturedAsync(int count = 10, CancellationToken ct = default)
@@ -242,20 +238,28 @@ public class ProductRepository : SoftDeleteRepository<Product>, IProductReposito
         if (product == null)
             return Array.Empty<Product>();
 
-        // Get related products based on categories and tags
-        return await DbSet
+        // Load products and filter client-side for JSON-stored collections
+        var products = await DbSet
             .Where(p => p.Id != productId)
             .Where(p => p.Status == ProductStatus.Published && p.IsVisible)
-            .Where(p =>
-                p.CategoryIds.Any(cid => product.CategoryIds.Contains(cid)) ||
-                p.Tags.Any(t => product.Tags.Contains(t)) ||
-                p.Brand == product.Brand)
-            .OrderByDescending(p =>
-                (p.CategoryIds.Any(cid => product.CategoryIds.Contains(cid)) ? 3 : 0) +
-                (p.Tags.Any(t => product.Tags.Contains(t)) ? 2 : 0) +
-                (p.Brand == product.Brand ? 1 : 0))
-            .Take(count)
+            .OrderBy(p => p.SortOrder)
             .ToListAsync(ct);
+
+        // Score and filter related products
+        var scored = products.Select(p => new
+        {
+            Product = p,
+            Score = (p.CategoryIds.Any(cid => product.CategoryIds.Contains(cid)) ? 3 : 0) +
+                    (p.Tags.Any(t => product.Tags.Contains(t)) ? 2 : 0) +
+                    (p.Brand == product.Brand ? 1 : 0)
+        })
+        .Where(x => x.Score > 0)
+        .OrderByDescending(x => x.Score)
+        .Take(count)
+        .Select(x => x.Product)
+        .ToList();
+
+        return scored;
     }
 
     public async Task<IReadOnlyList<Product>> GetByIdsAsync(

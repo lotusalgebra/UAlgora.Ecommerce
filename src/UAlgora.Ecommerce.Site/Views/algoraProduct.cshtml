@@ -1,0 +1,404 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Extensions
+@{
+    Layout = "_Layout.cshtml";
+
+    // Product basic info
+    var productName = Model.Value<string>("productName") ?? Model.Name;
+    var sku = Model.Value<string>("sku") ?? "";
+    var shortDescription = Model.Value<string>("shortDescription") ?? "";
+    var description = Model.Value<string>("description") ?? "";
+    var brand = Model.Value<string>("brand") ?? "";
+
+    // Pricing
+    var basePrice = Model.Value<decimal>("basePrice");
+    var salePrice = Model.Value<decimal?>("salePrice");
+    var currencyCode = Model.Value<string>("currencyCode") ?? "USD";
+    var isOnSale = salePrice.HasValue && salePrice.Value > 0 && salePrice.Value < basePrice;
+    var displayPrice = isOnSale ? salePrice.Value : basePrice;
+
+    // Inventory
+    var trackInventory = Model.Value<bool>("trackInventory");
+    var stockQuantity = Model.Value<int>("stockQuantity");
+    var lowStockThreshold = Model.Value<int>("lowStockThreshold");
+    var isOutOfStock = trackInventory && stockQuantity <= 0;
+    var isLowStock = trackInventory && stockQuantity > 0 && stockQuantity <= lowStockThreshold;
+
+    // Images
+    var primaryImage = Model.Value<IPublishedContent>("primaryImage");
+    var galleryImages = Model.Value<IEnumerable<IPublishedContent>>("galleryImages") ?? Enumerable.Empty<IPublishedContent>();
+    var allImages = primaryImage != null
+        ? new[] { primaryImage }.Concat(galleryImages).ToList()
+        : galleryImages.ToList();
+
+    // Shipping
+    var requiresShipping = Model.Value<bool>("requiresShipping");
+    var weight = Model.Value<decimal>("weight");
+
+    // Flags
+    var isFeatured = Model.Value<bool>("isFeatured");
+
+    // SEO
+    ViewData["Title"] = Model.Value<string>("metaTitle") ?? productName;
+    ViewData["Description"] = Model.Value<string>("metaDescription") ?? shortDescription;
+
+    // Currency formatting
+    var currencySymbol = currencyCode switch
+    {
+        "USD" => "$",
+        "EUR" => "€",
+        "GBP" => "£",
+        "INR" => "₹",
+        _ => currencyCode + " "
+    };
+
+    // Breadcrumb
+    var ancestors = Model.Ancestors().Reverse().ToList();
+
+    // Related products from same category
+    var parent = Model.Parent();
+    var relatedProducts = parent?.Children()?
+        .Where(c => c.ContentType.Alias == "algoraProduct" && c.Id != Model.Id && c.Value<bool>("isVisible"))
+        .Take(4)
+        .ToList() ?? new List<IPublishedContent>();
+}
+
+<!-- Breadcrumb -->
+<nav class="bg-gray-100 py-3">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ol class="flex items-center space-x-2 text-sm flex-wrap">
+            <li>
+                <a href="/" class="text-gray-500 hover:text-primary-600">Home</a>
+            </li>
+            @foreach (var ancestor in ancestors)
+            {
+                <li class="flex items-center">
+                    <svg class="w-4 h-4 text-gray-400 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                    <a href="@ancestor.Url()" class="text-gray-500 hover:text-primary-600">@(ancestor.Value<string>("categoryName") ?? ancestor.Name)</a>
+                </li>
+            }
+            <li class="flex items-center">
+                <svg class="w-4 h-4 text-gray-400 mx-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <span class="text-gray-900 font-medium truncate max-w-[200px]">@productName</span>
+            </li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Product Detail Section -->
+<section class="py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Product Images -->
+            <div x-data="{ activeImage: 0 }" class="space-y-4">
+                <!-- Main Image -->
+                <div class="aspect-square rounded-2xl overflow-hidden bg-gray-100">
+                    @if (allImages.Any())
+                    {
+                        @foreach (var (image, index) in allImages.Select((img, i) => (img, i)))
+                        {
+                            <img x-show="activeImage === @index"
+                                 src="@image.Url()"
+                                 alt="@productName"
+                                 class="w-full h-full object-contain">
+                        }
+                    }
+                    else
+                    {
+                        <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <svg class="w-32 h-32 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                    }
+                </div>
+
+                <!-- Thumbnail Gallery -->
+                @if (allImages.Count > 1)
+                {
+                    <div class="flex gap-3 overflow-x-auto pb-2">
+                        @foreach (var (image, index) in allImages.Select((img, i) => (img, i)))
+                        {
+                            <button @@click="activeImage = @index"
+                                    :class="{ 'ring-2 ring-primary-500': activeImage === @index }"
+                                    class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100 hover:opacity-75 transition">
+                                <img src="@image.Url()" alt="@productName thumbnail" class="w-full h-full object-cover">
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Product Info -->
+            <div class="flex flex-col">
+                <!-- Badges -->
+                <div class="flex flex-wrap gap-2 mb-4">
+                    @if (isFeatured)
+                    {
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                            Featured
+                        </span>
+                    }
+                    @if (isOnSale)
+                    {
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            On Sale
+                        </span>
+                    }
+                </div>
+
+                <!-- Brand -->
+                @if (!string.IsNullOrEmpty(brand))
+                {
+                    <p class="text-sm text-gray-500 uppercase tracking-wide mb-2">@brand</p>
+                }
+
+                <!-- Product Name -->
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">@productName</h1>
+
+                <!-- SKU -->
+                @if (!string.IsNullOrEmpty(sku))
+                {
+                    <p class="text-sm text-gray-500 mb-4">SKU: @sku</p>
+                }
+
+                <!-- Short Description -->
+                @if (!string.IsNullOrEmpty(shortDescription))
+                {
+                    <p class="text-gray-600 mb-6">@shortDescription</p>
+                }
+
+                <!-- Price -->
+                <div class="flex items-baseline gap-3 mb-6">
+                    <span class="text-4xl font-bold text-gray-900">@currencySymbol@displayPrice.ToString("N2")</span>
+                    @if (isOnSale)
+                    {
+                        <span class="text-xl text-gray-400 line-through">@currencySymbol@basePrice.ToString("N2")</span>
+                        <span class="text-sm text-red-600 font-medium">
+                            Save @((int)Math.Round((1 - displayPrice / basePrice) * 100))%
+                        </span>
+                    }
+                </div>
+
+                <!-- Stock Status -->
+                <div class="mb-6">
+                    @if (isOutOfStock)
+                    {
+                        <div class="flex items-center gap-2 text-red-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                            <span class="font-medium">Out of Stock</span>
+                        </div>
+                    }
+                    else if (isLowStock)
+                    {
+                        <div class="flex items-center gap-2 text-amber-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <span class="font-medium">Low Stock - Only @stockQuantity left!</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex items-center gap-2 text-green-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span class="font-medium">In Stock</span>
+                        </div>
+                    }
+                </div>
+
+                <!-- Quantity & Add to Cart -->
+                <div x-data="{ quantity: 1 }" class="mb-8">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="flex items-center border border-gray-300 rounded-lg">
+                            <button @@click="quantity = Math.max(1, quantity - 1)"
+                                    class="px-4 py-3 text-gray-600 hover:bg-gray-100 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                </svg>
+                            </button>
+                            <input type="number" x-model="quantity" min="1" @(trackInventory ? $"max=\"{stockQuantity}\"" : "")
+                                   class="w-16 text-center border-0 focus:ring-0 text-gray-900 font-medium">
+                            <button @@click="quantity = quantity + 1"
+                                    class="px-4 py-3 text-gray-600 hover:bg-gray-100 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        @if (!isOutOfStock)
+                        {
+                            <button type="button"
+                                    class="flex-1 bg-primary-600 text-white py-4 px-8 rounded-lg font-medium hover:bg-primary-700 transition flex items-center justify-center gap-2"
+                                    data-product-id="@Model.Id"
+                                    data-product-sku="@sku"
+                                    data-product-name="@productName"
+                                    data-product-price="@displayPrice"
+                                    :data-quantity="quantity"
+                                    onclick="addToCartWithQuantity(this)">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                </svg>
+                                Add to Cart
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" disabled
+                                    class="flex-1 bg-gray-300 text-gray-500 py-4 px-8 rounded-lg font-medium cursor-not-allowed">
+                                Out of Stock
+                            </button>
+                        }
+
+                        <button type="button"
+                                class="px-6 py-4 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                                title="Add to Wishlist">
+                            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Features -->
+                <div class="border-t border-gray-200 pt-6 space-y-4">
+                    @if (requiresShipping)
+                    {
+                        <div class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                            </svg>
+                            <span>Free shipping on orders over $50</span>
+                        </div>
+                    }
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                        <span>Secure checkout</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span>30-day return policy</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Description -->
+        @if (!string.IsNullOrEmpty(description))
+        {
+            <div class="mt-16 border-t border-gray-200 pt-12">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Product Description</h2>
+                <div class="prose prose-lg max-w-none text-gray-600">
+                    @Html.Raw(description)
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Related Products -->
+@if (relatedProducts.Any())
+{
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Related Products</h2>
+                <p class="text-gray-600">You might also like these products</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                @foreach (var product in relatedProducts)
+                {
+                    @await Html.PartialAsync("_UmbracoProductCard", product)
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+    <script>
+        function addToCartWithQuantity(button) {
+            const productId = button.dataset.productId;
+            const sku = button.dataset.productSku;
+            const name = button.dataset.productName;
+            const price = parseFloat(button.dataset.productPrice);
+            const quantity = parseInt(button.dataset.quantity) || 1;
+
+            // Get existing cart
+            let cart = JSON.parse(localStorage.getItem('algoraCart') || '[]');
+
+            // Find existing item
+            const existingIndex = cart.findIndex(item => item.sku === sku);
+
+            if (existingIndex >= 0) {
+                cart[existingIndex].quantity += quantity;
+            } else {
+                cart.push({
+                    id: productId,
+                    sku: sku,
+                    name: name,
+                    price: price,
+                    quantity: quantity
+                });
+            }
+
+            // Save cart
+            localStorage.setItem('algoraCart', JSON.stringify(cart));
+
+            // Update cart count in header
+            updateCartCount();
+
+            // Show feedback
+            button.innerHTML = `
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Added!
+            `;
+            button.classList.add('bg-green-600');
+            button.classList.remove('bg-primary-600', 'hover:bg-primary-700');
+
+            setTimeout(() => {
+                button.innerHTML = `
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    Add to Cart
+                `;
+                button.classList.remove('bg-green-600');
+                button.classList.add('bg-primary-600', 'hover:bg-primary-700');
+            }, 2000);
+        }
+
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('algoraCart') || '[]');
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const countElements = document.querySelectorAll('.cart-count');
+            countElements.forEach(el => {
+                el.textContent = count;
+                el.style.display = count > 0 ? 'flex' : 'none';
+            });
+        }
+
+        // Initialize cart count on page load
+        document.addEventListener('DOMContentLoaded', updateCartCount);
+    </script>
+}

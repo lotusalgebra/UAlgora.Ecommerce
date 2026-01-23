@@ -6,6 +6,11 @@ namespace UAlgora.Ecommerce.Core.Models.Domain;
 public class ShippingZone : SoftDeleteEntity
 {
     /// <summary>
+    /// Store this shipping zone belongs to.
+    /// </summary>
+    public Guid? StoreId { get; set; }
+
+    /// <summary>
     /// Zone name.
     /// </summary>
     public string Name { get; set; } = string.Empty;

@@ -1,0 +1,595 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using UAlgora.Ecommerce.Core.Interfaces.Services
+@using UAlgora.Ecommerce.Core.Interfaces.Repositories
+@using UAlgora.Ecommerce.Core.Constants
+@inject IProductService ProductService
+@inject Umbraco.Cms.Core.Services.IContentService ContentService
+@inject Umbraco.Cms.Core.Services.IContentTypeService ContentTypeService
+@{
+    Layout = "_Layout";
+
+    // Get settings from the page
+    var heroEnabled = Model.Value<bool>("heroEnabled");
+    var heroAutoplay = Model.Value<bool>("heroAutoplay");
+    var heroInterval = Model.Value<int>("heroInterval");
+    if (heroInterval <= 0) heroInterval = 5000;
+
+    var categoriesEnabled = Model.Value<bool>("categoriesEnabled");
+    var categoriesTitle = Model.Value<string>("categoriesTitle") ?? "Shop by Category";
+    var categoriesSubtitle = Model.Value<string>("categoriesSubtitle") ?? "Browse our popular categories";
+    var categoriesCount = Model.Value<int>("categoriesCount");
+    if (categoriesCount <= 0) categoriesCount = 8;
+
+    var dealsEnabled = Model.Value<bool>("dealsEnabled");
+    var dealsTitle = Model.Value<string>("dealsTitle") ?? "Deal of the Day";
+    var dealEndDate = Model.Value<DateTime?>("dealEndDate") ?? DateTime.Now.AddDays(3);
+    var dealProductsCount = Model.Value<int>("dealProductsCount");
+    if (dealProductsCount <= 0) dealProductsCount = 4;
+
+    var featuredEnabled = Model.Value<bool>("featuredEnabled");
+    var featuredTitle = Model.Value<string>("featuredTitle") ?? "Featured Products";
+    var featuredCount = Model.Value<int>("featuredCount");
+    if (featuredCount <= 0) featuredCount = 8;
+
+    var newArrivalsEnabled = Model.Value<bool>("newArrivalsEnabled");
+    var newArrivalsTitle = Model.Value<string>("newArrivalsTitle") ?? "New Arrivals";
+    var newArrivalsCount = Model.Value<int>("newArrivalsCount");
+    if (newArrivalsCount <= 0) newArrivalsCount = 8;
+
+    var bannersEnabled = Model.Value<bool>("bannersEnabled");
+    var featuresEnabled = Model.Value<bool>("featuresEnabled");
+    var testimonialsEnabled = Model.Value<bool>("testimonialsEnabled");
+    var testimonialsTitle = Model.Value<string>("testimonialsTitle") ?? "What Our Customers Say";
+    var testimonialsSubtitle = Model.Value<string>("testimonialsSubtitle") ?? "Trusted by thousands of happy customers";
+
+    // Get child content
+    var heroSlides = Model.Children()?.Where(x => x.ContentType.Alias == "algoraHeroSlide").ToList() ?? new List<IPublishedContent>();
+    var banners = Model.Children()?.Where(x => x.ContentType.Alias == "algoraBanner").OrderBy(x => x.Value<int>("sortOrder")).ToList() ?? new List<IPublishedContent>();
+    var testimonials = Model.Children()?.Where(x => x.ContentType.Alias == "algoraTestimonial").OrderBy(x => x.Value<int>("sortOrder")).ToList() ?? new List<IPublishedContent>();
+    var features = Model.Children()?.Where(x => x.ContentType.Alias == "algoraFeature").OrderBy(x => x.Value<int>("sortOrder")).ToList() ?? new List<IPublishedContent>();
+
+    // Get categories from Algora Catalog
+    var catalog = Umbraco.ContentAtRoot().FirstOrDefault(x => x.ContentType.Alias == "algoraCatalog");
+    var categories = catalog?.Children()?.Where(x => x.ContentType.Alias == "algoraCategory").Take(categoriesCount).ToList() ?? new List<IPublishedContent>();
+
+    // Get products from database
+    var featuredProducts = await ProductService.GetPagedAsync(new ProductQueryParameters { Page = 1, PageSize = featuredCount, IsFeatured = true });
+    var newProducts = await ProductService.GetPagedAsync(new ProductQueryParameters { Page = 1, PageSize = newArrivalsCount, SortBy = ProductSortBy.Newest });
+    var dealProducts = await ProductService.GetPagedAsync(new ProductQueryParameters { Page = 1, PageSize = dealProductsCount, OnSale = true });
+
+    // SEO
+    var metaTitle = Model.Value<string>("metaTitle") ?? Model.Name;
+    var metaDescription = Model.Value<string>("metaDescription") ?? "";
+    ViewData["Title"] = metaTitle;
+    ViewData["MetaDescription"] = metaDescription;
+}
+
+@if (heroEnabled && heroSlides.Any())
+{
+    <!-- Hero Carousel - CMS Driven -->
+    <section class="relative" x-data="heroCarousel(@heroSlides.Count, @heroInterval, @(heroAutoplay ? "true" : "false"))">
+        <div class="overflow-hidden">
+            <div class="flex transition-transform duration-700 ease-out" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
+                @foreach (var slide in heroSlides)
+                {
+                    var title = slide.Value<string>("title") ?? "";
+                    var subtitle = slide.Value<string>("subtitle") ?? "";
+                    var description = slide.Value<string>("description") ?? "";
+                    var bgColor = slide.Value<string>("backgroundColor") ?? "from-blue-600 via-blue-500 to-indigo-500";
+                    var textColor = slide.Value<string>("textColor") ?? "white";
+                    var buttonText = slide.Value<string>("buttonText") ?? "Shop Now";
+                    var buttonLink = slide.Value<string>("buttonLink") ?? "/products";
+                    var secondaryButtonText = slide.Value<string>("secondaryButtonText");
+                    var secondaryButtonLink = slide.Value<string>("secondaryButtonLink");
+                    var bgImage = slide.Value<IPublishedContent>("backgroundImage");
+                    var textAlign = slide.Value<string>("textAlignment") ?? "left";
+
+                    <div class="w-full flex-shrink-0 relative bg-gradient-to-r @bgColor">
+                        @if (bgImage != null)
+                        {
+                            <div class="absolute inset-0">
+                                <img src="@bgImage.Url()" alt="@title" class="w-full h-full object-cover" />
+                                <div class="absolute inset-0 bg-black/40"></div>
+                            </div>
+                        }
+                        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
+                            <div class="grid lg:grid-cols-2 gap-8 items-center">
+                                <div class="text-@textColor @(textAlign == "center" ? "text-center lg:col-span-2" : "")">
+                                    @if (!string.IsNullOrEmpty(subtitle))
+                                    {
+                                        <span class="inline-block bg-white/20 backdrop-blur px-4 py-1.5 rounded-full text-sm font-medium mb-4">
+                                            @subtitle
+                                        </span>
+                                    }
+                                    <h1 class="text-4xl lg:text-6xl font-bold leading-tight mb-6">
+                                        @Html.Raw(title.Replace("\n", "<br>"))
+                                    </h1>
+                                    @if (!string.IsNullOrEmpty(description))
+                                    {
+                                        <p class="text-lg opacity-90 mb-8 max-w-lg @(textAlign == "center" ? "mx-auto" : "")">
+                                            @description
+                                        </p>
+                                    }
+                                    <div class="flex flex-wrap gap-4 @(textAlign == "center" ? "justify-center" : "")">
+                                        @if (!string.IsNullOrEmpty(buttonText))
+                                        {
+                                            <a href="@buttonLink" class="bg-white text-gray-900 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg inline-flex items-center gap-2">
+                                                @buttonText
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                                </svg>
+                                            </a>
+                                        }
+                                        @if (!string.IsNullOrEmpty(secondaryButtonText))
+                                        {
+                                            <a href="@secondaryButtonLink" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-gray-900 transition">
+                                                @secondaryButtonText
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (heroSlides.Count > 1)
+        {
+            <!-- Carousel Controls -->
+            <button @@click="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur hover:bg-white/40 rounded-full flex items-center justify-center text-white transition z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <button @@click="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur hover:bg-white/40 rounded-full flex items-center justify-center text-white transition z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+
+            <!-- Carousel Indicators -->
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+                <template x-for="(slide, index) in totalSlides" :key="index">
+                    <button @@click="goToSlide(index)"
+                            :class="currentSlide === index ? 'bg-white w-8' : 'bg-white/50 w-3 hover:bg-white/75'"
+                            class="h-3 rounded-full transition-all duration-300"></button>
+                </template>
+            </div>
+        }
+    </section>
+}
+
+@if (categoriesEnabled && categories.Any())
+{
+    <!-- Categories Section - CMS Driven -->
+    <section class="py-12 bg-white dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            @if (!string.IsNullOrEmpty(categoriesTitle))
+            {
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">@categoriesTitle</h2>
+                    @if (!string.IsNullOrEmpty(categoriesSubtitle))
+                    {
+                        <p class="text-gray-600 dark:text-gray-400">@categoriesSubtitle</p>
+                    }
+                </div>
+            }
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+                @{
+                    var categoryColors = new[] { "blue", "pink", "emerald", "orange", "purple", "cyan", "rose", "amber" };
+                    var index = 0;
+                }
+                @foreach (var category in categories)
+                {
+                    var catName = category.Value<string>("categoryName") ?? category.Name;
+                    var catImage = category.Value<IPublishedContent>("categoryImage");
+                    var catIcon = category.Value<string>("icon") ?? "grid";
+                    var productCount = category.Children()?.Count(c => c.ContentType.Alias == "algoraProduct") ?? 0;
+                    var color = categoryColors[index % categoryColors.Length];
+                    index++;
+
+                    <a href="@category.Url()" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-@(color)-500 to-@(color)-600 p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                        @if (catImage != null)
+                        {
+                            <div class="absolute inset-0">
+                                <img src="@catImage.Url()" alt="@catName" class="w-full h-full object-cover opacity-30 group-hover:scale-110 transition duration-500" />
+                            </div>
+                        }
+                        <div class="relative z-10">
+                            <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-bold text-lg mb-1">@catName</h3>
+                            <p class="text-white/80 text-sm">@productCount+ Products</p>
+                        </div>
+                        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full"></div>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (dealsEnabled)
+{
+    <!-- Deal of the Day - CMS Driven -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-900" x-data="dealCountdown('@dealEndDate.ToString("o")')">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 rounded-3xl overflow-hidden shadow-2xl">
+                <div class="grid lg:grid-cols-2 gap-8 p-8 lg:p-12">
+                    <div class="text-white">
+                        <div class="flex items-center gap-2 mb-4">
+                            <svg class="w-8 h-8 text-yellow-300 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12.586 2.586a2 2 0 00-2.828 0L3.172 9.172a2 2 0 000 2.828l6.586 6.586a2 2 0 002.828 0l6.586-6.586a2 2 0 000-2.828l-6.586-6.586z"/>
+                            </svg>
+                            <span class="text-xl font-bold">@dealsTitle</span>
+                        </div>
+                        <h2 class="text-3xl lg:text-5xl font-bold mb-4">
+                            Super Sale<br>
+                            <span class="text-yellow-300">Up to 70% Off!</span>
+                        </h2>
+                        <p class="text-rose-100 text-lg mb-8">
+                            Don't miss out on our biggest sale. Limited time offer on selected products.
+                        </p>
+
+                        <!-- Countdown Timer -->
+                        <div class="mb-8">
+                            <p class="text-sm text-rose-200 mb-3">Hurry! Offer ends in:</p>
+                            <div class="flex gap-3">
+                                <div class="bg-white/20 backdrop-blur rounded-xl p-4 text-center min-w-[70px]">
+                                    <span class="block text-3xl font-bold" x-text="days">00</span>
+                                    <span class="text-xs text-rose-200">Days</span>
+                                </div>
+                                <div class="bg-white/20 backdrop-blur rounded-xl p-4 text-center min-w-[70px]">
+                                    <span class="block text-3xl font-bold" x-text="hours">00</span>
+                                    <span class="text-xs text-rose-200">Hours</span>
+                                </div>
+                                <div class="bg-white/20 backdrop-blur rounded-xl p-4 text-center min-w-[70px]">
+                                    <span class="block text-3xl font-bold" x-text="minutes">00</span>
+                                    <span class="text-xs text-rose-200">Mins</span>
+                                </div>
+                                <div class="bg-white/20 backdrop-blur rounded-xl p-4 text-center min-w-[70px]">
+                                    <span class="block text-3xl font-bold" x-text="seconds">00</span>
+                                    <span class="text-xs text-rose-200">Secs</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="/deals" class="inline-flex items-center gap-2 bg-white text-rose-600 px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg">
+                            Shop All Deals
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        @foreach (var product in dealProducts.Items.Take(4))
+                        {
+                            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition group">
+                                <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 overflow-hidden">
+                                    @if (product.SalePrice.HasValue)
+                                    {
+                                        var discount = (int)Math.Round((1 - (product.SalePrice.Value / product.BasePrice)) * 100);
+                                        <span class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg z-10">
+                                            -@discount%
+                                        </span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(product.PrimaryImageUrl))
+                                    {
+                                        <img src="@product.PrimaryImageUrl" alt="@product.Name" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                    }
+                                </div>
+                                <h4 class="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 mb-2">@product.Name</h4>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-lg font-bold text-rose-600">$@((product.SalePrice ?? product.BasePrice).ToString("F2"))</span>
+                                    @if (product.SalePrice.HasValue)
+                                    {
+                                        <span class="text-sm text-gray-400 line-through">$@product.BasePrice.ToString("F2")</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@if (featuredEnabled && featuredProducts.Items.Any())
+{
+    <!-- Featured Products - CMS Driven -->
+    <section class="py-16 bg-white dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white">@featuredTitle</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Handpicked products just for you</p>
+                </div>
+                <a href="/products?featured=true" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 font-semibold group">
+                    View All
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @foreach (var product in featuredProducts.Items)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (bannersEnabled && banners.Any())
+{
+    <!-- Promotional Banners - CMS Driven -->
+    <section class="py-12 bg-gray-50 dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-6">
+                @foreach (var banner in banners.Take(2))
+                {
+                    var bannerTitle = banner.Value<string>("title") ?? "";
+                    var bannerSubtitle = banner.Value<string>("subtitle") ?? "";
+                    var bannerDesc = banner.Value<string>("description") ?? "";
+                    var bannerBgColor = banner.Value<string>("backgroundColor") ?? "from-violet-600 to-purple-600";
+                    var bannerBtnText = banner.Value<string>("buttonText") ?? "Shop Now";
+                    var bannerBtnLink = banner.Value<string>("buttonLink") ?? "/products";
+                    var bannerImage = banner.Value<IPublishedContent>("image");
+                    var discountText = banner.Value<string>("discountText");
+
+                    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r @bannerBgColor p-8 text-white group">
+                        @if (bannerImage != null)
+                        {
+                            <div class="absolute inset-0">
+                                <img src="@bannerImage.Url()" alt="@bannerTitle" class="w-full h-full object-cover opacity-20" />
+                            </div>
+                        }
+                        <div class="relative z-10">
+                            @if (!string.IsNullOrEmpty(bannerSubtitle))
+                            {
+                                <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-sm font-medium mb-3">@bannerSubtitle</span>
+                            }
+                            <h3 class="text-2xl lg:text-3xl font-bold mb-2">@bannerTitle</h3>
+                            @if (!string.IsNullOrEmpty(bannerDesc))
+                            {
+                                <p class="opacity-90 mb-4">@bannerDesc</p>
+                            }
+                            @if (!string.IsNullOrEmpty(discountText))
+                            {
+                                <p class="text-2xl font-bold text-yellow-300 mb-4">@discountText</p>
+                            }
+                            <a href="@bannerBtnLink" class="inline-flex items-center gap-2 bg-white text-gray-900 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition">
+                                @bannerBtnText
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                </svg>
+                            </a>
+                        </div>
+                        <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full group-hover:scale-150 transition duration-500"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (newArrivalsEnabled && newProducts.Items.Any())
+{
+    <!-- New Arrivals - CMS Driven -->
+    <section class="py-16 bg-white dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+                <div>
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-white">@newArrivalsTitle</h2>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2">Check out the latest additions to our store</p>
+                </div>
+                <a href="/products?sort=newest" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 font-semibold group">
+                    View All
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                @foreach (var product in newProducts.Items)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (featuresEnabled && features.Any())
+{
+    <!-- Features Section - CMS Driven -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-6">
+                @{
+                    var featureColors = new[] { "blue", "green", "amber", "rose" };
+                    var featureIndex = 0;
+                }
+                @foreach (var feature in features)
+                {
+                    var featureTitle = feature.Value<string>("title") ?? "";
+                    var featureDesc = feature.Value<string>("description") ?? "";
+                    var featureIcon = feature.Value<string>("icon") ?? "star";
+                    var featureColor = featureColors[featureIndex % featureColors.Length];
+                    featureIndex++;
+
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 text-center shadow-sm hover:shadow-lg transition group">
+                        <div class="w-16 h-16 bg-@(featureColor)-100 dark:bg-@(featureColor)-900 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
+                            @await Html.PartialAsync("_FeatureIcon", featureIcon)
+                        </div>
+                        <h3 class="font-bold text-gray-900 dark:text-white mb-2">@featureTitle</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm">@featureDesc</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@if (testimonialsEnabled && testimonials.Any())
+{
+    <!-- Testimonials - CMS Driven -->
+    <section class="py-16 bg-white dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">@testimonialsTitle</h2>
+                <p class="text-gray-600 dark:text-gray-400">@testimonialsSubtitle</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                @foreach (var testimonial in testimonials.Take(3))
+                {
+                    var customerName = testimonial.Value<string>("customerName") ?? "";
+                    var customerTitle = testimonial.Value<string>("customerTitle") ?? "Verified Buyer";
+                    var customerPhoto = testimonial.Value<IPublishedContent>("customerPhoto");
+                    var rating = testimonial.Value<int>("rating");
+                    if (rating <= 0) rating = 5;
+                    var reviewText = testimonial.Value<string>("reviewText") ?? "";
+                    var isVerified = testimonial.Value<bool>("isVerified");
+                    var initials = string.Join("", customerName.Split(' ').Take(2).Select(n => n.FirstOrDefault().ToString().ToUpper()));
+
+                    <div class="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 relative">
+                        <div class="absolute -top-4 left-6 w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+                            </svg>
+                        </div>
+                        <div class="flex items-center gap-1 mb-4 mt-4">
+                            @for (int i = 0; i < rating; i++)
+                            {
+                                <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            }
+                            @for (int i = rating; i < 5; i++)
+                            {
+                                <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                                </svg>
+                            }
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">"@reviewText"</p>
+                        <div class="flex items-center gap-3">
+                            @if (customerPhoto != null)
+                            {
+                                <img src="@customerPhoto.Url()" alt="@customerName" class="w-10 h-10 rounded-full object-cover" />
+                            }
+                            else
+                            {
+                                <div class="w-10 h-10 bg-blue-200 dark:bg-blue-800 rounded-full flex items-center justify-center">
+                                    <span class="text-blue-700 dark:text-blue-300 font-bold text-sm">@initials</span>
+                                </div>
+                            }
+                            <div>
+                                <p class="font-semibold text-gray-900 dark:text-white">@customerName</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    @if (isVerified)
+                                    {
+                                        <span class="text-green-600 dark:text-green-400">✓</span>
+                                    }
+                                    @customerTitle
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@section Scripts {
+<script>
+function heroCarousel(totalSlides, interval, autoplay) {
+    return {
+        currentSlide: 0,
+        totalSlides: totalSlides || 1,
+        autoplayInterval: null,
+        interval: interval || 5000,
+        autoplay: autoplay === 'true' || autoplay === true,
+
+        init() {
+            if (this.autoplay && this.totalSlides > 1) {
+                this.startAutoplay();
+            }
+        },
+
+        startAutoplay() {
+            this.autoplayInterval = setInterval(() => {
+                this.nextSlide();
+            }, this.interval);
+        },
+
+        stopAutoplay() {
+            if (this.autoplayInterval) {
+                clearInterval(this.autoplayInterval);
+            }
+        },
+
+        nextSlide() {
+            this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
+        },
+
+        prevSlide() {
+            this.currentSlide = (this.currentSlide - 1 + this.totalSlides) % this.totalSlides;
+        },
+
+        goToSlide(index) {
+            this.currentSlide = index;
+            this.stopAutoplay();
+            if (this.autoplay) {
+                this.startAutoplay();
+            }
+        }
+    };
+}
+
+function dealCountdown(endDateStr) {
+    return {
+        days: '00',
+        hours: '00',
+        minutes: '00',
+        seconds: '00',
+
+        init() {
+            const endTime = new Date(endDateStr);
+            this.updateCountdown(endTime);
+            setInterval(() => this.updateCountdown(endTime), 1000);
+        },
+
+        updateCountdown(endTime) {
+            const now = new Date().getTime();
+            const distance = endTime.getTime() - now;
+
+            if (distance > 0) {
+                this.days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                this.hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                this.minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                this.seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+            }
+        }
+    };
+}
+</script>
+}

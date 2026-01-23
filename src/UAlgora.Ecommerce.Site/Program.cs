@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using UAlgora.Ecommerce.Infrastructure;
 using UAlgora.Ecommerce.Web;
 using UAlgora.Ecommerce.Site.Data;
@@ -33,38 +34,51 @@ builder.CreateUmbracoBuilder()
 
 WebApplication app = builder.Build();
 
-// Seed demo data
+// Apply e-commerce migrations and seed demo data
 using (var scope = app.Services.CreateScope())
 {
-    try
-    {
-        var seeder = scope.ServiceProvider.GetRequiredService<DemoDataSeeder>();
-        await seeder.SeedAsync();
-    }
-    catch (Exception ex)
-    {
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-        logger.LogWarning(ex, "Could not seed demo data. This is normal on first run before database is created.");
-    }
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+    // Apply pending migrations - let errors propagate so we can debug
+    var dbContext = scope.ServiceProvider.GetRequiredService<EcommerceDbContext>();
+
+    // Get pending migrations
+    var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+    logger.LogInformation("Pending e-commerce migrations: {Count} - {Migrations}",
+        pendingMigrations.Count(),
+        string.Join(", ", pendingMigrations));
+
+    logger.LogInformation("Applying database migrations...");
+    await dbContext.Database.MigrateAsync();
+    logger.LogInformation("Database migrations applied successfully.");
+
+    // Seed demo data
+    var seeder = scope.ServiceProvider.GetRequiredService<DemoDataSeeder>();
+    await seeder.SeedAsync();
+    logger.LogInformation("Demo data seeded successfully.");
 }
 
 await app.BootUmbracoAsync();
 
+// Use routing for MVC controllers
+app.UseRouting();
+
+// Configure Umbraco - BackOffice middleware only, but all endpoints (needed for install)
 app.UseUmbraco()
     .WithMiddleware(u =>
     {
         u.UseBackOffice();
-        u.UseWebsite();
+        // Note: We intentionally DON'T call UseWebsite() here
+        // because our StorefrontController handles all frontend routes
     })
     .WithEndpoints(u =>
     {
-        u.UseBackOfficeEndpoints();
-        u.UseWebsiteEndpoints();
+        // Map our storefront controllers BEFORE Umbraco endpoints
+        // This ensures our routes take precedence
+        u.EndpointRouteBuilder.MapControllers();
 
-        // Map storefront controllers
-        u.EndpointRouteBuilder.MapControllerRoute(
-            name: "default",
-            pattern: "{controller=Storefront}/{action=Index}/{id?}");
+        u.UseBackOfficeEndpoints();
+        u.UseWebsiteEndpoints(); // Needed for Umbraco install/upgrade process
     });
 
 await app.RunAsync();

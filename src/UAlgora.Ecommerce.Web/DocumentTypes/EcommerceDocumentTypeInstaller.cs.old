@@ -1,0 +1,592 @@
+using Microsoft.Extensions.Logging;
+using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Models;
+using Umbraco.Cms.Core.Notifications;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Strings;
+
+namespace UAlgora.Ecommerce.Web.DocumentTypes;
+
+/// <summary>
+/// Algora Commerce Document Type Installer
+///
+/// Enterprise-grade installer for Algora Commerce document types in Umbraco.
+/// Creates Product, Category, Order, and Checkout Step document types with
+/// proper property groups, validation, and SEO support.
+///
+/// Architecture:
+/// - Configuration-driven document type definitions
+/// - Reusable property group and property creation methods
+/// - Centralized data type resolution
+/// - Proper logging and error handling
+/// </summary>
+public class EcommerceDocumentTypeInstaller : INotificationHandler<UmbracoApplicationStartedNotification>
+{
+    #region Dependencies
+
+    private readonly IContentTypeService _contentTypeService;
+    private readonly IDataTypeService _dataTypeService;
+    private readonly IShortStringHelper _shortStringHelper;
+    private readonly ILogger<EcommerceDocumentTypeInstaller> _logger;
+
+    #endregion
+
+    #region Document Type Configuration
+
+    /// <summary>
+    /// Algora Product document type alias
+    /// </summary>
+    public const string ProductAlias = "algoraProduct";
+
+    /// <summary>
+    /// Algora Category document type alias
+    /// </summary>
+    public const string CategoryAlias = "algoraCategory";
+
+    /// <summary>
+    /// Algora Checkout Step document type alias
+    /// </summary>
+    public const string CheckoutStepAlias = "algoraCheckoutStep";
+
+    /// <summary>
+    /// Algora Order document type alias
+    /// </summary>
+    public const string OrderAlias = "algoraOrder";
+
+    #endregion
+
+    #region Umbraco Built-in Data Type IDs
+
+    private const int TextboxDataTypeId = -88;
+    private const int TextareaDataTypeId = -89;
+    private const int LabelDataTypeId = -92;
+    private const int NumericDataTypeId = -51;
+    private const int TrueFalseDataTypeId = -49;
+    private const int RichTextDataTypeId = -87;
+    private const int DatePickerDataTypeId = -41;
+
+    #endregion
+
+    #region Constructor
+
+    public EcommerceDocumentTypeInstaller(
+        IContentTypeService contentTypeService,
+        IDataTypeService dataTypeService,
+        IShortStringHelper shortStringHelper,
+        ILogger<EcommerceDocumentTypeInstaller> logger)
+    {
+        _contentTypeService = contentTypeService;
+        _dataTypeService = dataTypeService;
+        _shortStringHelper = shortStringHelper;
+        _logger = logger;
+    }
+
+    #endregion
+
+    #region INotificationHandler Implementation
+
+    public void Handle(UmbracoApplicationStartedNotification notification)
+    {
+        try
+        {
+            _logger.LogInformation("Algora Commerce: Installing document types...");
+
+            CreateProductDocumentType();
+            CreateCategoryDocumentType();
+            CreateCheckoutStepDocumentType();
+            CreateOrderDocumentType();
+            UpdateAllowedChildTypes();
+
+            _logger.LogInformation("Algora Commerce: Document types installed successfully.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Algora Commerce: Error installing document types");
+        }
+    }
+
+    #endregion
+
+    #region Product Document Type
+
+    private void CreateProductDocumentType()
+    {
+        var existing = _contentTypeService.Get(ProductAlias);
+        if (existing != null)
+        {
+            _logger.LogInformation("Algora Product document type already exists, updating price field data types...");
+            UpdatePriceFieldDataTypes(existing);
+            return;
+        }
+
+        _logger.LogInformation("Creating Algora Product document type...");
+
+        var contentType = new ContentType(_shortStringHelper, -1)
+        {
+            Alias = ProductAlias,
+            Name = "Algora Product",
+            Description = "Algora Commerce Product - A product in the catalog with pricing, inventory, and SEO support",
+            Icon = "icon-box color-green",
+            AllowedAsRoot = true,
+            Variations = ContentVariation.Nothing
+        };
+
+        // Get data types
+        var decimalDataType = GetDecimalDataTypeId();
+        var mediaPickerDataType = GetMediaPickerDataTypeId();
+
+        // ============================================
+        // Tab 1: Content
+        // ============================================
+        var contentGroup = CreatePropertyGroup("algoraProductContent", "Content", 0);
+        AddProperty(contentGroup, "productName", "Product Name", "The display name of the product", TextboxDataTypeId, true, 0);
+        AddProperty(contentGroup, "sku", "SKU", "Stock Keeping Unit - unique product identifier", TextboxDataTypeId, true, 1);
+        AddProperty(contentGroup, "slug", "URL Slug", "URL-friendly identifier (auto-generated if empty)", TextboxDataTypeId, false, 2);
+        AddProperty(contentGroup, "shortDescription", "Short Description", "Brief description for product listings (max 200 chars)", TextareaDataTypeId, false, 3);
+        AddProperty(contentGroup, "description", "Full Description", "Detailed product description with rich text formatting", RichTextDataTypeId, false, 4);
+        AddProperty(contentGroup, "brand", "Brand", "Product brand or manufacturer name", TextboxDataTypeId, false, 5);
+        AddProperty(contentGroup, "manufacturer", "Manufacturer", "Product manufacturer", TextboxDataTypeId, false, 6);
+        AddProperty(contentGroup, "mpn", "MPN", "Manufacturer Part Number", TextboxDataTypeId, false, 7);
+        AddProperty(contentGroup, "gtin", "GTIN/Barcode", "Global Trade Item Number (UPC, EAN, ISBN)", TextboxDataTypeId, false, 8);
+
+        // ============================================
+        // Tab 2: Pricing
+        // ============================================
+        var pricingGroup = CreatePropertyGroup("algoraProductPricing", "Pricing", 1);
+        AddProperty(pricingGroup, "basePrice", "Base Price", "Regular retail price", decimalDataType, true, 0);
+        AddProperty(pricingGroup, "salePrice", "Sale Price", "Discounted price (leave empty if not on sale)", decimalDataType, false, 1);
+        AddProperty(pricingGroup, "costPrice", "Cost Price", "Your cost for margin calculation (not shown to customers)", decimalDataType, false, 2);
+        AddProperty(pricingGroup, "compareAtPrice", "Compare At Price", "Original MSRP for showing savings", decimalDataType, false, 3);
+        AddProperty(pricingGroup, "currencyCode", "Currency", "Currency code (e.g., USD, EUR, GBP)", TextboxDataTypeId, false, 4);
+        AddProperty(pricingGroup, "taxIncluded", "Tax Included", "Prices include tax", TrueFalseDataTypeId, false, 5);
+        AddProperty(pricingGroup, "taxClass", "Tax Class", "Tax classification for tax calculation", TextboxDataTypeId, false, 6);
+
+        // ============================================
+        // Tab 3: Inventory
+        // ============================================
+        var inventoryGroup = CreatePropertyGroup("algoraProductInventory", "Inventory", 2);
+        AddProperty(inventoryGroup, "trackInventory", "Track Inventory", "Enable inventory tracking for this product", TrueFalseDataTypeId, false, 0);
+        AddProperty(inventoryGroup, "stockQuantity", "Stock Quantity", "Current available stock", NumericDataTypeId, false, 1);
+        AddProperty(inventoryGroup, "lowStockThreshold", "Low Stock Alert", "Send alert when stock falls below this level", NumericDataTypeId, false, 2);
+        AddProperty(inventoryGroup, "allowBackorders", "Allow Backorders", "Accept orders when out of stock", TrueFalseDataTypeId, false, 3);
+        AddProperty(inventoryGroup, "maxOrderQuantity", "Max Order Quantity", "Maximum quantity per order (0 = unlimited)", NumericDataTypeId, false, 4);
+
+        // ============================================
+        // Tab 4: Shipping
+        // ============================================
+        var shippingGroup = CreatePropertyGroup("algoraProductShipping", "Shipping", 3);
+        AddProperty(shippingGroup, "weight", "Weight (kg)", "Product weight for shipping calculation", decimalDataType, false, 0);
+        AddProperty(shippingGroup, "length", "Length (cm)", "Package length", decimalDataType, false, 1);
+        AddProperty(shippingGroup, "width", "Width (cm)", "Package width", decimalDataType, false, 2);
+        AddProperty(shippingGroup, "height", "Height (cm)", "Package height", decimalDataType, false, 3);
+        AddProperty(shippingGroup, "shippingClass", "Shipping Class", "Shipping class for rate calculation", TextboxDataTypeId, false, 4);
+        AddProperty(shippingGroup, "requiresShipping", "Requires Shipping", "Product needs to be shipped (false for digital)", TrueFalseDataTypeId, false, 5);
+
+        // ============================================
+        // Tab 5: Media
+        // ============================================
+        var mediaGroup = CreatePropertyGroup("algoraProductMedia", "Media", 4);
+        AddProperty(mediaGroup, "primaryImage", "Primary Image", "Main product image shown in listings", mediaPickerDataType, false, 0);
+        AddProperty(mediaGroup, "additionalImages", "Gallery Images", "Additional product images for gallery", mediaPickerDataType, false, 1);
+        AddProperty(mediaGroup, "videoUrl", "Video URL", "Product video URL (YouTube, Vimeo)", TextboxDataTypeId, false, 2);
+
+        // ============================================
+        // Tab 6: SEO
+        // ============================================
+        var seoGroup = CreatePropertyGroup("algoraProductSeo", "SEO", 5);
+        AddProperty(seoGroup, "metaTitle", "Meta Title", "SEO page title (recommended: 50-60 characters)", TextboxDataTypeId, false, 0);
+        AddProperty(seoGroup, "metaDescription", "Meta Description", "SEO meta description (recommended: 150-160 characters)", TextareaDataTypeId, false, 1);
+        AddProperty(seoGroup, "metaKeywords", "Meta Keywords", "SEO keywords (comma-separated)", TextboxDataTypeId, false, 2);
+        AddProperty(seoGroup, "canonicalUrl", "Canonical URL", "Canonical URL if different from default", TextboxDataTypeId, false, 3);
+
+        // ============================================
+        // Tab 7: Settings
+        // ============================================
+        var settingsGroup = CreatePropertyGroup("algoraProductSettings", "Settings", 6);
+        AddProperty(settingsGroup, "isVisible", "Visible", "Show product in catalog and search", TrueFalseDataTypeId, false, 0);
+        AddProperty(settingsGroup, "isFeatured", "Featured", "Feature this product on homepage/promotions", TrueFalseDataTypeId, false, 1);
+        AddProperty(settingsGroup, "status", "Status", "Product status (Draft, Published, Archived)", TextboxDataTypeId, false, 2);
+        AddProperty(settingsGroup, "publishDate", "Publish Date", "Schedule product to be published", DatePickerDataTypeId, false, 3);
+
+        // Add all property groups
+        contentType.PropertyGroups.Add(contentGroup);
+        contentType.PropertyGroups.Add(pricingGroup);
+        contentType.PropertyGroups.Add(inventoryGroup);
+        contentType.PropertyGroups.Add(shippingGroup);
+        contentType.PropertyGroups.Add(mediaGroup);
+        contentType.PropertyGroups.Add(seoGroup);
+        contentType.PropertyGroups.Add(settingsGroup);
+
+        _contentTypeService.Save(contentType);
+        _logger.LogInformation("Algora Product document type created successfully.");
+    }
+
+    #endregion
+
+    #region Category Document Type
+
+    private void CreateCategoryDocumentType()
+    {
+        var existing = _contentTypeService.Get(CategoryAlias);
+        if (existing != null)
+        {
+            _logger.LogInformation("Algora Category document type already exists, skipping creation.");
+            return;
+        }
+
+        _logger.LogInformation("Creating Algora Category document type...");
+
+        var contentType = new ContentType(_shortStringHelper, -1)
+        {
+            Alias = CategoryAlias,
+            Name = "Algora Category",
+            Description = "Algora Commerce Category - Organize products into hierarchical categories",
+            Icon = "icon-folder color-blue",
+            AllowedAsRoot = true,
+            Variations = ContentVariation.Nothing
+        };
+
+        var mediaPickerDataType = GetMediaPickerDataTypeId();
+
+        // ============================================
+        // Tab 1: Content
+        // ============================================
+        var contentGroup = CreatePropertyGroup("algoraCategoryContent", "Content", 0);
+        AddProperty(contentGroup, "categoryName", "Category Name", "Display name of the category", TextboxDataTypeId, true, 0);
+        AddProperty(contentGroup, "slug", "URL Slug", "URL-friendly identifier (auto-generated if empty)", TextboxDataTypeId, false, 1);
+        AddProperty(contentGroup, "description", "Description", "Category description with rich text formatting", RichTextDataTypeId, false, 2);
+
+        // ============================================
+        // Tab 2: Media
+        // ============================================
+        var mediaGroup = CreatePropertyGroup("algoraCategoryMedia", "Media", 1);
+        AddProperty(mediaGroup, "categoryImage", "Category Image", "Main category image for navigation and banners", mediaPickerDataType, false, 0);
+        AddProperty(mediaGroup, "bannerImage", "Banner Image", "Wide banner image for category page header", mediaPickerDataType, false, 1);
+        AddProperty(mediaGroup, "iconClass", "Icon Class", "CSS icon class (e.g., icon-laptop, icon-shirt)", TextboxDataTypeId, false, 2);
+
+        // ============================================
+        // Tab 3: SEO
+        // ============================================
+        var seoGroup = CreatePropertyGroup("algoraCategorySeo", "SEO", 2);
+        AddProperty(seoGroup, "metaTitle", "Meta Title", "SEO page title (recommended: 50-60 characters)", TextboxDataTypeId, false, 0);
+        AddProperty(seoGroup, "metaDescription", "Meta Description", "SEO meta description (recommended: 150-160 characters)", TextareaDataTypeId, false, 1);
+        AddProperty(seoGroup, "metaKeywords", "Meta Keywords", "SEO keywords (comma-separated)", TextboxDataTypeId, false, 2);
+
+        // ============================================
+        // Tab 4: Settings
+        // ============================================
+        var settingsGroup = CreatePropertyGroup("algoraCategorySettings", "Settings", 3);
+        AddProperty(settingsGroup, "isVisible", "Visible", "Show category in navigation and listings", TrueFalseDataTypeId, false, 0);
+        AddProperty(settingsGroup, "isFeatured", "Featured", "Feature this category on homepage", TrueFalseDataTypeId, false, 1);
+        AddProperty(settingsGroup, "sortOrder", "Sort Order", "Display order in navigation (lower = first)", NumericDataTypeId, false, 2);
+        AddProperty(settingsGroup, "showInMenu", "Show in Menu", "Include in main navigation menu", TrueFalseDataTypeId, false, 3);
+
+        contentType.PropertyGroups.Add(contentGroup);
+        contentType.PropertyGroups.Add(mediaGroup);
+        contentType.PropertyGroups.Add(seoGroup);
+        contentType.PropertyGroups.Add(settingsGroup);
+
+        _contentTypeService.Save(contentType);
+        _logger.LogInformation("Algora Category document type created successfully.");
+    }
+
+    #endregion
+
+    #region Checkout Step Document Type
+
+    private void CreateCheckoutStepDocumentType()
+    {
+        var existing = _contentTypeService.Get(CheckoutStepAlias);
+        if (existing != null)
+        {
+            _logger.LogInformation("Algora Checkout Step document type already exists, skipping creation.");
+            return;
+        }
+
+        _logger.LogInformation("Creating Algora Checkout Step document type...");
+
+        var contentType = new ContentType(_shortStringHelper, -1)
+        {
+            Alias = CheckoutStepAlias,
+            Name = "Algora Checkout Step",
+            Description = "Algora Commerce Checkout Step - Configure steps in the checkout process",
+            Icon = "icon-checkbox color-purple",
+            AllowedAsRoot = true,
+            Variations = ContentVariation.Nothing
+        };
+
+        // ============================================
+        // Tab 1: General
+        // ============================================
+        var generalGroup = CreatePropertyGroup("algoraCheckoutStepGeneral", "General", 0);
+        AddProperty(generalGroup, "stepName", "Step Name", "Internal name for this checkout step", TextboxDataTypeId, true, 0);
+        AddProperty(generalGroup, "stepType", "Step Type", "Type: information, shipping, payment, review, custom", TextboxDataTypeId, true, 1);
+        AddProperty(generalGroup, "stepOrder", "Step Order", "Order in checkout flow (1, 2, 3...)", NumericDataTypeId, true, 2);
+        AddProperty(generalGroup, "isRequired", "Required", "Customer must complete this step", TrueFalseDataTypeId, false, 3);
+        AddProperty(generalGroup, "isEnabled", "Enabled", "Step is active in checkout flow", TrueFalseDataTypeId, false, 4);
+
+        // ============================================
+        // Tab 2: Content
+        // ============================================
+        var contentGroup = CreatePropertyGroup("algoraCheckoutStepContent", "Content", 1);
+        AddProperty(contentGroup, "stepTitle", "Display Title", "Title shown to customers during checkout", TextboxDataTypeId, false, 0);
+        AddProperty(contentGroup, "stepDescription", "Description", "Instructions and information for this step", RichTextDataTypeId, false, 1);
+        AddProperty(contentGroup, "helpText", "Help Text", "Additional help text shown below the step", TextareaDataTypeId, false, 2);
+        AddProperty(contentGroup, "errorMessage", "Error Message", "Custom message shown on validation errors", TextareaDataTypeId, false, 3);
+        AddProperty(contentGroup, "successMessage", "Success Message", "Message shown when step is completed", TextareaDataTypeId, false, 4);
+
+        // ============================================
+        // Tab 3: Validation
+        // ============================================
+        var validationGroup = CreatePropertyGroup("algoraCheckoutStepValidation", "Validation", 2);
+        AddProperty(validationGroup, "validationRules", "Validation Rules", "Comma-separated validation rules (required, email, phone, address)", TextboxDataTypeId, false, 0);
+        AddProperty(validationGroup, "customValidator", "Custom Validator", "Custom validation function name", TextboxDataTypeId, false, 1);
+
+        // ============================================
+        // Tab 4: Advanced
+        // ============================================
+        var advancedGroup = CreatePropertyGroup("algoraCheckoutStepAdvanced", "Advanced", 3);
+        AddProperty(advancedGroup, "skipCondition", "Skip Condition", "Condition to skip step (e.g., cart.isDigitalOnly, cart.total < 50)", TextboxDataTypeId, false, 0);
+        AddProperty(advancedGroup, "templatePath", "Template Path", "Custom template path (optional)", TextboxDataTypeId, false, 1);
+        AddProperty(advancedGroup, "cssClass", "CSS Class", "Additional CSS classes for styling", TextboxDataTypeId, false, 2);
+
+        contentType.PropertyGroups.Add(generalGroup);
+        contentType.PropertyGroups.Add(contentGroup);
+        contentType.PropertyGroups.Add(validationGroup);
+        contentType.PropertyGroups.Add(advancedGroup);
+
+        _contentTypeService.Save(contentType);
+        _logger.LogInformation("Algora Checkout Step document type created successfully.");
+    }
+
+    #endregion
+
+    #region Order Document Type
+
+    private void CreateOrderDocumentType()
+    {
+        var existing = _contentTypeService.Get(OrderAlias);
+        if (existing != null)
+        {
+            _logger.LogInformation("Algora Order document type already exists, skipping creation.");
+            return;
+        }
+
+        _logger.LogInformation("Creating Algora Order document type...");
+
+        var decimalDataType = GetDecimalDataTypeId();
+
+        var contentType = new ContentType(_shortStringHelper, -1)
+        {
+            Alias = OrderAlias,
+            Name = "Algora Order",
+            Description = "Algora Commerce Order - Customer order with line items, addresses, and payment info",
+            Icon = "icon-receipt-dollar color-amber",
+            AllowedAsRoot = true,
+            Variations = ContentVariation.Nothing
+        };
+
+        // ============================================
+        // Tab 1: Overview
+        // ============================================
+        var overviewGroup = CreatePropertyGroup("algoraOrderOverview", "Overview", 0);
+        AddProperty(overviewGroup, "orderNumber", "Order Number", "Unique order identifier", TextboxDataTypeId, true, 0);
+        AddProperty(overviewGroup, "orderStatus", "Order Status", "Current order status", TextboxDataTypeId, false, 1);
+        AddProperty(overviewGroup, "paymentStatus", "Payment Status", "Payment status (Pending, Paid, Failed, Refunded)", TextboxDataTypeId, false, 2);
+        AddProperty(overviewGroup, "fulfillmentStatus", "Fulfillment Status", "Shipping/delivery status", TextboxDataTypeId, false, 3);
+        AddProperty(overviewGroup, "orderDate", "Order Date", "Date order was placed", DatePickerDataTypeId, false, 4);
+
+        // ============================================
+        // Tab 2: Customer
+        // ============================================
+        var customerGroup = CreatePropertyGroup("algoraOrderCustomer", "Customer", 1);
+        AddProperty(customerGroup, "customerName", "Customer Name", "Full name of the customer", TextboxDataTypeId, true, 0);
+        AddProperty(customerGroup, "customerEmail", "Customer Email", "Email address for order confirmation", TextboxDataTypeId, true, 1);
+        AddProperty(customerGroup, "customerPhone", "Customer Phone", "Contact phone number", TextboxDataTypeId, false, 2);
+        AddProperty(customerGroup, "customerId", "Customer ID", "Reference to customer account (if registered)", TextboxDataTypeId, false, 3);
+
+        // ============================================
+        // Tab 3: Addresses
+        // ============================================
+        var addressGroup = CreatePropertyGroup("algoraOrderAddresses", "Addresses", 2);
+        AddProperty(addressGroup, "shippingAddress", "Shipping Address", "Full shipping address (JSON)", TextareaDataTypeId, false, 0);
+        AddProperty(addressGroup, "billingAddress", "Billing Address", "Full billing address (JSON)", TextareaDataTypeId, false, 1);
+
+        // ============================================
+        // Tab 4: Totals
+        // ============================================
+        var totalsGroup = CreatePropertyGroup("algoraOrderTotals", "Totals", 3);
+        AddProperty(totalsGroup, "subtotal", "Subtotal", "Order subtotal before tax and shipping", decimalDataType, false, 0);
+        AddProperty(totalsGroup, "taxAmount", "Tax Amount", "Total tax amount", decimalDataType, false, 1);
+        AddProperty(totalsGroup, "shippingAmount", "Shipping Amount", "Shipping cost", decimalDataType, false, 2);
+        AddProperty(totalsGroup, "discountAmount", "Discount Amount", "Total discounts applied", decimalDataType, false, 3);
+        AddProperty(totalsGroup, "grandTotal", "Grand Total", "Final order total", decimalDataType, true, 4);
+        AddProperty(totalsGroup, "currencyCode", "Currency", "Currency code (USD, EUR, etc.)", TextboxDataTypeId, false, 5);
+
+        // ============================================
+        // Tab 5: Notes
+        // ============================================
+        var notesGroup = CreatePropertyGroup("algoraOrderNotes", "Notes", 4);
+        AddProperty(notesGroup, "customerNotes", "Customer Notes", "Notes from customer during checkout", TextareaDataTypeId, false, 0);
+        AddProperty(notesGroup, "internalNotes", "Internal Notes", "Private notes for staff only", TextareaDataTypeId, false, 1);
+
+        contentType.PropertyGroups.Add(overviewGroup);
+        contentType.PropertyGroups.Add(customerGroup);
+        contentType.PropertyGroups.Add(addressGroup);
+        contentType.PropertyGroups.Add(totalsGroup);
+        contentType.PropertyGroups.Add(notesGroup);
+
+        _contentTypeService.Save(contentType);
+        _logger.LogInformation("Algora Order document type created successfully.");
+    }
+
+    #endregion
+
+    #region Child Type Configuration
+
+    private void UpdateAllowedChildTypes()
+    {
+        _logger.LogInformation("Updating allowed child types...");
+
+        var product = _contentTypeService.Get(ProductAlias);
+        var category = _contentTypeService.Get(CategoryAlias);
+
+        if (category != null)
+        {
+            var allowedTypes = new List<ContentTypeSort>();
+
+            // Categories can contain other categories (nested structure)
+            allowedTypes.Add(new ContentTypeSort(category.Key, 0, CategoryAlias));
+
+            // Categories can also contain products
+            if (product != null)
+            {
+                allowedTypes.Add(new ContentTypeSort(product.Key, 1, ProductAlias));
+            }
+
+            category.AllowedContentTypes = allowedTypes;
+            _contentTypeService.Save(category);
+            _logger.LogInformation("Updated Algora Category allowed child types.");
+        }
+    }
+
+    #endregion
+
+    #region Update Methods
+
+    /// <summary>
+    /// Updates existing price field properties to use the correct Numeric data type
+    /// </summary>
+    private void UpdatePriceFieldDataTypes(IContentType contentType)
+    {
+        var numericDataTypeId = GetDecimalDataTypeId();
+        var numericDataType = _dataTypeService.GetDataType(numericDataTypeId);
+
+        if (numericDataType == null)
+        {
+            _logger.LogWarning("Cannot update price fields - Numeric data type not found");
+            return;
+        }
+
+        var priceFields = new[] { "basePrice", "salePrice", "costPrice", "compareAtPrice", "weight", "length", "width", "height" };
+        var updated = false;
+
+        foreach (var fieldAlias in priceFields)
+        {
+            var property = contentType.PropertyTypes.FirstOrDefault(p => p.Alias == fieldAlias);
+            if (property != null && property.DataTypeId != numericDataTypeId)
+            {
+                _logger.LogInformation("Updating {Field} data type from {OldId} to {NewId} (Numeric)",
+                    fieldAlias, property.DataTypeId, numericDataTypeId);
+
+                property.DataTypeId = numericDataTypeId;
+                property.DataTypeKey = numericDataType.Key;
+                updated = true;
+            }
+        }
+
+        if (updated)
+        {
+            _contentTypeService.Save(contentType);
+            _logger.LogInformation("Algora Product document type price fields updated to use Numeric data type");
+        }
+        else
+        {
+            _logger.LogInformation("Algora Product price fields already using correct data type");
+        }
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private PropertyGroup CreatePropertyGroup(string alias, string name, int sortOrder)
+    {
+        return new PropertyGroup(new PropertyTypeCollection(true))
+        {
+            Alias = alias,
+            Name = name,
+            SortOrder = sortOrder,
+            Type = PropertyGroupType.Group
+        };
+    }
+
+    private void AddProperty(PropertyGroup group, string alias, string name, string description, int dataTypeId, bool mandatory, int sortOrder)
+    {
+        var dataType = _dataTypeService.GetDataType(dataTypeId);
+        if (dataType == null)
+        {
+            _logger.LogWarning("Data type {DataTypeId} not found, using textbox", dataTypeId);
+            dataType = _dataTypeService.GetDataType(TextboxDataTypeId);
+        }
+
+        var propertyType = new PropertyType(_shortStringHelper, dataType!, alias)
+        {
+            Name = name,
+            Description = description,
+            Mandatory = mandatory,
+            SortOrder = sortOrder,
+            Variations = ContentVariation.Nothing
+        };
+        group.PropertyTypes!.Add(propertyType);
+    }
+
+    private int GetDecimalDataTypeId()
+    {
+        var allDataTypes = _dataTypeService.GetAll();
+
+        // Try to find Numeric data type first (Umbraco 15 standard)
+        var numericDataType = allDataTypes.FirstOrDefault(dt =>
+            dt.Name?.Equals("Numeric", StringComparison.OrdinalIgnoreCase) == true);
+
+        if (numericDataType != null)
+        {
+            return numericDataType.Id;
+        }
+
+        // Fallback: search for Decimal
+        var decimalDataType = allDataTypes.FirstOrDefault(dt =>
+            dt.Name?.Contains("Decimal", StringComparison.OrdinalIgnoreCase) == true);
+
+        if (decimalDataType != null)
+        {
+            return decimalDataType.Id;
+        }
+
+        // Final fallback: use Textbox
+        _logger.LogWarning("Numeric/Decimal data type not found, falling back to Textbox for price fields");
+        return TextboxDataTypeId;
+    }
+
+    private int GetMediaPickerDataTypeId()
+    {
+        var allDataTypes = _dataTypeService.GetAll();
+        var mediaPicker = allDataTypes.FirstOrDefault(dt =>
+            dt.Name?.Contains("Media Picker", StringComparison.OrdinalIgnoreCase) == true);
+
+        return mediaPicker?.Id ?? TextboxDataTypeId;
+    }
+
+    #endregion
+}

@@ -148,6 +148,107 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.ToTable("Addresses", (string)null);
                 });
 
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.AuditLog", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Action")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AdditionalDataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ChangedPropertiesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long?>("DurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HttpMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSuccess")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSystemAction")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NewValuesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValuesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UmbracoNodeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserRole")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoreId");
+
+                    b.ToTable("AuditLogs");
+                });
+
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Cart", b =>
                 {
                     b.Property<Guid>("Id")
@@ -222,6 +323,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<decimal>("ShippingTotal")
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("Subtotal")
                         .HasPrecision(18, 4)
@@ -401,6 +505,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int?>("UmbracoNodeId")
                         .HasColumnType("int");
 
@@ -419,11 +526,111 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
 
                     b.HasIndex("SortOrder");
 
+                    b.HasIndex("StoreId");
+
                     b.HasIndex("UmbracoNodeId");
 
                     b.HasIndex("ParentId", "SortOrder");
 
                     b.ToTable("Categories", (string)null);
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Currency", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Countries")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DecimalPlaces")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(2);
+
+                    b.Property<string>("DecimalSeparator")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)")
+                        .HasDefaultValue(".");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NativeName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Rounding")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("RoundingIncrement")
+                        .HasPrecision(18, 6)
+                        .HasColumnType("decimal(18,6)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("SpaceBetweenSymbolAndAmount")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("SymbolPosition")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ThousandsSeparator")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)")
+                        .HasDefaultValue(",");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("IsDefault");
+
+                    b.HasIndex("SortOrder");
+
+                    b.HasIndex("IsActive", "SortOrder");
+
+                    b.ToTable("Currencies", (string)null);
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Customer", b =>
@@ -524,6 +731,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Tags")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -568,6 +778,8 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasIndex("Phone");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("StoreId");
 
                     b.HasIndex("TotalSpent");
 
@@ -683,6 +895,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<DateTime?>("StartDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int?>("TotalUsageLimit")
                         .HasColumnType("int");
 
@@ -712,6 +927,8 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasIndex("IsActive");
 
                     b.HasIndex("StartDate");
+
+                    b.HasIndex("StoreId");
 
                     b.HasIndex("Type");
 
@@ -758,6 +975,507 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasIndex("DiscountId", "CustomerId");
 
                     b.ToTable("DiscountUsages", (string)null);
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.EmailTemplate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AvailableVariablesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BccEmails")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BodyHtml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BodyText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomCss")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DelayMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("EventType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FooterHtml")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FromEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FromName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeaderImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastSentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastTestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LayoutTemplate")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Preheader")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReplyToEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SampleDataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SendCount")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UmbracoNodeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoreId");
+
+                    b.ToTable("EmailTemplates");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.ExchangeRate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("FromCurrencyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal?>("MarkupPercent")
+                        .HasPrecision(10, 4)
+                        .HasColumnType("decimal(10,4)");
+
+                    b.Property<decimal>("Rate")
+                        .HasPrecision(18, 8)
+                        .HasColumnType("decimal(18,8)");
+
+                    b.Property<string>("Source")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("ToCurrencyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EffectiveFrom");
+
+                    b.HasIndex("EffectiveTo");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("ToCurrencyId");
+
+                    b.HasIndex("FromCurrencyId", "ToCurrencyId");
+
+                    b.HasIndex("FromCurrencyId", "ToCurrencyId", "IsActive", "EffectiveFrom");
+
+                    b.ToTable("ExchangeRates", (string)null);
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.GiftCard", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Balance")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("CanCombineWithDiscounts")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("InitialValue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("IssuedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("IssuedByOrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("IssuedToCustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("LastUsedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("LastUsedByCustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("MaxRedemptionPerOrder")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("MinimumOrderAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("PurchasedByCustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RecipientEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RecipientName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.PrimitiveCollection<string>("RestrictedToCategoryIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.PrimitiveCollection<string>("RestrictedToProductIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SenderName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UmbracoNodeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UsageCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IssuedToCustomerId");
+
+                    b.HasIndex("PurchasedByCustomerId");
+
+                    b.HasIndex("StoreId");
+
+                    b.ToTable("GiftCards");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.GiftCardTransaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BalanceAfter")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("BalanceBefore")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("GiftCardId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("PerformedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("GiftCardId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("GiftCardTransactions");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.License", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("ActivationCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("AllowLocalhost")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AutoRenew")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Company")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ConsecutiveValidationFailures")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CountryCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomerEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DisabledFeaturesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EnabledFeaturesJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FeatureFlagsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("FirstActivatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GracePeriodDays")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsLifetime")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastActivatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastValidatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LastValidationError")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LastValidationResult")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LicensedDomains")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LicensedIpAddresses")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MachineFingerprint")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxActivations")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxAdminUsers")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxOrdersPerMonth")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxProducts")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxStorageMb")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MaxStores")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("NextRenewalDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PaymentProcessor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("RenewalAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("RenewalCurrency")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Signature")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SubscriptionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ValidUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ValidationIntervalHours")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Licenses");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Order", b =>
@@ -926,6 +1644,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Subtotal")
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
@@ -969,6 +1690,8 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasIndex("ShippingAddressId");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("StoreId");
 
                     b.HasIndex("CustomerId", "CreatedAt");
 
@@ -1658,6 +2381,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Tags")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1704,6 +2430,8 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasIndex("Slug");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("StoreId");
 
                     b.HasIndex("UmbracoNodeId");
 
@@ -1979,6 +2707,203 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasIndex("PurchaseOrderId");
 
                     b.ToTable("Ecommerce_PurchaseOrderItems", (string)null);
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Return", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AdminNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal?>("ApprovedRefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("CustomerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CustomerNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsReturnShippingPrepaid")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ProcessedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Reason")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReasonDetails")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ReceivedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("RefundGiftCardId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("RefundMethod")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RefundedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RejectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectionReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("RequestedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("RestockingFee")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ReturnCarrier")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReturnLabelUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReturnNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("ReturnShippingCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ReturnTrackingNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ReturnWarehouseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("StoreCreditAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerId");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("RefundGiftCardId");
+
+                    b.HasIndex("StoreId");
+
+                    b.ToTable("Returns");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.ReturnItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Condition")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ConditionNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("InspectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InspectedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsInspected")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OrderLineId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Reason")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReasonDetails")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("RefundAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("RestockedQuantity")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReturnId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("ShouldRestock")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("VariantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderLineId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ReturnId");
+
+                    b.ToTable("ReturnItems");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Review", b =>
@@ -2578,6 +3503,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -2846,6 +3774,194 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasIndex("StockTransferId");
 
                     b.ToTable("Ecommerce_StockTransferItems", (string)null);
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Store", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AbandonedCartRetentionDays")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AccentColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AddressLine1")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AddressLine2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("AllowGuestCheckout")
+                        .HasColumnType("bit");
+
+                    b.PrimitiveCollection<string>("AlternateDomains")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("City")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContactEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CountryCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DefaultCurrencyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DefaultLanguage")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("DefaultShippingZoneId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DefaultTaxZoneId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("DefaultWarehouseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Domain")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FacebookUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FaviconUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("FreeShippingThreshold")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("InstagramUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("LastLicenseValidation")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LicenseExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("LicenseKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("LicenseType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LinkedInUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("MaxCartItems")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("MinimumOrderAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrderNumberPrefix")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("OrderNumberSequence")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PrimaryColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("RequireEmailVerification")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecondaryColor")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SettingsJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("State")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SupportEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.PrimitiveCollection<string>("SupportedCurrencies")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.PrimitiveCollection<string>("SupportedLanguages")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TaxIncludedInPrices")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("TikTokUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TimeZoneId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TrialExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TwitterUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UmbracoNodeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UrlSlug")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("YouTubeUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Stores");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.StoredPaymentMethod", b =>
@@ -3339,6 +4455,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -3454,6 +4573,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
@@ -3527,6 +4649,235 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasFilter("[VariantId] IS NOT NULL");
 
                     b.ToTable("Ecommerce_WarehouseStocks", (string)null);
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Webhook", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ApiKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("AuthType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("AutoDisableReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("AutoDisabledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double?>("AverageResponseTimeMs")
+                        .HasColumnType("float");
+
+                    b.Property<string>("BasicAuthPassword")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BasicAuthUsername")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BearerToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.PrimitiveCollection<string>("CategoryIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ConsecutiveFailures")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EventsJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("FailedDeliveries")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FilterJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HeadersJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HttpMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAutoDisabled")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("LastFailureAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("LastStatusCode")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastSuccessAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LastTriggeredAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("MaxConsecutiveFailures")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxRetries")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.PrimitiveCollection<string>("ProductIds")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RetryDelaySeconds")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("RetryEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Secret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("StoreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("SubscribeToAll")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SuccessfulDeliveries")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TimeoutSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalDeliveries")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UmbracoNodeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("UseExponentialBackoff")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("VerifySsl")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StoreId");
+
+                    b.ToTable("Webhooks");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.WebhookDelivery", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptNumber")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("DurationMs")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ErrorType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsSuccess")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RequestHeaders")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RequestPayload")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResponseBody")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResponseHeaders")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ScheduledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ServerIpAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("StatusCode")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("TriggerEntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("TriggerEntityType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("WebhookId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("WebhookId");
+
+                    b.ToTable("WebhookDeliveries");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Wishlist", b =>
@@ -3653,12 +5004,21 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.AuditLog", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId");
+
+                    b.Navigation("Store");
+                });
+
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Cart", b =>
                 {
                     b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Address", "BillingAddress")
                         .WithMany()
                         .HasForeignKey("BillingAddressId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Customer", "Customer")
                         .WithMany()
@@ -3668,7 +5028,7 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Address", "ShippingAddress")
                         .WithMany()
                         .HasForeignKey("ShippingAddressId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("BillingAddress");
 
@@ -3695,7 +5055,25 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", null)
+                        .WithMany("Categories")
+                        .HasForeignKey("StoreId");
+
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Customer", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", null)
+                        .WithMany("Customers")
+                        .HasForeignKey("StoreId");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Discount", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", null)
+                        .WithMany("Discounts")
+                        .HasForeignKey("StoreId");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.DiscountUsage", b =>
@@ -3724,6 +5102,78 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Navigation("Order");
                 });
 
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.EmailTemplate", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId");
+
+                    b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.ExchangeRate", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Currency", "FromCurrency")
+                        .WithMany("ExchangeRatesFrom")
+                        .HasForeignKey("FromCurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Currency", "ToCurrency")
+                        .WithMany("ExchangeRatesTo")
+                        .HasForeignKey("ToCurrencyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FromCurrency");
+
+                    b.Navigation("ToCurrency");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.GiftCard", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Customer", "IssuedToCustomer")
+                        .WithMany()
+                        .HasForeignKey("IssuedToCustomerId");
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Customer", "PurchasedByCustomer")
+                        .WithMany()
+                        .HasForeignKey("PurchasedByCustomerId");
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId");
+
+                    b.Navigation("IssuedToCustomer");
+
+                    b.Navigation("PurchasedByCustomer");
+
+                    b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.GiftCardTransaction", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId");
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.GiftCard", "GiftCard")
+                        .WithMany("Transactions")
+                        .HasForeignKey("GiftCardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("GiftCard");
+
+                    b.Navigation("Order");
+                });
+
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Order", b =>
                 {
                     b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Address", "BillingAddress")
@@ -3740,6 +5190,10 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .WithMany()
                         .HasForeignKey("ShippingAddressId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", null)
+                        .WithMany("Orders")
+                        .HasForeignKey("StoreId");
 
                     b.Navigation("BillingAddress");
 
@@ -3785,6 +5239,13 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Gateway");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Product", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", null)
+                        .WithMany("Products")
+                        .HasForeignKey("StoreId");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.ProductVariant", b =>
@@ -3834,6 +5295,64 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("PurchaseOrder");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Return", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Order", "Order")
+                        .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.GiftCard", "RefundGiftCard")
+                        .WithMany()
+                        .HasForeignKey("RefundGiftCardId");
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Order");
+
+                    b.Navigation("RefundGiftCard");
+
+                    b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.ReturnItem", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.OrderLine", "OrderLine")
+                        .WithMany()
+                        .HasForeignKey("OrderLineId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Return", "Return")
+                        .WithMany("Items")
+                        .HasForeignKey("ReturnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("OrderLine");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Return");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Review", b =>
@@ -4060,6 +5579,26 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Navigation("Warehouse");
                 });
 
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Webhook", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Store", "Store")
+                        .WithMany()
+                        .HasForeignKey("StoreId");
+
+                    b.Navigation("Store");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.WebhookDelivery", b =>
+                {
+                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Webhook", "Webhook")
+                        .WithMany("Deliveries")
+                        .HasForeignKey("WebhookId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Webhook");
+                });
+
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Wishlist", b =>
                 {
                     b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Customer", "Customer")
@@ -4107,11 +5646,23 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Navigation("Children");
                 });
 
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Currency", b =>
+                {
+                    b.Navigation("ExchangeRatesFrom");
+
+                    b.Navigation("ExchangeRatesTo");
+                });
+
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Customer", b =>
                 {
                     b.Navigation("Addresses");
 
                     b.Navigation("Orders");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.GiftCard", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Order", b =>
@@ -4143,6 +5694,11 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Navigation("Items");
                 });
 
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Return", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Shipment", b =>
                 {
                     b.Navigation("Items");
@@ -4168,6 +5724,19 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Navigation("Items");
                 });
 
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Store", b =>
+                {
+                    b.Navigation("Categories");
+
+                    b.Navigation("Customers");
+
+                    b.Navigation("Discounts");
+
+                    b.Navigation("Orders");
+
+                    b.Navigation("Products");
+                });
+
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Supplier", b =>
                 {
                     b.Navigation("Products");
@@ -4186,6 +5755,11 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Warehouse", b =>
                 {
                     b.Navigation("StockLevels");
+                });
+
+            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Webhook", b =>
+                {
+                    b.Navigation("Deliveries");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Wishlist", b =>

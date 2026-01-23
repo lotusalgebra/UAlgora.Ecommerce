@@ -145,21 +145,21 @@ public class CategoryRepository : SoftDeleteRepository<Category>, ICategoryRepos
         bool includeSubcategories = false,
         CancellationToken ct = default)
     {
+        // Load products with basic server-side filtering, then filter by CategoryIds in memory
+        // because CategoryIds is stored as JSON and can't be queried directly by EF Core
+        var products = await Context.Products
+            .Where(p => p.Status == ProductStatus.Published && !p.IsDeleted)
+            .ToListAsync(ct);
+
         if (includeSubcategories)
         {
             var categoryIds = new List<Guid> { categoryId };
             categoryIds.AddRange(await GetDescendantIdsAsync(categoryId, ct));
 
-            return await Context.Products
-                .Where(p => p.CategoryIds.Any(cid => categoryIds.Contains(cid)))
-                .Where(p => p.Status == ProductStatus.Published && !p.IsDeleted)
-                .CountAsync(ct);
+            return products.Count(p => p.CategoryIds.Any(cid => categoryIds.Contains(cid)));
         }
 
-        return await Context.Products
-            .Where(p => p.CategoryIds.Contains(categoryId))
-            .Where(p => p.Status == ProductStatus.Published && !p.IsDeleted)
-            .CountAsync(ct);
+        return products.Count(p => p.CategoryIds.Contains(categoryId));
     }
 
     public async Task UpdateSortOrdersAsync(

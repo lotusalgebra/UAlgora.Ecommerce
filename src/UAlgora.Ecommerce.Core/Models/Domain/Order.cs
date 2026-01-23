@@ -8,6 +8,11 @@ namespace UAlgora.Ecommerce.Core.Models.Domain;
 public class Order : SoftDeleteEntity
 {
     /// <summary>
+    /// Store this order belongs to.
+    /// </summary>
+    public Guid? StoreId { get; set; }
+
+    /// <summary>
     /// Human-readable order number (e.g., "ORD-2024-0001").
     /// </summary>
     public string OrderNumber { get; set; } = string.Empty;

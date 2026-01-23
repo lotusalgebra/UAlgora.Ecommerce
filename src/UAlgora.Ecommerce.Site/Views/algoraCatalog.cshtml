@@ -1,0 +1,151 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Umbraco.Extensions
+@{
+    Layout = "_Layout.cshtml";
+
+    var catalogTitle = Model.Value<string>("title") ?? "Shop";
+    var catalogSubtitle = Model.Value<string>("subtitle") ?? "";
+    var catalogDescription = Model.Value<string>("description") ?? "";
+
+    ViewData["Title"] = Model.Value<string>("metaTitle") ?? catalogTitle;
+    ViewData["Description"] = Model.Value<string>("metaDescription") ?? "Browse our product catalog";
+
+    var categories = Model.Children()?.Where(c => c.ContentType.Alias == "algoraCategory") ?? Enumerable.Empty<IPublishedContent>();
+}
+
+<!-- Hero Section -->
+<section class="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">@catalogTitle</h1>
+            @if (!string.IsNullOrEmpty(catalogSubtitle))
+            {
+                <p class="text-xl text-primary-100 mb-6">@catalogSubtitle</p>
+            }
+            @if (!string.IsNullOrEmpty(catalogDescription))
+            {
+                <div class="text-primary-100 max-w-2xl mx-auto">
+                    @Html.Raw(catalogDescription)
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Categories Grid -->
+<section class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Shop by Category</h2>
+            <p class="text-gray-600">Browse our collection of quality products</p>
+        </div>
+
+        @if (categories.Any())
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                @foreach (var category in categories)
+                {
+                    var categoryName = category.Value<string>("categoryName") ?? category.Name;
+                    var categoryImage = category.Value<IPublishedContent>("image");
+                    var productCount = category.Children()?.Count(c => c.ContentType.Alias == "algoraProduct") ?? 0;
+
+                    <a href="@category.Url()" class="group">
+                        <div class="relative aspect-square rounded-2xl overflow-hidden bg-gray-100">
+                            @if (categoryImage != null)
+                            {
+                                <img src="@categoryImage.Url()" alt="@categoryName"
+                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            }
+                            else
+                            {
+                                <div class="w-full h-full bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+                                    <svg class="w-20 h-20 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                </div>
+                            }
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
+                                <h3 class="text-xl font-bold mb-1">@categoryName</h3>
+                                <p class="text-sm text-gray-200">@productCount @(productCount == 1 ? "product" : "products")</p>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-12">
+                <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <p class="text-gray-500 text-lg">No categories available yet.</p>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Featured Products Section -->
+@{
+    var allProducts = Model.Descendants()
+        .Where(d => d.ContentType.Alias == "algoraProduct" && d.Value<bool>("isFeatured"))
+        .Take(8)
+        .ToList();
+}
+
+@if (allProducts.Any())
+{
+    <section class="py-16 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Featured Products</h2>
+                <p class="text-gray-600">Hand-picked products just for you</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                @foreach (var product in allProducts)
+                {
+                    @await Html.PartialAsync("_UmbracoProductCard", product)
+                }
+            </div>
+
+            <div class="text-center mt-10">
+                <a href="@Model.Url()?featured=true" class="inline-flex items-center px-6 py-3 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition">
+                    View All Featured
+                    <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- All Products Grid -->
+@{
+    var recentProducts = Model.Descendants()
+        .Where(d => d.ContentType.Alias == "algoraProduct")
+        .OrderByDescending(p => p.CreateDate)
+        .Take(12)
+        .ToList();
+}
+
+@if (recentProducts.Any())
+{
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">Latest Products</h2>
+                <p class="text-gray-600">Check out our newest arrivals</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                @foreach (var product in recentProducts)
+                {
+                    @await Html.PartialAsync("_UmbracoProductCard", product)
+                }
+            </div>
+        </div>
+    </section>
+}

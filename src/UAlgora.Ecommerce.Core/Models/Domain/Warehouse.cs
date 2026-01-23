@@ -6,6 +6,11 @@ namespace UAlgora.Ecommerce.Core.Models.Domain;
 public class Warehouse : SoftDeleteEntity
 {
     /// <summary>
+    /// Store this warehouse belongs to.
+    /// </summary>
+    public Guid? StoreId { get; set; }
+
+    /// <summary>
     /// Warehouse name.
     /// </summary>
     public string Name { get; set; } = string.Empty;

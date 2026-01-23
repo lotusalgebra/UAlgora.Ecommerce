@@ -67,15 +67,16 @@ public class CartConfiguration : IEntityTypeConfiguration<Cart>
             .OnDelete(DeleteBehavior.Cascade);
 
         // Navigation properties to Address entities
+        // Use NoAction to avoid multiple cascade path issues with Customer -> Address
         builder.HasOne(c => c.ShippingAddress)
             .WithMany()
             .HasForeignKey("ShippingAddressId")
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
 
         builder.HasOne(c => c.BillingAddress)
             .WithMany()
             .HasForeignKey("BillingAddressId")
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
 
         // JSON for applied discounts
         builder.Property(c => c.AppliedDiscounts)

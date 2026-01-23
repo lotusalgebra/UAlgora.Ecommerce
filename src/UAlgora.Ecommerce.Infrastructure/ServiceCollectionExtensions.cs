@@ -62,6 +62,15 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IWishlistRepository, WishlistRepository>();
 
+        // Enterprise feature repositories
+        services.AddScoped<IStoreRepository, StoreRepository>();
+        services.AddScoped<IGiftCardRepository, GiftCardRepository>();
+        services.AddScoped<IReturnRepository, ReturnRepository>();
+        services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<ILicenseRepository, LicenseRepository>();
+        services.AddScoped<IWebhookRepository, WebhookRepository>();
+
         return services;
     }
 
@@ -88,6 +97,23 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICurrencyService, CurrencyService>();
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<IWishlistService, WishlistService>();
+
+        // Enterprise feature services
+        services.AddScoped<IStoreService, StoreService>();
+        services.AddScoped<IGiftCardService, GiftCardService>();
+        services.AddScoped<IReturnService, ReturnService>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<ILicenseService, LicenseService>();
+        services.AddScoped<IWebhookService, WebhookService>();
+
+        // Register HttpClient for webhook delivery
+        services.AddHttpClient("WebhookClient")
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AllowAutoRedirect = true,
+                MaxAutomaticRedirections = 3
+            });
 
         return services;
     }

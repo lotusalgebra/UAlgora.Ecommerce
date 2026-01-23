@@ -6,6 +6,11 @@ namespace UAlgora.Ecommerce.Core.Models.Domain;
 public class Cart : BaseEntity
 {
     /// <summary>
+    /// Store this cart belongs to.
+    /// </summary>
+    public Guid? StoreId { get; set; }
+
+    /// <summary>
     /// Customer ID if logged in.
     /// </summary>
     public Guid? CustomerId { get; set; }
