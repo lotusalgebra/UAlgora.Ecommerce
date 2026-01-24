@@ -85,6 +85,12 @@ public sealed class AlgoraDocumentTypeComposer : IComposer
         builder.AddNotificationAsyncHandler<ContentPublishedNotification, ContentToWebhookSyncHandler>();
         builder.AddNotificationAsyncHandler<ContentUnpublishedNotification, ContentToWebhookSyncHandler>();
         builder.AddNotificationAsyncHandler<ContentDeletedNotification, ContentToWebhookSyncHandler>();
+
+        // Register content-to-category sync handlers
+        // When categories are published/unpublished/deleted in the content tree, sync to category database
+        builder.AddNotificationAsyncHandler<ContentPublishedNotification, ContentToCategorySyncHandler>();
+        builder.AddNotificationAsyncHandler<ContentUnpublishedNotification, ContentToCategorySyncHandler>();
+        builder.AddNotificationAsyncHandler<ContentDeletedNotification, ContentToCategorySyncHandler>();
     }
 }
 

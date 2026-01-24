@@ -3,7 +3,7 @@ import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
 
 /**
  * Algora Sidebar Tree Element
- * Clean navigation tree for the Algora Commerce section.
+ * Clean navigation tree for the Algora Commerce section with category groupings.
  */
 export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
   static styles = css`
@@ -82,16 +82,16 @@ export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
     super.connectedCallback();
     this._updateSelectedFromUrl();
 
-    // Listen for URL changes
-    this._observer = new MutationObserver(() => this._updateSelectedFromUrl());
+    // Listen for popstate events (browser back/forward)
+    window.addEventListener('popstate', () => this._updateSelectedFromUrl());
 
-    // Check URL periodically as backup
+    // Check URL periodically as backup for SPA navigation
     this._interval = setInterval(() => this._updateSelectedFromUrl(), 500);
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    if (this._observer) this._observer.disconnect();
+    window.removeEventListener('popstate', () => this._updateSelectedFromUrl());
     if (this._interval) clearInterval(this._interval);
   }
 
@@ -101,15 +101,20 @@ export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
 
     if (path.includes('/products')) newSelected = 'products';
     else if (path.includes('/categories')) newSelected = 'categories';
+    else if (path.includes('/brands')) newSelected = 'brands';
+    else if (path.includes('/manufacturers')) newSelected = 'manufacturers';
     else if (path.includes('/orders')) newSelected = 'orders';
-    else if (path.includes('/customers')) newSelected = 'customers';
-    else if (path.includes('/discounts')) newSelected = 'discounts';
-    else if (path.includes('/stores')) newSelected = 'stores';
-    else if (path.includes('/giftcards')) newSelected = 'giftcards';
     else if (path.includes('/returns')) newSelected = 'returns';
+    else if (path.includes('/paymentlinks')) newSelected = 'paymentlinks';
+    else if (path.includes('/customers')) newSelected = 'customers';
+    else if (path.includes('/giftcards')) newSelected = 'giftcards';
+    else if (path.includes('/discounts')) newSelected = 'discounts';
     else if (path.includes('/emailtemplates')) newSelected = 'emailtemplates';
+    else if (path.includes('/stores')) newSelected = 'stores';
+    else if (path.includes('/currencies')) newSelected = 'currencies';
     else if (path.includes('/webhooks')) newSelected = 'webhooks';
-    else if (path.includes('/dashboard')) newSelected = 'dashboard';
+    else if (path.includes('/license')) newSelected = 'license';
+    else if (path.includes('/dashboard') || path.endsWith('/ecommerce')) newSelected = 'dashboard';
 
     if (newSelected !== this._selectedItem) {
       this._selectedItem = newSelected;
@@ -119,19 +124,21 @@ export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
 
   _navigateTo(item, pathname) {
     this._selectedItem = item;
-    // Umbraco 15 sectionView URL format: /umbraco/section/{section}/{viewPathname}
+    // Direct navigation to sectionView - Umbraco 15 format
     window.location.href = `/umbraco/section/ecommerce/${pathname}`;
   }
 
   render() {
     return html`
       <div class="tree-root">
+        <!-- Dashboard -->
         <div class="tree-item ${this._selectedItem === 'dashboard' ? 'active' : ''}"
-             @click=${() => { this._selectedItem = 'dashboard'; window.location.href = '/umbraco/section/ecommerce'; }}>
+             @click=${() => this._navigateTo('dashboard', 'dashboard')}>
           <uui-icon name="icon-dashboard"></uui-icon>
           <span class="tree-item-label">Dashboard</span>
         </div>
 
+        <!-- Catalog -->
         <div class="tree-header">Catalog</div>
 
         <div class="tree-item ${this._selectedItem === 'products' ? 'active' : ''}"
@@ -146,6 +153,19 @@ export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
           <span class="tree-item-label">Categories</span>
         </div>
 
+        <div class="tree-item ${this._selectedItem === 'brands' ? 'active' : ''}"
+             @click=${() => this._navigateTo('brands', 'brands')}>
+          <uui-icon name="icon-stamp"></uui-icon>
+          <span class="tree-item-label">Brands</span>
+        </div>
+
+        <div class="tree-item ${this._selectedItem === 'manufacturers' ? 'active' : ''}"
+             @click=${() => this._navigateTo('manufacturers', 'manufacturers')}>
+          <uui-icon name="icon-factory"></uui-icon>
+          <span class="tree-item-label">Manufacturers</span>
+        </div>
+
+        <!-- Sales -->
         <div class="tree-header">Sales</div>
 
         <div class="tree-item ${this._selectedItem === 'orders' ? 'active' : ''}"
@@ -160,6 +180,13 @@ export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
           <span class="tree-item-label">Returns</span>
         </div>
 
+        <div class="tree-item ${this._selectedItem === 'paymentlinks' ? 'active' : ''}"
+             @click=${() => this._navigateTo('paymentlinks', 'paymentlinks')}>
+          <uui-icon name="icon-share-alt"></uui-icon>
+          <span class="tree-item-label">Payment Links</span>
+        </div>
+
+        <!-- Customers -->
         <div class="tree-header">Customers</div>
 
         <div class="tree-item ${this._selectedItem === 'customers' ? 'active' : ''}"
@@ -174,6 +201,7 @@ export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
           <span class="tree-item-label">Gift Cards</span>
         </div>
 
+        <!-- Marketing -->
         <div class="tree-header">Marketing</div>
 
         <div class="tree-item ${this._selectedItem === 'discounts' ? 'active' : ''}"
@@ -188,6 +216,7 @@ export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
           <span class="tree-item-label">Email Templates</span>
         </div>
 
+        <!-- Settings -->
         <div class="tree-header">Settings</div>
 
         <div class="tree-item ${this._selectedItem === 'stores' ? 'active' : ''}"
@@ -196,10 +225,22 @@ export class EcommerceSidebarTree extends UmbElementMixin(LitElement) {
           <span class="tree-item-label">Stores</span>
         </div>
 
+        <div class="tree-item ${this._selectedItem === 'currencies' ? 'active' : ''}"
+             @click=${() => this._navigateTo('currencies', 'currencies')}>
+          <uui-icon name="icon-coins-dollar-alt"></uui-icon>
+          <span class="tree-item-label">Currencies</span>
+        </div>
+
         <div class="tree-item ${this._selectedItem === 'webhooks' ? 'active' : ''}"
              @click=${() => this._navigateTo('webhooks', 'webhooks')}>
           <uui-icon name="icon-link"></uui-icon>
           <span class="tree-item-label">Webhooks</span>
+        </div>
+
+        <div class="tree-item ${this._selectedItem === 'license' ? 'active' : ''}"
+             @click=${() => this._navigateTo('license', 'license')}>
+          <uui-icon name="icon-key"></uui-icon>
+          <span class="tree-item-label">License</span>
         </div>
       </div>
     `;

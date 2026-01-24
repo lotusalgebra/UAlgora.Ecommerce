@@ -32,8 +32,10 @@ public static class ServiceCollectionExtensions
         // Register cart context provider
         services.AddScoped<ICartContextProvider, HttpCartContextProvider>();
 
-        // Register content sync service for syncing products to Umbraco content tree
+        // Register content sync services for bidirectional sync
+        // Database ↔ Umbraco Content Tree
         services.AddScoped<ProductContentSyncService>();
+        services.AddScoped<CategoryContentSyncService>();
 
         // Register catalog content seeder for demo/testing
         services.AddScoped<CatalogContentSeeder>();

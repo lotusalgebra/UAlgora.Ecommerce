@@ -1,5 +1,5 @@
 // Algora Commerce Extension Entry Point
-// Version 2.8.0
+// Version 2.8.4
 
 // Import dashboard
 import './views/dashboard.js';
@@ -18,5 +18,10 @@ import './views/collections/giftcard-collection.js';
 import './views/collections/return-collection.js';
 import './views/collections/emailtemplate-collection.js';
 import './views/collections/webhook-collection.js';
+import './views/collections/currency-collection.js';
+import './views/collections/brand-collection.js';
+import './views/collections/manufacturer-collection.js';
+import './views/collections/paymentlink-collection.js';
+import './views/collections/license-collection.js';
 
-console.log('Algora Commerce extension loaded v2.8.0');
+console.log('Algora Commerce extension loaded v2.8.4');

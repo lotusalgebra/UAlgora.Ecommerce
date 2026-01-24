@@ -1,22 +1,32 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using UAlgora.Ecommerce.Core.Interfaces.Services;
 using UAlgora.Ecommerce.Core.Models.Domain;
+using UAlgora.Ecommerce.Web.Services;
 using Umbraco.Cms.Api.Management.Routing;
 
 namespace UAlgora.Ecommerce.Web.BackOffice.Api;
 
 /// <summary>
 /// Management API controller for category operations in the Umbraco backoffice.
+/// Automatically syncs categories to Umbraco content tree for bidirectional management.
 /// </summary>
 [VersionedApiBackOfficeRoute($"{EcommerceConstants.ApiRouteBase}/{EcommerceConstants.Routes.Categories}")]
 public class CategoryManagementApiController : EcommerceManagementApiControllerBase
 {
     private readonly ICategoryService _categoryService;
+    private readonly CategoryContentSyncService _syncService;
+    private readonly ILogger<CategoryManagementApiController> _logger;
 
-    public CategoryManagementApiController(ICategoryService categoryService)
+    public CategoryManagementApiController(
+        ICategoryService categoryService,
+        CategoryContentSyncService syncService,
+        ILogger<CategoryManagementApiController> logger)
     {
         _categoryService = categoryService;
+        _syncService = syncService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -137,6 +147,17 @@ public class CategoryManagementApiController : EcommerceManagementApiControllerB
 
         var created = await _categoryService.CreateAsync(category);
 
+        // Sync to Umbraco content tree for bidirectional management
+        try
+        {
+            await _syncService.SyncCategoryToContentAsync(created.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to sync category to content tree: {Id}", created.Id);
+            // Don't fail the create - content sync is secondary
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, MapToCategoryDetail(created, 0));
     }
 
@@ -194,6 +215,16 @@ public class CategoryManagementApiController : EcommerceManagementApiControllerB
 
         var updated = await _categoryService.UpdateAsync(existing);
         var productCount = await _categoryService.GetProductCountAsync(id, false);
+
+        // Sync to Umbraco content tree for bidirectional management
+        try
+        {
+            await _syncService.SyncCategoryToContentAsync(updated.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to sync category to content tree: {Id}", updated.Id);
+        }
 
         return Ok(MapToCategoryDetail(updated, productCount));
     }

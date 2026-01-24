@@ -2,7 +2,7 @@
   "$schema": "../../umbraco-package-schema.json",
   "id": "UAlgora.Ecommerce",
   "name": "Algora Commerce",
-  "version": "2.8.0",
+  "version": "2.8.5",
   "allowTelemetry": true,
   "extensions": [
     {
@@ -28,14 +28,44 @@
       ]
     },
     {
+      "type": "menu",
+      "alias": "Umb.Menu.Ecommerce.Main",
+      "name": "Main Menu"
+    },
+    {
+      "type": "menu",
+      "alias": "Umb.Menu.Ecommerce.Catalog",
+      "name": "Catalog"
+    },
+    {
+      "type": "menu",
+      "alias": "Umb.Menu.Ecommerce.Sales",
+      "name": "Sales"
+    },
+    {
+      "type": "menu",
+      "alias": "Umb.Menu.Ecommerce.Customers",
+      "name": "Customers"
+    },
+    {
+      "type": "menu",
+      "alias": "Umb.Menu.Ecommerce.Marketing",
+      "name": "Marketing"
+    },
+    {
+      "type": "menu",
+      "alias": "Umb.Menu.Ecommerce.Settings",
+      "name": "Settings"
+    },
+    {
       "type": "sectionSidebarApp",
-      "kind": "tree",
-      "alias": "Umb.SectionSidebarApp.Ecommerce.Tree",
-      "name": "Algora Tree",
-      "element": "/App_Plugins/Ecommerce/views/trees/ecommerce-sidebar-tree.js",
-      "weight": 100,
+      "kind": "menu",
+      "alias": "Umb.SectionSidebarApp.Ecommerce.Main",
+      "name": "Main",
+      "weight": 1000,
       "meta": {
-        "label": "Algora"
+        "label": "",
+        "menu": "Umb.Menu.Ecommerce.Main"
       },
       "conditions": [
         {
@@ -43,6 +73,299 @@
           "match": "Umb.Section.Ecommerce"
         }
       ]
+    },
+    {
+      "type": "sectionSidebarApp",
+      "kind": "menu",
+      "alias": "Umb.SectionSidebarApp.Ecommerce.Catalog",
+      "name": "Catalog",
+      "weight": 900,
+      "meta": {
+        "label": "Catalog",
+        "menu": "Umb.Menu.Ecommerce.Catalog"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionSidebarApp",
+      "kind": "menu",
+      "alias": "Umb.SectionSidebarApp.Ecommerce.Sales",
+      "name": "Sales",
+      "weight": 800,
+      "meta": {
+        "label": "Sales",
+        "menu": "Umb.Menu.Ecommerce.Sales"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionSidebarApp",
+      "kind": "menu",
+      "alias": "Umb.SectionSidebarApp.Ecommerce.Customers",
+      "name": "Customers",
+      "weight": 700,
+      "meta": {
+        "label": "Customers",
+        "menu": "Umb.Menu.Ecommerce.Customers"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionSidebarApp",
+      "kind": "menu",
+      "alias": "Umb.SectionSidebarApp.Ecommerce.Marketing",
+      "name": "Marketing",
+      "weight": 600,
+      "meta": {
+        "label": "Marketing",
+        "menu": "Umb.Menu.Ecommerce.Marketing"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionSidebarApp",
+      "kind": "menu",
+      "alias": "Umb.SectionSidebarApp.Ecommerce.Settings",
+      "name": "Settings",
+      "weight": 500,
+      "meta": {
+        "label": "Settings",
+        "menu": "Umb.Menu.Ecommerce.Settings"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Dashboard",
+      "name": "Dashboard",
+      "weight": 1000,
+      "meta": {
+        "label": "Dashboard",
+        "icon": "icon-dashboard",
+        "menus": ["Umb.Menu.Ecommerce.Main"],
+        "href": "/umbraco/section/ecommerce/view/dashboard"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Products",
+      "name": "Products",
+      "weight": 900,
+      "meta": {
+        "label": "Products",
+        "icon": "icon-box",
+        "menus": ["Umb.Menu.Ecommerce.Catalog"],
+        "href": "/umbraco/section/ecommerce/view/products"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Categories",
+      "name": "Categories",
+      "weight": 890,
+      "meta": {
+        "label": "Categories",
+        "icon": "icon-folder",
+        "menus": ["Umb.Menu.Ecommerce.Catalog"],
+        "href": "/umbraco/section/ecommerce/view/categories"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Brands",
+      "name": "Brands",
+      "weight": 880,
+      "meta": {
+        "label": "Brands",
+        "icon": "icon-stamp",
+        "menus": ["Umb.Menu.Ecommerce.Catalog"],
+        "href": "/umbraco/section/ecommerce/view/brands"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Manufacturers",
+      "name": "Manufacturers",
+      "weight": 870,
+      "meta": {
+        "label": "Manufacturers",
+        "icon": "icon-factory",
+        "menus": ["Umb.Menu.Ecommerce.Catalog"],
+        "href": "/umbraco/section/ecommerce/view/manufacturers"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Orders",
+      "name": "Orders",
+      "weight": 900,
+      "meta": {
+        "label": "Orders",
+        "icon": "icon-receipt-dollar",
+        "menus": ["Umb.Menu.Ecommerce.Sales"],
+        "href": "/umbraco/section/ecommerce/view/orders"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Returns",
+      "name": "Returns",
+      "weight": 890,
+      "meta": {
+        "label": "Returns",
+        "icon": "icon-undo",
+        "menus": ["Umb.Menu.Ecommerce.Sales"],
+        "href": "/umbraco/section/ecommerce/view/returns"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.PaymentLinks",
+      "name": "Payment Links",
+      "weight": 880,
+      "meta": {
+        "label": "Payment Links",
+        "icon": "icon-share-alt",
+        "menus": ["Umb.Menu.Ecommerce.Sales"],
+        "href": "/umbraco/section/ecommerce/view/paymentlinks"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Customers",
+      "name": "Customers",
+      "weight": 900,
+      "meta": {
+        "label": "Customers",
+        "icon": "icon-users",
+        "menus": ["Umb.Menu.Ecommerce.Customers"],
+        "href": "/umbraco/section/ecommerce/view/customers"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.GiftCards",
+      "name": "Gift Cards",
+      "weight": 890,
+      "meta": {
+        "label": "Gift Cards",
+        "icon": "icon-gift",
+        "menus": ["Umb.Menu.Ecommerce.Customers"],
+        "href": "/umbraco/section/ecommerce/view/giftcards"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Discounts",
+      "name": "Discounts",
+      "weight": 900,
+      "meta": {
+        "label": "Discounts",
+        "icon": "icon-tag",
+        "menus": ["Umb.Menu.Ecommerce.Marketing"],
+        "href": "/umbraco/section/ecommerce/view/discounts"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.EmailTemplates",
+      "name": "Email Templates",
+      "weight": 890,
+      "meta": {
+        "label": "Email Templates",
+        "icon": "icon-message",
+        "menus": ["Umb.Menu.Ecommerce.Marketing"],
+        "href": "/umbraco/section/ecommerce/view/emailtemplates"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Stores",
+      "name": "Stores",
+      "weight": 900,
+      "meta": {
+        "label": "Stores",
+        "icon": "icon-store",
+        "menus": ["Umb.Menu.Ecommerce.Settings"],
+        "href": "/umbraco/section/ecommerce/view/stores"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Currencies",
+      "name": "Currencies",
+      "weight": 890,
+      "meta": {
+        "label": "Currencies",
+        "icon": "icon-coins-dollar-alt",
+        "menus": ["Umb.Menu.Ecommerce.Settings"],
+        "href": "/umbraco/section/ecommerce/view/currencies"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Webhooks",
+      "name": "Webhooks",
+      "weight": 880,
+      "meta": {
+        "label": "Webhooks",
+        "icon": "icon-link",
+        "menus": ["Umb.Menu.Ecommerce.Settings"],
+        "href": "/umbraco/section/ecommerce/view/webhooks"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.License",
+      "name": "License",
+      "weight": 100,
+      "meta": {
+        "label": "License",
+        "icon": "icon-key",
+        "menus": ["Umb.Menu.Ecommerce.Settings"],
+        "href": "/umbraco/section/ecommerce/view/license"
+      }
     },
     {
       "type": "dashboard",

@@ -1,28 +1,37 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using UAlgora.Ecommerce.Core.Constants;
 using UAlgora.Ecommerce.Core.Interfaces.Repositories;
 using UAlgora.Ecommerce.Core.Interfaces.Services;
 using UAlgora.Ecommerce.Core.Models.Domain;
+using UAlgora.Ecommerce.Web.Services;
 using Umbraco.Cms.Api.Management.Routing;
 
 namespace UAlgora.Ecommerce.Web.BackOffice.Api;
 
 /// <summary>
 /// Management API controller for product operations in the Umbraco backoffice.
+/// Automatically syncs products to Umbraco content tree for bidirectional management.
 /// </summary>
 [VersionedApiBackOfficeRoute($"{EcommerceConstants.ApiRouteBase}/{EcommerceConstants.Routes.Products}")]
 public class ProductManagementApiController : EcommerceManagementApiControllerBase
 {
     private readonly IProductService _productService;
     private readonly ICategoryService _categoryService;
+    private readonly ProductContentSyncService _syncService;
+    private readonly ILogger<ProductManagementApiController> _logger;
 
     public ProductManagementApiController(
         IProductService productService,
-        ICategoryService categoryService)
+        ICategoryService categoryService,
+        ProductContentSyncService syncService,
+        ILogger<ProductManagementApiController> logger)
     {
         _productService = productService;
         _categoryService = categoryService;
+        _syncService = syncService;
+        _logger = logger;
     }
 
     /// <summary>
@@ -255,6 +264,17 @@ public class ProductManagementApiController : EcommerceManagementApiControllerBa
 
         var created = await _productService.CreateAsync(product);
 
+        // Sync to Umbraco content tree for bidirectional management
+        try
+        {
+            await _syncService.SyncProductToContentAsync(created.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to sync product to content tree: {Id}", created.Id);
+            // Don't fail the create - content sync is secondary
+        }
+
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, MapToProductDetail(created));
     }
 
@@ -322,6 +342,16 @@ public class ProductManagementApiController : EcommerceManagementApiControllerBa
         existing.ImageIds = request.ImageIds ?? [];
 
         var updated = await _productService.UpdateAsync(existing);
+
+        // Sync to Umbraco content tree for bidirectional management
+        try
+        {
+            await _syncService.SyncProductToContentAsync(updated.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to sync product to content tree: {Id}", updated.Id);
+        }
 
         return Ok(MapToProductDetail(updated));
     }

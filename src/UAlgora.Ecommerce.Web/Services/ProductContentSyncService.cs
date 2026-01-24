@@ -163,6 +163,83 @@ public class ProductContentSyncService
         return result;
     }
 
+    /// <summary>
+    /// Syncs a single product from database to content tree
+    /// </summary>
+    public async Task<bool> SyncProductToContentAsync(Guid productId)
+    {
+        try
+        {
+            var product = await _productService.GetByIdAsync(productId);
+            if (product == null)
+            {
+                _logger.LogWarning("Product not found for sync: {Id}", productId);
+                return false;
+            }
+
+            var productDocType = _contentTypeService.Get(AlgoraDocumentTypeConstants.ProductAlias);
+            if (productDocType == null)
+            {
+                _logger.LogError("Algora Product document type not found");
+                return false;
+            }
+
+            // Check if content already exists
+            IContent? existingContent = null;
+            if (product.UmbracoNodeId.HasValue && product.UmbracoNodeId > 0)
+            {
+                existingContent = _contentService.GetById(product.UmbracoNodeId.Value);
+            }
+
+            if (existingContent != null)
+            {
+                // Update existing
+                MapProductToContent(existingContent, product);
+                _contentService.Save(existingContent);
+                _contentService.Publish(existingContent, Array.Empty<string>());
+                _logger.LogInformation("Updated product content: {Sku}", product.Sku);
+            }
+            else
+            {
+                // Create new - need root container
+                var rootContent = GetOrCreateProductsRoot(productDocType);
+                if (rootContent == null)
+                {
+                    _logger.LogError("Failed to get/create Products root");
+                    return false;
+                }
+
+                var newContent = CreateProductNode(rootContent.Id, productDocType, product);
+                if (newContent != null)
+                {
+                    var saveResult = _contentService.Save(newContent);
+                    if (saveResult.Success)
+                    {
+                        _contentService.Publish(newContent, Array.Empty<string>());
+
+                        // Update product with Umbraco node ID
+                        product.UmbracoNodeId = newContent.Id;
+                        await _productService.UpdateAsync(product);
+
+                        _logger.LogInformation("Created product content: {Sku}", product.Sku);
+                    }
+                    else
+                    {
+                        _logger.LogError("Failed to save product content: {Sku}", product.Sku);
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error syncing product to content: {Id}", productId);
+            return false;
+        }
+    }
+
     #endregion
 
     #region Private Methods
