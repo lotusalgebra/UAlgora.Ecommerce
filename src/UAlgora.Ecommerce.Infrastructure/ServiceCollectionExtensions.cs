@@ -70,6 +70,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<ILicenseRepository, LicenseRepository>();
         services.AddScoped<IWebhookRepository, WebhookRepository>();
+        services.AddScoped<IPaymentLinkRepository, PaymentLinkRepository>();
 
         return services;
     }
@@ -106,6 +107,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<ILicenseService, LicenseService>();
         services.AddScoped<IWebhookService, WebhookService>();
+        services.AddScoped<IPaymentLinkService, PaymentLinkService>();
 
         // Register HttpClient for webhook delivery
         services.AddHttpClient("WebhookClient")

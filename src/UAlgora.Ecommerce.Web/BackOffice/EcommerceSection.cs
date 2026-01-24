@@ -32,6 +32,7 @@ public static class EcommerceConstants
         public const string Webhooks = "webhook";
         public const string Audit = "audit";
         public const string EmailTemplates = "email-template";
+        public const string PaymentLinks = "payment-link";
     }
 
     public static class Icons

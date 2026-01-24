@@ -294,6 +294,24 @@
           "match": "Umb.Section.Ecommerce"
         }
       ]
+    },
+    {
+      "type": "sectionView",
+      "alias": "Umb.SectionView.Ecommerce.PaymentLinks",
+      "name": "Payment Links View",
+      "element": "/App_Plugins/Ecommerce/views/collections/paymentlink-collection.js",
+      "weight": 135,
+      "meta": {
+        "label": "Payment Links",
+        "pathname": "paymentlinks",
+        "icon": "icon-share-alt"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
     }
   ]
 }

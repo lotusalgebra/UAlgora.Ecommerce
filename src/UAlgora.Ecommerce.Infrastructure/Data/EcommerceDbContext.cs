@@ -110,6 +110,10 @@ public class EcommerceDbContext : DbContext
     public DbSet<Webhook> Webhooks => Set<Webhook>();
     public DbSet<WebhookDelivery> WebhookDeliveries => Set<WebhookDelivery>();
 
+    // Payment Links
+    public DbSet<PaymentLink> PaymentLinks => Set<PaymentLink>();
+    public DbSet<PaymentLinkPayment> PaymentLinkPayments => Set<PaymentLinkPayment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
