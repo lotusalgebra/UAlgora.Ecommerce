@@ -240,6 +240,60 @@
           "match": "Umb.Section.Ecommerce"
         }
       ]
+    },
+    {
+      "type": "sectionView",
+      "alias": "Umb.SectionView.Ecommerce.Currencies",
+      "name": "Currencies View",
+      "element": "/App_Plugins/Ecommerce/views/collections/currency-collection.js",
+      "weight": 100,
+      "meta": {
+        "label": "Currencies",
+        "pathname": "currencies",
+        "icon": "icon-coins-dollar-alt"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionView",
+      "alias": "Umb.SectionView.Ecommerce.Brands",
+      "name": "Brands View",
+      "element": "/App_Plugins/Ecommerce/views/collections/brand-collection.js",
+      "weight": 90,
+      "meta": {
+        "label": "Brands",
+        "pathname": "brands",
+        "icon": "icon-stamp"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionView",
+      "alias": "Umb.SectionView.Ecommerce.Manufacturers",
+      "name": "Manufacturers View",
+      "element": "/App_Plugins/Ecommerce/views/collections/manufacturer-collection.js",
+      "weight": 80,
+      "meta": {
+        "label": "Manufacturers",
+        "pathname": "manufacturers",
+        "icon": "icon-factory"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
     }
   ]
 }
