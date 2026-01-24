@@ -312,6 +312,24 @@
           "match": "Umb.Section.Ecommerce"
         }
       ]
+    },
+    {
+      "type": "sectionView",
+      "alias": "Umb.SectionView.Ecommerce.License",
+      "name": "License View",
+      "element": "/App_Plugins/Ecommerce/views/collections/license-collection.js",
+      "weight": 10,
+      "meta": {
+        "label": "License",
+        "pathname": "license",
+        "icon": "icon-key"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
     }
   ]
 }

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using UAlgora.Ecommerce.Core.Interfaces.Services;
 using UAlgora.Ecommerce.Web.Authorization;
+using UAlgora.Ecommerce.Web.Licensing;
 using UAlgora.Ecommerce.Web.Providers;
 using UAlgora.Ecommerce.Web.Services;
 
@@ -36,6 +37,25 @@ public static class ServiceCollectionExtensions
 
         // Register catalog content seeder for demo/testing
         services.AddScoped<CatalogContentSeeder>();
+
+        // Register license context (singleton to hold current license state)
+        services.AddSingleton<LicenseContext>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds Algora Commerce licensing services.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The configuration.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddAlgoraLicensing(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        // Configure license options from configuration
+        services.Configure<LicenseOptions>(configuration.GetSection(LicenseOptions.SectionName));
 
         return services;
     }

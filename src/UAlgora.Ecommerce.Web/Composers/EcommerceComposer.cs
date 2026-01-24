@@ -50,6 +50,9 @@ public class EcommerceComposer : IComposer
         // Register authorization (admin API protection)
         builder.Services.AddEcommerceAuthorization(builder.Config);
 
+        // Register licensing services
+        builder.Services.AddAlgoraLicensing(builder.Config);
+
         // Note: Document type installation is handled by AlgoraDocumentTypeComposer
         // which follows Clean Architecture patterns with proper separation of concerns
     }
