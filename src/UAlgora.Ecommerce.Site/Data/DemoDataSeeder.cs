@@ -16,13 +16,193 @@ public class DemoDataSeeder
 
     public async Task SeedAsync()
     {
+        // Always seed currencies if not present
+        await SeedCurrenciesAsync();
+
         if (_context.Products.Any())
         {
-            return; // Already seeded
+            return; // Products already seeded
         }
 
         var categories = await SeedCategoriesAsync();
         await SeedProductsAsync(categories);
+        await _context.SaveChangesAsync();
+    }
+
+    private async Task SeedCurrenciesAsync()
+    {
+        if (_context.Currencies.Any())
+        {
+            return; // Currencies already seeded
+        }
+
+        var currencies = new List<Currency>
+        {
+            new Currency
+            {
+                Code = "USD",
+                Name = "US Dollar",
+                Symbol = "$",
+                NativeName = "US Dollar",
+                DecimalPlaces = 2,
+                DecimalSeparator = ".",
+                ThousandsSeparator = ",",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = false,
+                IsDefault = true,
+                IsActive = true,
+                SortOrder = 1,
+                Countries = new List<string> { "US" }
+            },
+            new Currency
+            {
+                Code = "EUR",
+                Name = "Euro",
+                Symbol = "€",
+                NativeName = "Euro",
+                DecimalPlaces = 2,
+                DecimalSeparator = ",",
+                ThousandsSeparator = ".",
+                SymbolPosition = CurrencySymbolPosition.After,
+                SpaceBetweenSymbolAndAmount = true,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 2,
+                Countries = new List<string> { "DE", "FR", "IT", "ES", "NL", "BE", "AT", "IE", "PT", "FI" }
+            },
+            new Currency
+            {
+                Code = "GBP",
+                Name = "British Pound",
+                Symbol = "£",
+                NativeName = "British Pound Sterling",
+                DecimalPlaces = 2,
+                DecimalSeparator = ".",
+                ThousandsSeparator = ",",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = false,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 3,
+                Countries = new List<string> { "GB" }
+            },
+            new Currency
+            {
+                Code = "INR",
+                Name = "Indian Rupee",
+                Symbol = "₹",
+                NativeName = "भारतीय रुपया",
+                DecimalPlaces = 2,
+                DecimalSeparator = ".",
+                ThousandsSeparator = ",",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = false,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 4,
+                Countries = new List<string> { "IN" }
+            },
+            new Currency
+            {
+                Code = "JPY",
+                Name = "Japanese Yen",
+                Symbol = "¥",
+                NativeName = "日本円",
+                DecimalPlaces = 0,
+                DecimalSeparator = ".",
+                ThousandsSeparator = ",",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = false,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 5,
+                Countries = new List<string> { "JP" }
+            },
+            new Currency
+            {
+                Code = "CNY",
+                Name = "Chinese Yuan",
+                Symbol = "¥",
+                NativeName = "人民币",
+                DecimalPlaces = 2,
+                DecimalSeparator = ".",
+                ThousandsSeparator = ",",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = false,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 6,
+                Countries = new List<string> { "CN" }
+            },
+            new Currency
+            {
+                Code = "AUD",
+                Name = "Australian Dollar",
+                Symbol = "A$",
+                NativeName = "Australian Dollar",
+                DecimalPlaces = 2,
+                DecimalSeparator = ".",
+                ThousandsSeparator = ",",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = false,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 7,
+                Countries = new List<string> { "AU" }
+            },
+            new Currency
+            {
+                Code = "CAD",
+                Name = "Canadian Dollar",
+                Symbol = "C$",
+                NativeName = "Canadian Dollar",
+                DecimalPlaces = 2,
+                DecimalSeparator = ".",
+                ThousandsSeparator = ",",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = false,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 8,
+                Countries = new List<string> { "CA" }
+            },
+            new Currency
+            {
+                Code = "CHF",
+                Name = "Swiss Franc",
+                Symbol = "CHF",
+                NativeName = "Schweizer Franken",
+                DecimalPlaces = 2,
+                DecimalSeparator = ".",
+                ThousandsSeparator = "'",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = true,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 9,
+                Rounding = CurrencyRounding.ToIncrement,
+                RoundingIncrement = 0.05m,
+                Countries = new List<string> { "CH" }
+            },
+            new Currency
+            {
+                Code = "AED",
+                Name = "UAE Dirham",
+                Symbol = "د.إ",
+                NativeName = "درهم إماراتي",
+                DecimalPlaces = 2,
+                DecimalSeparator = ".",
+                ThousandsSeparator = ",",
+                SymbolPosition = CurrencySymbolPosition.Before,
+                SpaceBetweenSymbolAndAmount = true,
+                IsDefault = false,
+                IsActive = true,
+                SortOrder = 10,
+                Countries = new List<string> { "AE" }
+            }
+        };
+
+        _context.Currencies.AddRange(currencies);
         await _context.SaveChangesAsync();
     }
 

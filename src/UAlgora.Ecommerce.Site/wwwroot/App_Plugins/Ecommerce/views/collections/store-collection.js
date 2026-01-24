@@ -352,7 +352,7 @@ export class StoreCollection extends UmbElementMixin(LitElement) {
         <div class="form-group">
           <label>Default Currency *</label>
           <select .value=${s.defaultCurrencyCode || 'USD'} @change=${e => this._handleInput('defaultCurrencyCode', e.target.value)}>
-            ${this._currencies.length === 0 ? html`<option value="USD">USD - US Dollar</option><option value="EUR">EUR - Euro</option><option value="GBP">GBP - British Pound</option><option value="INR">INR - Indian Rupee</option>` : ''}
+            ${this._currencies.length === 0 ? html`<option value="">-- Loading currencies... --</option>` : ''}
             ${this._currencies.map(c => html`<option value="${c.code}" ?selected=${s.defaultCurrencyCode === c.code}>${c.code} - ${c.name}</option>`)}
           </select>
           <small>All prices in this store will be displayed in this currency</small>
