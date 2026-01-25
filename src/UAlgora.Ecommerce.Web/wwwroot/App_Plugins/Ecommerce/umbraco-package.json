@@ -2,7 +2,7 @@
   "$schema": "../../umbraco-package-schema.json",
   "id": "UAlgora.Ecommerce",
   "name": "Algora Commerce",
-  "version": "2.8.5",
+  "version": "2.8.6",
   "allowTelemetry": true,
   "extensions": [
     {
@@ -357,6 +357,19 @@
     {
       "type": "menuItem",
       "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.CheckoutSteps",
+      "name": "Checkout Steps",
+      "weight": 870,
+      "meta": {
+        "label": "Checkout Steps",
+        "icon": "icon-directions-alt",
+        "menus": ["Umb.Menu.Ecommerce.Settings"],
+        "href": "/umbraco/section/ecommerce/view/checkoutsteps"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
       "alias": "Umb.MenuItem.Ecommerce.License",
       "name": "License",
       "weight": 100,
@@ -646,6 +659,24 @@
         "label": "License",
         "pathname": "license",
         "icon": "icon-key"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionView",
+      "alias": "Umb.SectionView.Ecommerce.CheckoutSteps",
+      "name": "Checkout Steps View",
+      "element": "/App_Plugins/Ecommerce/views/collections/checkoutstep-collection.js",
+      "weight": 15,
+      "meta": {
+        "label": "Checkout Steps",
+        "pathname": "checkoutsteps",
+        "icon": "icon-directions-alt"
       },
       "conditions": [
         {

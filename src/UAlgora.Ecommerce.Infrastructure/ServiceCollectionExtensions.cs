@@ -71,6 +71,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILicenseRepository, LicenseRepository>();
         services.AddScoped<IWebhookRepository, WebhookRepository>();
         services.AddScoped<IPaymentLinkRepository, PaymentLinkRepository>();
+        services.AddScoped<ICheckoutStepRepository, CheckoutStepRepository>();
 
         return services;
     }

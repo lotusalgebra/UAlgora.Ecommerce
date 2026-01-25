@@ -114,6 +114,9 @@ public class EcommerceDbContext : DbContext
     public DbSet<PaymentLink> PaymentLinks => Set<PaymentLink>();
     public DbSet<PaymentLinkPayment> PaymentLinkPayments => Set<PaymentLinkPayment>();
 
+    // Checkout Steps
+    public DbSet<CheckoutStepConfiguration> CheckoutSteps => Set<CheckoutStepConfiguration>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

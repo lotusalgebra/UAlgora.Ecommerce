@@ -904,22 +904,22 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
 
       <!-- Quick Actions -->
       <div class="quick-actions">
-        <div class="quick-action products">
+        <div class="quick-action products" @click=${this._viewProducts}>
           <div class="quick-action-icon"><uui-icon name="icon-box"></uui-icon></div>
           <div class="quick-action-label">Products</div>
           <div class="quick-action-count">${this._overview?.totalProducts || 0} items</div>
         </div>
-        <div class="quick-action orders">
+        <div class="quick-action orders" @click=${this._viewOrders}>
           <div class="quick-action-icon"><uui-icon name="icon-receipt-dollar"></uui-icon></div>
           <div class="quick-action-label">Orders</div>
           <div class="quick-action-count">${this._overview?.totalOrders || 0} total</div>
         </div>
-        <div class="quick-action customers">
+        <div class="quick-action customers" @click=${this._viewCustomers}>
           <div class="quick-action-icon"><uui-icon name="icon-users"></uui-icon></div>
           <div class="quick-action-label">Customers</div>
           <div class="quick-action-count">${this._overview?.totalCustomers || 0} registered</div>
         </div>
-        <div class="quick-action discounts">
+        <div class="quick-action discounts" @click=${this._viewDiscounts}>
           <div class="quick-action-icon"><uui-icon name="icon-sale"></uui-icon></div>
           <div class="quick-action-label">Discounts</div>
           <div class="quick-action-count">${this._overview?.activeDiscounts || 0} active</div>
@@ -932,7 +932,7 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
         <div class="widget">
           <div class="widget-header">
             <h3>Order Funnel</h3>
-            <uui-button look="secondary" compact>View Details</uui-button>
+            <uui-button look="secondary" compact @click=${this._viewOrders}>View Details</uui-button>
           </div>
           <div class="widget-body">
             <div class="funnel-stages">
@@ -999,7 +999,7 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
         <div class="widget">
           <div class="widget-header">
             <h3>Top Products</h3>
-            <uui-button look="secondary" compact>View All</uui-button>
+            <uui-button look="secondary" compact @click=${this._viewProducts}>View All</uui-button>
           </div>
           <div class="widget-body">
             <div class="product-list">
@@ -1025,7 +1025,7 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
         <div class="widget">
           <div class="widget-header">
             <h3>Top Buyers</h3>
-            <uui-button look="secondary" compact>View All</uui-button>
+            <uui-button look="secondary" compact @click=${this._viewCustomers}>View All</uui-button>
           </div>
           <div class="widget-body">
             <div class="buyer-list">
@@ -1050,7 +1050,7 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
         <div class="widget">
           <div class="widget-header">
             <h3>Refund Analytics</h3>
-            <uui-button look="secondary" compact>View Details</uui-button>
+            <uui-button look="secondary" compact @click=${this._viewReturns}>View Details</uui-button>
           </div>
           <div class="widget-body">
             <div class="refund-stats">
@@ -1076,7 +1076,7 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
       <div class="widget" style="margin-top: 24px;">
         <div class="widget-header">
           <h3>Recent Activity</h3>
-          <uui-button look="secondary" compact>View All</uui-button>
+          <uui-button look="secondary" compact @click=${this._viewOrders}>View All</uui-button>
         </div>
         <div class="widget-body">
           <div class="activity-list">
@@ -1102,6 +1102,31 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
     const template = document.createElement('template');
     template.innerHTML = htmlString;
     return template.content.cloneNode(true);
+  }
+
+  _navigateTo(path) {
+    window.history.pushState({}, '', path);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }
+
+  _viewProducts() {
+    this._navigateTo('/umbraco/section/ecommerce/view/products');
+  }
+
+  _viewOrders() {
+    this._navigateTo('/umbraco/section/ecommerce/view/orders');
+  }
+
+  _viewCustomers() {
+    this._navigateTo('/umbraco/section/ecommerce/view/customers');
+  }
+
+  _viewDiscounts() {
+    this._navigateTo('/umbraco/section/ecommerce/view/discounts');
+  }
+
+  _viewReturns() {
+    this._navigateTo('/umbraco/section/ecommerce/view/returns');
   }
 }
 
