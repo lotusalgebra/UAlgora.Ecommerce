@@ -1,52 +1,58 @@
 @model Product
 
-<div class="group bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
+<div class="product-card group">
+    <!-- Image Container -->
     <a href="/products/@Model.Slug" class="block">
-        <div class="relative aspect-square bg-gray-100 overflow-hidden">
+        <div class="product-image relative aspect-[4/5] bg-gray-100 dark:bg-fashion-slate overflow-hidden">
             @if (!string.IsNullOrEmpty(Model.PrimaryImageUrl))
             {
-                <img src="@Model.PrimaryImageUrl" alt="@Model.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <img src="@Model.PrimaryImageUrl" alt="@Model.Name"
+                     class="w-full h-full object-cover">
             }
             else
             {
-                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200">
-                    <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-fashion-charcoal dark:to-fashion-slate">
+                    <svg class="w-20 h-20 text-gray-200 dark:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                     </svg>
                 </div>
             }
 
-            <!-- Badges -->
-            <div class="absolute top-2 left-2 flex flex-col gap-1">
-                @if (Model.IsOnSale)
+            <!-- Badges - Top Left -->
+            <div class="absolute top-3 left-3 flex flex-col gap-1.5">
+                @if (Model.IsOnSale && Model.DiscountPercentage.HasValue)
                 {
-                    <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                    <span class="bg-accent-500 text-white text-xs font-accent tracking-wide px-2.5 py-1">
                         -@Model.DiscountPercentage?.ToString("F0")%
+                    </span>
+                }
+                @if ((DateTime.UtcNow - Model.CreatedAt).TotalDays < 14)
+                {
+                    <span class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black text-xs font-accent tracking-wide px-2.5 py-1">
+                        NEW
                     </span>
                 }
                 @if (Model.IsFeatured)
                 {
-                    <span class="bg-primary-600 text-white text-xs font-bold px-2 py-1 rounded">Featured</span>
-                }
-                @if ((DateTime.UtcNow - Model.CreatedAt).TotalDays < 14)
-                {
-                    <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">New</span>
+                    <span class="bg-primary-500 text-white text-xs font-accent tracking-wide px-2.5 py-1">
+                        TRENDING
+                    </span>
                 }
             </div>
 
-            <!-- Quick Actions -->
-            <div class="absolute top-2 right-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <!-- Quick Actions - Hover Overlay -->
+            <div class="product-actions absolute inset-0 bg-black/10 flex items-center justify-center gap-3">
                 <button onclick="event.preventDefault(); addToWishlist('@Model.Id', '@Model.Name.Replace("'", "\\'")'); return false;"
-                        class="bg-white p-2 rounded-full shadow hover:bg-primary-50 hover:text-primary-600 transition">
+                        class="w-11 h-11 bg-white dark:bg-fashion-charcoal rounded-full shadow-lg flex items-center justify-center text-fashion-black dark:text-white hover:bg-accent-500 hover:text-white transition-all duration-200 transform hover:scale-110">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                     </svg>
                 </button>
                 <button onclick="event.preventDefault(); quickView('@Model.Id'); return false;"
-                        class="bg-white p-2 rounded-full shadow hover:bg-primary-50 hover:text-primary-600 transition">
+                        class="w-11 h-11 bg-white dark:bg-fashion-charcoal rounded-full shadow-lg flex items-center justify-center text-fashion-black dark:text-white hover:bg-primary-500 hover:text-white transition-all duration-200 transform hover:scale-110">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                     </svg>
                 </button>
             </div>
@@ -54,66 +60,91 @@
             <!-- Out of Stock Overlay -->
             @if (!Model.IsInStock)
             {
-                <div class="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span class="bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold">Out of Stock</span>
+                <div class="absolute inset-0 bg-white/80 dark:bg-fashion-black/80 flex items-center justify-center">
+                    <span class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-6 py-2 font-accent tracking-wider text-sm">
+                        SOLD OUT
+                    </span>
                 </div>
             }
         </div>
     </a>
 
-    <div class="p-4">
+    <!-- Product Info -->
+    <div class="pt-4 pb-2">
+        <!-- Brand Name (if available) -->
+        @if (!string.IsNullOrEmpty(Model.Brand))
+        {
+            <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">@Model.Brand</p>
+        }
+
+        <!-- Product Name -->
         <a href="/products/@Model.Slug">
-            <h3 class="font-medium text-gray-900 group-hover:text-primary-600 transition line-clamp-2 mb-2">@Model.Name</h3>
+            <h3 class="text-sm font-medium text-fashion-black dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition line-clamp-2 leading-tight">
+                @Model.Name
+            </h3>
         </a>
 
-        <!-- Rating -->
-        <div class="flex items-center gap-1 mb-2">
-            @for (int i = 1; i <= 5; i++)
-            {
-                <svg class="w-4 h-4 @(i <= 4 ? "text-yellow-400" : "text-gray-300")" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
-                </svg>
-            }
-            <span class="text-xs text-gray-500 ml-1">(24)</span>
-        </div>
-
         <!-- Price -->
-        <div class="flex items-center gap-2 mb-3">
-            <span class="text-lg font-bold text-gray-900">$@Model.CurrentPrice.ToString("F2")</span>
+        <div class="flex items-baseline gap-2 mt-2">
+            <span class="text-base font-semibold text-fashion-black dark:text-white">
+                $@Model.CurrentPrice.ToString("F2")
+            </span>
             @if (Model.SalePrice.HasValue)
             {
-                <span class="text-sm text-gray-500 line-through">$@Model.BasePrice.ToString("F2")</span>
+                <span class="text-sm text-gray-400 line-through">
+                    $@Model.BasePrice.ToString("F2")
+                </span>
             }
         </div>
 
-        <!-- Add to Cart Button -->
-        @if (Model.IsInStock)
-        {
-            <button onclick="CartManager.addItem({id: '@Model.Id', name: '@Model.Name.Replace("'", "\\'")', price: @Model.CurrentPrice, image: '@Model.PrimaryImageUrl'})"
-                    class="w-full bg-primary-600 text-white py-2 rounded-lg font-medium hover:bg-primary-700 transition flex items-center justify-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                Add to Cart
-            </button>
-        }
-        else
-        {
-            <button disabled class="w-full bg-gray-300 text-gray-500 py-2 rounded-lg font-medium cursor-not-allowed">
-                Out of Stock
-            </button>
-        }
+        <!-- Size Availability Dots (simulated for fashion) -->
+        <div class="flex items-center gap-1.5 mt-3">
+            <span class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-[10px] text-gray-500 dark:text-gray-400 hover:border-fashion-black dark:hover:border-white cursor-pointer transition">XS</span>
+            <span class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-[10px] text-gray-500 dark:text-gray-400 hover:border-fashion-black dark:hover:border-white cursor-pointer transition">S</span>
+            <span class="w-5 h-5 rounded-full border border-fashion-black dark:border-white bg-fashion-black dark:bg-white flex items-center justify-center text-[10px] text-white dark:text-fashion-black">M</span>
+            <span class="w-5 h-5 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center text-[10px] text-gray-500 dark:text-gray-400 hover:border-fashion-black dark:hover:border-white cursor-pointer transition">L</span>
+            <span class="w-5 h-5 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[10px] text-gray-300 dark:text-gray-600 cursor-not-allowed line-through">XL</span>
+        </div>
+
+        <!-- Add to Bag Button -->
+        <div class="mt-4">
+            @if (Model.IsInStock)
+            {
+                <button onclick="CartManager.addItem({id: '@Model.Id', name: '@Model.Name.Replace("'", "\\'")', price: @Model.CurrentPrice, image: '@Model.PrimaryImageUrl', size: 'M'})"
+                        class="w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-3 text-xs uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors duration-200">
+                    Add to Bag
+                </button>
+            }
+            else
+            {
+                <button disabled class="w-full bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 py-3 text-xs uppercase tracking-widest font-medium cursor-not-allowed">
+                    Sold Out
+                </button>
+            }
+        </div>
     </div>
 </div>
 
 <script>
 function addToWishlist(productId, productName) {
-    // TODO: Implement wishlist functionality
-    alert('Added to wishlist: ' + productName);
+    // Show wishlist notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-fashion-black text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3';
+    notification.innerHTML = `
+        <svg class="w-5 h-5 text-accent-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+        </svg>
+        <span class="font-medium">Added to wishlist</span>
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        notification.style.transition = 'opacity 0.3s';
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
 }
 
 function quickView(productId) {
-    // TODO: Implement quick view modal
     window.location.href = '/products/' + productId;
 }
 </script>

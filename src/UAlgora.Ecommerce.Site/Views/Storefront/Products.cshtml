@@ -1,207 +1,377 @@
 @model ProductListViewModel
 
-<div class="bg-white border-b">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+<!-- Hero Banner -->
+<section class="relative bg-fashion-black dark:bg-fashion-charcoal py-16 lg:py-24">
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-20 -right-20 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 -left-20 w-80 h-80 bg-accent-500/10 rounded-full blur-3xl"></div>
+    </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         <!-- Breadcrumb -->
-        <nav class="flex text-sm text-gray-500">
-            <a href="/" class="hover:text-primary-600">Home</a>
+        <nav class="flex text-sm text-gray-400 mb-6">
+            <a href="/" class="hover:text-white transition">Home</a>
             <span class="mx-2">/</span>
-            <a href="/products" class="hover:text-primary-600">Products</a>
+            <a href="/products" class="hover:text-white transition">Shop</a>
             @if (!string.IsNullOrEmpty(Model.CategoryName))
             {
                 <span class="mx-2">/</span>
-                <span class="text-gray-900">@Model.CategoryName</span>
+                <span class="text-white">@Model.CategoryName</span>
             }
         </nav>
-    </div>
-</div>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex flex-col lg:flex-row gap-8">
-        <!-- Filters Sidebar -->
-        <aside class="lg:w-64 flex-shrink-0">
-            <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-                <h3 class="font-semibold text-gray-900 mb-4">Filters</h3>
-
-                <!-- Categories -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-gray-700 mb-3">Categories</h4>
-                    <div class="space-y-2">
-                        <a href="/products" class="block text-sm @(Model.CategoryId == null ? "text-primary-600 font-medium" : "text-gray-600 hover:text-primary-600")">
-                            All Categories
-                        </a>
-                        @foreach (var category in Model.Categories.Where(c => c.ParentId == null).Take(10))
-                        {
-                            <a href="/products?category=@category.Id"
-                               class="block text-sm @(Model.CategoryId == category.Id ? "text-primary-600 font-medium" : "text-gray-600 hover:text-primary-600")">
-                                @category.Name
-                            </a>
-                        }
-                    </div>
-                </div>
-
-                <!-- Price Range -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-gray-700 mb-3">Price Range</h4>
-                    <form method="get" class="space-y-3">
-                        @if (Model.CategoryId.HasValue)
-                        {
-                            <input type="hidden" name="category" value="@Model.CategoryId" />
-                        }
-                        @if (!string.IsNullOrEmpty(Model.SearchTerm))
-                        {
-                            <input type="hidden" name="search" value="@Model.SearchTerm" />
-                        }
-                        <div class="flex gap-2">
-                            <input type="number" name="minPrice" value="@Model.MinPrice" placeholder="Min" class="w-full px-3 py-2 border rounded-lg text-sm">
-                            <input type="number" name="maxPrice" value="@Model.MaxPrice" placeholder="Max" class="w-full px-3 py-2 border rounded-lg text-sm">
-                        </div>
-                        <button type="submit" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition">
-                            Apply
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Availability -->
-                <div class="mb-6">
-                    <h4 class="font-medium text-gray-700 mb-3">Availability</h4>
-                    <div class="space-y-2">
-                        <label class="flex items-center">
-                            <input type="checkbox" @(Model.InStock == true ? "checked" : "")
-                                   onchange="applyFilter('inStock', this.checked)" class="rounded text-primary-600 mr-2">
-                            <span class="text-sm text-gray-600">In Stock</span>
-                        </label>
-                        <label class="flex items-center">
-                            <input type="checkbox" @(Model.OnSale == true ? "checked" : "")
-                                   onchange="applyFilter('sale', this.checked)" class="rounded text-primary-600 mr-2">
-                            <span class="text-sm text-gray-600">On Sale</span>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Clear Filters -->
-                <a href="/products" class="block text-center text-sm text-primary-600 hover:text-primary-700 font-medium">
-                    Clear All Filters
-                </a>
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+            <div>
+                <h1 class="font-display text-4xl lg:text-6xl font-bold text-white">
+                    @if (!string.IsNullOrEmpty(Model.CategoryName))
+                    {
+                        @Model.CategoryName<span class="text-primary-400">.</span>
+                    }
+                    else if (Model.OnSale == true)
+                    {
+                        <span>Sale<span class="text-accent-400">.</span></span>
+                    }
+                    else
+                    {
+                        <span>All Products<span class="text-primary-400">.</span></span>
+                    }
+                </h1>
+                <p class="text-gray-400 mt-2 text-lg">@Model.TotalCount pieces curated for you</p>
             </div>
-        </aside>
-
-        <!-- Products Grid -->
-        <main class="flex-1">
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900">
-                        @(Model.CategoryName ?? (Model.OnSale == true ? "Deals & Offers" : "All Products"))
-                    </h1>
-                    <p class="text-gray-600">@Model.TotalCount products found</p>
+            @if (!string.IsNullOrEmpty(Model.SearchTerm))
+            {
+                <div class="bg-white/10 backdrop-blur px-4 py-2 rounded-lg inline-flex items-center gap-2">
+                    <span class="text-gray-300">Results for:</span>
+                    <span class="text-white font-medium">"@Model.SearchTerm"</span>
+                    <a href="/products" class="ml-2 text-accent-400 hover:text-accent-300">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </a>
                 </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Horizontal Sticky Filter Bar -->
+<section class="sticky top-16 z-30 bg-white dark:bg-fashion-charcoal border-b border-gray-100 dark:border-fashion-slate shadow-sm" x-data="{ showFilters: false, showSort: false }">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between py-4 gap-4">
+            <!-- Filter Toggle Button -->
+            <button @@click="showFilters = !showFilters"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-fashion-slate rounded-full text-sm font-medium text-fashion-black dark:text-white hover:border-fashion-black dark:hover:border-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                </svg>
+                <span>Filters</span>
                 @{
-                    var sortOptions = new[] {
-                        ("", "Sort by: Default"),
-                        ("newest", "Newest First"),
-                        ("price-asc", "Price: Low to High"),
-                        ("price-desc", "Price: High to Low"),
-                        ("name", "Name: A to Z"),
-                        ("rating", "Top Rated")
-                    };
+                    var activeFilters = 0;
+                    if (Model.CategoryId.HasValue) activeFilters++;
+                    if (Model.MinPrice.HasValue || Model.MaxPrice.HasValue) activeFilters++;
+                    if (Model.InStock == true) activeFilters++;
+                    if (Model.OnSale == true) activeFilters++;
                 }
-                <div class="flex items-center gap-4">
-                    <select onchange="window.location.href=updateQueryParam('sort', this.value)"
-                            class="px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                        @foreach (var (value, text) in sortOptions)
+                @if (activeFilters > 0)
+                {
+                    <span class="bg-primary-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">@activeFilters</span>
+                }
+            </button>
+
+            <!-- Quick Category Pills -->
+            <div class="hidden lg:flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                <a href="/products"
+                   class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition @(Model.CategoryId == null ? "bg-fashion-black dark:bg-white text-white dark:text-fashion-black" : "bg-gray-100 dark:bg-fashion-slate text-fashion-black dark:text-white hover:bg-gray-200 dark:hover:bg-fashion-black")">
+                    All
+                </a>
+                @foreach (var category in Model.Categories.Where(c => c.ParentId == null).Take(6))
+                {
+                    <a href="/products?category=@category.Id"
+                       class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition @(Model.CategoryId == category.Id ? "bg-fashion-black dark:bg-white text-white dark:text-fashion-black" : "bg-gray-100 dark:bg-fashion-slate text-fashion-black dark:text-white hover:bg-gray-200 dark:hover:bg-fashion-black")">
+                        @category.Name
+                    </a>
+                }
+            </div>
+
+            <!-- Sort Dropdown -->
+            <div class="relative">
+                <button @@click="showSort = !showSort"
+                        class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 dark:border-fashion-slate rounded-full text-sm font-medium text-fashion-black dark:text-white hover:border-fashion-black dark:hover:border-white transition">
+                    <span class="hidden sm:inline">Sort:</span>
+                    <span class="font-medium">
+                        @{
+                            var sortLabels = new Dictionary<string, string> {
+                                { "", "Featured" },
+                                { "newest", "Newest" },
+                                { "price-asc", "Price: Low-High" },
+                                { "price-desc", "Price: High-Low" },
+                                { "name", "A-Z" },
+                                { "rating", "Top Rated" }
+                            };
+                        }
+                        @sortLabels.GetValueOrDefault(Model.SortBy ?? "", "Featured")
+                    </span>
+                    <svg class="w-4 h-4 transition" :class="showSort ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+
+                <!-- Sort Dropdown Menu -->
+                <div x-show="showSort"
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-150"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 translate-y-1"
+                     @@click.outside="showSort = false"
+                     class="absolute right-0 mt-2 w-48 bg-white dark:bg-fashion-charcoal rounded-lg shadow-xl border border-gray-100 dark:border-fashion-slate py-2 z-50">
+                    @foreach (var (value, text) in new[] { ("", "Featured"), ("newest", "Newest"), ("price-asc", "Price: Low to High"), ("price-desc", "Price: High to Low"), ("name", "Name: A-Z"), ("rating", "Top Rated") })
+                    {
+                        <a href="@updateSortUrl(value)"
+                           class="block px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-fashion-slate transition @((string.IsNullOrEmpty(value) && string.IsNullOrEmpty(Model.SortBy)) || value == Model.SortBy ? "text-primary-600 font-medium" : "text-gray-700 dark:text-gray-300")">
+                            @text
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Expandable Filter Panel -->
+        <div x-show="showFilters"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-2"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-2"
+             class="border-t border-gray-100 dark:border-fashion-slate py-6">
+            <form method="get" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
+                @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                {
+                    <input type="hidden" name="search" value="@Model.SearchTerm" />
+                }
+
+                <!-- Category Filter (Mobile) -->
+                <div class="col-span-2 md:col-span-1 lg:hidden">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Category</label>
+                    <select name="category" class="w-full px-4 py-2.5 border border-gray-200 dark:border-fashion-slate rounded-lg bg-white dark:bg-fashion-slate text-sm text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">All Categories</option>
+                        @foreach (var category in Model.Categories.Where(c => c.ParentId == null))
                         {
-                            if ((string.IsNullOrEmpty(value) && string.IsNullOrEmpty(Model.SortBy)) || value == Model.SortBy)
+                            @if (Model.CategoryId == category.Id)
                             {
-                                <option value="@value" selected>@text</option>
+                                <option value="@category.Id" selected>@category.Name</option>
                             }
                             else
                             {
-                                <option value="@value">@text</option>
+                                <option value="@category.Id">@category.Name</option>
                             }
                         }
                     </select>
                 </div>
-            </div>
 
-            <!-- Search Results Message -->
-            @if (!string.IsNullOrEmpty(Model.SearchTerm))
-            {
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <p class="text-blue-800">
-                        Showing results for "<strong>@Model.SearchTerm</strong>"
-                        <a href="/products" class="ml-2 text-blue-600 hover:underline">Clear search</a>
-                    </p>
-                </div>
-            }
-
-            @if (Model.Products.Any())
-            {
-                <!-- Products Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    @foreach (var product in Model.Products)
-                    {
-                        <partial name="_ProductCard" model="product" />
-                    }
+                <!-- Price Range -->
+                <div class="col-span-2">
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Price Range</label>
+                    <div class="flex gap-2">
+                        <div class="relative flex-1">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                            <input type="number" name="minPrice" value="@Model.MinPrice" placeholder="Min"
+                                   class="w-full pl-7 pr-3 py-2.5 border border-gray-200 dark:border-fashion-slate rounded-lg bg-white dark:bg-fashion-slate text-sm text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                        <span class="self-center text-gray-400">—</span>
+                        <div class="relative flex-1">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+                            <input type="number" name="maxPrice" value="@Model.MaxPrice" placeholder="Max"
+                                   class="w-full pl-7 pr-3 py-2.5 border border-gray-200 dark:border-fashion-slate rounded-lg bg-white dark:bg-fashion-slate text-sm text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Pagination -->
-                @if (Model.TotalPages > 1)
-                {
-                    <nav class="flex justify-center mt-12">
-                        <ul class="flex items-center gap-1">
-                            @if (Model.Page > 1)
-                            {
-                                <li>
-                                    <a href="@updatePageUrl(Model.Page - 1)" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-                                        </svg>
-                                    </a>
-                                </li>
-                            }
+                <!-- Size Filter (Fashion-specific) -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Size</label>
+                    <div class="flex flex-wrap gap-1.5">
+                        @foreach (var size in new[] { "XS", "S", "M", "L", "XL" })
+                        {
+                            <button type="button"
+                                    class="w-9 h-9 rounded-full border border-gray-200 dark:border-fashion-slate text-xs font-medium text-fashion-black dark:text-white hover:border-fashion-black dark:hover:border-white transition">
+                                @size
+                            </button>
+                        }
+                    </div>
+                </div>
 
-                            @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
-                            {
-                                <li>
-                                    <a href="@updatePageUrl(i)"
-                                       class="px-4 py-2 rounded-lg transition @(i == Model.Page ? "bg-primary-600 text-white" : "border hover:bg-gray-50")">
-                                        @i
-                                    </a>
-                                </li>
-                            }
+                <!-- Color Filter -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Color</label>
+                    <div class="flex flex-wrap gap-1.5">
+                        @foreach (var (color, hex) in new[] { ("Black", "#000"), ("White", "#fff"), ("Red", "#ef4444"), ("Blue", "#3b82f6"), ("Pink", "#ec4899") })
+                        {
+                            <button type="button"
+                                    class="w-7 h-7 rounded-full border-2 border-gray-200 dark:border-fashion-slate hover:border-fashion-black dark:hover:border-white transition"
+                                    style="background-color: @hex"
+                                    title="@color">
+                            </button>
+                        }
+                    </div>
+                </div>
 
-                            @if (Model.Page < Model.TotalPages)
-                            {
-                                <li>
-                                    <a href="@updatePageUrl(Model.Page + 1)" class="px-4 py-2 border rounded-lg hover:bg-gray-50 transition">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                                        </svg>
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </nav>
-                }
-            }
-            else
-            {
-                <!-- No Products -->
-                <div class="text-center py-16">
-                    <svg class="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
-                    <p class="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
-                    <a href="/products" class="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-primary-700 transition">
-                        View All Products
+                <!-- Toggle Filters -->
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Options</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="inStock" value="true" @(Model.InStock == true ? "checked" : "")
+                                   class="w-4 h-4 rounded border-gray-300 dark:border-fashion-slate text-primary-500 focus:ring-primary-500">
+                            <span class="text-sm text-fashion-black dark:text-white">In Stock</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="sale" value="true" @(Model.OnSale == true ? "checked" : "")
+                                   class="w-4 h-4 rounded border-gray-300 dark:border-fashion-slate text-accent-500 focus:ring-accent-500">
+                            <span class="text-sm text-fashion-black dark:text-white">On Sale</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-span-2 md:col-span-4 lg:col-span-1 flex items-end gap-2">
+                    <button type="submit"
+                            class="flex-1 bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-2.5 rounded-lg text-sm font-medium uppercase tracking-wider hover:bg-primary-600 dark:hover:bg-primary-400 transition">
+                        Apply
+                    </button>
+                    <a href="/products"
+                       class="px-4 py-2.5 border border-gray-200 dark:border-fashion-slate rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-fashion-black dark:hover:border-white hover:text-fashion-black dark:hover:text-white transition">
+                        Clear
                     </a>
                 </div>
-            }
-        </main>
+            </form>
+        </div>
     </div>
-</div>
+</section>
+
+<!-- Products Grid -->
+<section class="py-12 bg-gray-50 dark:bg-fashion-slate min-h-[60vh]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        @if (Model.Products.Any())
+        {
+            <!-- Product Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+                @foreach (var product in Model.Products)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            </div>
+
+            <!-- Pagination -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav class="flex justify-center items-center mt-16 gap-2">
+                    <!-- Previous -->
+                    @if (Model.Page > 1)
+                    {
+                        <a href="@updatePageUrl(Model.Page - 1)"
+                           class="w-10 h-10 border border-gray-200 dark:border-fashion-slate rounded-full flex items-center justify-center text-fashion-black dark:text-white hover:border-fashion-black dark:hover:border-white transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </a>
+                    }
+
+                    <!-- Page Numbers -->
+                    <div class="flex items-center gap-1">
+                        @{
+                            var startPage = Math.Max(1, Model.Page - 2);
+                            var endPage = Math.Min(Model.TotalPages, Model.Page + 2);
+                        }
+
+                        @if (startPage > 1)
+                        {
+                            <a href="@updatePageUrl(1)" class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-fashion-black dark:text-white hover:bg-gray-100 dark:hover:bg-fashion-black transition">1</a>
+                            @if (startPage > 2)
+                            {
+                                <span class="text-gray-400 px-2">...</span>
+                            }
+                        }
+
+                        @for (int i = startPage; i <= endPage; i++)
+                        {
+                            <a href="@updatePageUrl(i)"
+                               class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium transition @(i == Model.Page ? "bg-fashion-black dark:bg-white text-white dark:text-fashion-black" : "text-fashion-black dark:text-white hover:bg-gray-100 dark:hover:bg-fashion-black")">
+                                @i
+                            </a>
+                        }
+
+                        @if (endPage < Model.TotalPages)
+                        {
+                            @if (endPage < Model.TotalPages - 1)
+                            {
+                                <span class="text-gray-400 px-2">...</span>
+                            }
+                            <a href="@updatePageUrl(Model.TotalPages)" class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-fashion-black dark:text-white hover:bg-gray-100 dark:hover:bg-fashion-black transition">@Model.TotalPages</a>
+                        }
+                    </div>
+
+                    <!-- Next -->
+                    @if (Model.Page < Model.TotalPages)
+                    {
+                        <a href="@updatePageUrl(Model.Page + 1)"
+                           class="w-10 h-10 border border-gray-200 dark:border-fashion-slate rounded-full flex items-center justify-center text-fashion-black dark:text-white hover:border-fashion-black dark:hover:border-white transition">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    }
+                </nav>
+
+                <!-- Page Info -->
+                <p class="text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+                    Showing @((Model.Page - 1) * Model.PageSize + 1)–@Math.Min(Model.Page * Model.PageSize, Model.TotalCount) of @Model.TotalCount products
+                </p>
+            }
+        }
+        else
+        {
+            <!-- No Products Found -->
+            <div class="text-center py-20">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gray-100 dark:bg-fashion-charcoal rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </div>
+                <h3 class="font-display text-2xl font-bold text-fashion-black dark:text-white mb-2">No products found</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">
+                    We couldn't find any products matching your criteria. Try adjusting your filters or browse all products.
+                </p>
+                <a href="/products"
+                   class="inline-block bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 transition">
+                    View All Products
+                </a>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Recently Viewed (placeholder) -->
+<section class="py-16 bg-white dark:bg-fashion-charcoal border-t border-gray-100 dark:border-fashion-slate">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-end mb-8">
+            <div>
+                <span class="text-primary-500 font-accent text-sm tracking-[0.3em] uppercase">Your History</span>
+                <h2 class="font-display text-2xl lg:text-3xl font-bold text-fashion-black dark:text-white mt-1">
+                    Recently Viewed<span class="text-primary-500">.</span>
+                </h2>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" x-data="{ items: [] }">
+            <template x-if="items.length === 0">
+                <p class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
+                    Your recently viewed items will appear here.
+                </p>
+            </template>
+        </div>
+    </div>
+</section>
 
 @functions {
     string updatePageUrl(int page)
@@ -217,9 +387,32 @@
         query.Add($"page={page}");
         return "/products?" + string.Join("&", query);
     }
+
+    string updateSortUrl(string sort)
+    {
+        var query = new List<string>();
+        if (Model.CategoryId.HasValue) query.Add($"category={Model.CategoryId}");
+        if (!string.IsNullOrEmpty(Model.SearchTerm)) query.Add($"search={Model.SearchTerm}");
+        if (!string.IsNullOrEmpty(sort)) query.Add($"sort={sort}");
+        if (Model.MinPrice.HasValue) query.Add($"minPrice={Model.MinPrice}");
+        if (Model.MaxPrice.HasValue) query.Add($"maxPrice={Model.MaxPrice}");
+        if (Model.OnSale == true) query.Add("sale=true");
+        if (Model.InStock == true) query.Add("inStock=true");
+        return "/products" + (query.Any() ? "?" + string.Join("&", query) : "");
+    }
 }
 
 @section Scripts {
+<style>
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+</style>
+
 <script>
 function updateQueryParam(key, value) {
     const url = new URL(window.location.href);

@@ -1,116 +1,320 @@
 @model Order
+@using Microsoft.AspNetCore.Html
 
-<div class="bg-white border-b">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <nav class="flex text-sm text-gray-500">
-            <a href="/" class="hover:text-primary-600">Home</a>
-            <span class="mx-2">/</span>
-            <a href="/account" class="hover:text-primary-600">Account</a>
-            <span class="mx-2">/</span>
-            <a href="/account/orders" class="hover:text-primary-600">Orders</a>
-            <span class="mx-2">/</span>
-            <span class="text-gray-900">@Model.OrderNumber</span>
-        </nav>
-    </div>
-</div>
-
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="flex justify-between items-start mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-gray-900">Order @Model.OrderNumber</h1>
-            <p class="text-gray-600 mt-1">Placed on @Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
-        </div>
-        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium @GetStatusColor(Model.Status)">
-            @Model.Status
-        </span>
-    </div>
-
-    <div class="grid lg:grid-cols-3 gap-8">
-        <!-- Order Items -->
-        <div class="lg:col-span-2">
-            <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                <div class="p-6 border-b">
-                    <h2 class="text-lg font-semibold text-gray-900">Order Items</h2>
+<div class="min-h-screen bg-gray-50 dark:bg-fashion-charcoal">
+    <!-- Hero Header -->
+    <div class="bg-gradient-to-br from-fashion-black via-fashion-charcoal to-fashion-slate dark:from-fashion-black dark:to-fashion-charcoal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <nav class="flex text-sm text-gray-400 mb-4">
+                <a href="/" class="hover:text-white transition">Home</a>
+                <span class="mx-2">/</span>
+                <a href="/account" class="hover:text-white transition">Account</a>
+                <span class="mx-2">/</span>
+                <a href="/account/orders" class="hover:text-white transition">Orders</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">@Model.OrderNumber</span>
+            </nav>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="font-display text-3xl lg:text-4xl font-bold text-white">
+                        Order @Model.OrderNumber<span class="text-primary-400">.</span>
+                    </h1>
+                    <p class="text-gray-400 mt-1">Placed on @Model.CreatedAt.ToString("MMMM dd, yyyy 'at' h:mm tt")</p>
                 </div>
-                <div class="divide-y">
-                    @foreach (var line in Model.Lines)
+                <span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium uppercase tracking-wider @GetStatusStyle(Model.Status)">
+                    @GetStatusIcon(Model.Status)
+                    @Model.Status
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Order Items & Info -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Order Status Timeline -->
+                <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800">
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="font-display text-lg font-bold text-fashion-black dark:text-white">Order Status</h2>
+                    </div>
+                    <div class="p-5">
+                        <div class="relative">
+                            <!-- Progress Line -->
+                            <div class="absolute left-5 top-5 bottom-5 w-0.5 bg-gray-200 dark:bg-gray-700">
+                                <div class="w-full bg-green-500 transition-all" style="height: @GetProgressHeight(Model.Status)"></div>
+                            </div>
+
+                            <!-- Timeline Steps -->
+                            <div class="space-y-8">
+                                <!-- Confirmed -->
+                                <div class="relative flex items-start gap-4">
+                                    <div class="w-10 h-10 flex-shrink-0 @(IsStepComplete(Model.Status, OrderStatus.Pending) ? "bg-green-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400") rounded-full flex items-center justify-center z-10">
+                                        @if (IsStepComplete(Model.Status, OrderStatus.Pending))
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-sm font-bold">1</span>
+                                        }
+                                    </div>
+                                    <div class="pt-1.5">
+                                        <p class="font-medium text-fashion-black dark:text-white">Order Confirmed</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Your order has been placed successfully</p>
+                                        @if (IsStepComplete(Model.Status, OrderStatus.Pending))
+                                        {
+                                            <p class="text-xs text-gray-400 mt-1">@Model.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")</p>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Processing -->
+                                <div class="relative flex items-start gap-4">
+                                    <div class="w-10 h-10 flex-shrink-0 @(IsStepComplete(Model.Status, OrderStatus.Processing) ? "bg-green-500 text-white" : Model.Status == OrderStatus.Processing ? "bg-primary-500 text-white animate-pulse" : "bg-gray-200 dark:bg-gray-700 text-gray-400") rounded-full flex items-center justify-center z-10">
+                                        @if (IsStepComplete(Model.Status, OrderStatus.Processing))
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                            </svg>
+                                        }
+                                    </div>
+                                    <div class="pt-1.5">
+                                        <p class="font-medium @(Model.Status == OrderStatus.Processing ? "text-primary-600 dark:text-primary-400" : "text-fashion-black dark:text-white")">Processing</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">We're preparing your order for shipment</p>
+                                    </div>
+                                </div>
+
+                                <!-- Shipped -->
+                                <div class="relative flex items-start gap-4">
+                                    <div class="w-10 h-10 flex-shrink-0 @(IsStepComplete(Model.Status, OrderStatus.Shipped) ? "bg-green-500 text-white" : Model.Status == OrderStatus.Shipped ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400") rounded-full flex items-center justify-center z-10">
+                                        @if (IsStepComplete(Model.Status, OrderStatus.Shipped))
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                                            </svg>
+                                        }
+                                    </div>
+                                    <div class="pt-1.5">
+                                        <p class="font-medium @(Model.Status == OrderStatus.Shipped ? "text-blue-600 dark:text-blue-400" : "text-fashion-black dark:text-white")">Shipped</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Your package is on its way</p>
+                                        @if (Model.Status == OrderStatus.Shipped || Model.Status == OrderStatus.Delivered)
+                                        {
+                                            <p class="text-xs text-gray-400 mt-1">Tracking: #TRK123456789</p>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Delivered -->
+                                <div class="relative flex items-start gap-4">
+                                    <div class="w-10 h-10 flex-shrink-0 @(Model.Status == OrderStatus.Delivered ? "bg-green-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400") rounded-full flex items-center justify-center z-10">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                        </svg>
+                                    </div>
+                                    <div class="pt-1.5">
+                                        <p class="font-medium @(Model.Status == OrderStatus.Delivered ? "text-green-600 dark:text-green-400" : "text-fashion-black dark:text-white")">Delivered</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Package has been delivered</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800">
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <h2 class="font-display text-lg font-bold text-fashion-black dark:text-white">Order Items</h2>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">@Model.Lines.Count item(s)</span>
+                    </div>
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach (var line in Model.Lines)
+                        {
+                            <div class="p-5 flex gap-4">
+                                <!-- Product Image -->
+                                <div class="flex-shrink-0 w-24 h-28 bg-gray-100 dark:bg-fashion-charcoal overflow-hidden group">
+                                    <img src="@(line.ImageUrl ?? "https://placehold.co/96x112/e2e8f0/64748b?text=Product")"
+                                         alt="@line.ProductName"
+                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                </div>
+
+                                <!-- Product Info -->
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-medium text-fashion-black dark:text-white">@line.ProductName</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">SKU: @line.Sku</p>
+                                    @if (!string.IsNullOrEmpty(line.VariantName))
+                                    {
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">Size: @line.VariantName</p>
+                                    }
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Qty: @line.Quantity</p>
+                                </div>
+
+                                <!-- Price -->
+                                <div class="text-right flex-shrink-0">
+                                    <p class="font-display text-lg font-bold text-fashion-black dark:text-white">$@line.LineTotal.ToString("F2")</p>
+                                    <p class="text-sm text-gray-400">$@line.UnitPrice.ToString("F2") each</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Addresses -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Shipping Address -->
+                    @if (Model.ShippingAddress != null)
                     {
-                        <div class="p-6 flex items-center gap-4">
-                            <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                <img src="@(line.ImageUrl ?? "https://placehold.co/80x80/e2e8f0/64748b?text=Product")" alt="@line.ProductName" class="w-full h-full object-cover">
+                        <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 p-5">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="font-display font-bold text-fashion-black dark:text-white">Shipping Address</h3>
                             </div>
-                            <div class="flex-1">
-                                <h3 class="font-medium text-gray-900">@line.ProductName</h3>
-                                <p class="text-sm text-gray-500">SKU: @line.Sku</p>
-                                <p class="text-sm text-gray-500">Qty: @line.Quantity</p>
+                            <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                <p class="font-medium text-fashion-black dark:text-white">@Model.ShippingAddress.FirstName @Model.ShippingAddress.LastName</p>
+                                <p>@Model.ShippingAddress.AddressLine1</p>
+                                @if (!string.IsNullOrEmpty(Model.ShippingAddress.AddressLine2))
+                                {
+                                    <p>@Model.ShippingAddress.AddressLine2</p>
+                                }
+                                <p>@Model.ShippingAddress.City, @Model.ShippingAddress.StateProvince @Model.ShippingAddress.PostalCode</p>
+                                <p>@Model.ShippingAddress.Country</p>
                             </div>
-                            <div class="text-right">
-                                <p class="font-semibold text-gray-900">$@line.LineTotal.ToString("F2")</p>
-                                <p class="text-sm text-gray-500">$@line.UnitPrice.ToString("F2") each</p>
+                        </div>
+                    }
+
+                    <!-- Billing Address -->
+                    @if (Model.BillingAddress != null)
+                    {
+                        <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 p-5">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-10 h-10 bg-accent-100 dark:bg-accent-900/30 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-accent-600 dark:text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="font-display font-bold text-fashion-black dark:text-white">Billing Address</h3>
+                            </div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                <p class="font-medium text-fashion-black dark:text-white">@Model.BillingAddress.FirstName @Model.BillingAddress.LastName</p>
+                                <p>@Model.BillingAddress.AddressLine1</p>
+                                @if (!string.IsNullOrEmpty(Model.BillingAddress.AddressLine2))
+                                {
+                                    <p>@Model.BillingAddress.AddressLine2</p>
+                                }
+                                <p>@Model.BillingAddress.City, @Model.BillingAddress.StateProvince @Model.BillingAddress.PostalCode</p>
+                                <p>@Model.BillingAddress.Country</p>
                             </div>
                         </div>
                     }
                 </div>
             </div>
 
-            <!-- Shipping Info -->
-            @if (Model.ShippingAddress != null)
-            {
-                <div class="bg-white rounded-xl shadow-sm p-6 mt-6">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-4">Shipping Address</h2>
-                    <p class="text-gray-600">
-                        @Model.ShippingAddress.FirstName @Model.ShippingAddress.LastName<br>
-                        @Model.ShippingAddress.AddressLine1<br>
-                        @if (!string.IsNullOrEmpty(Model.ShippingAddress.AddressLine2))
-                        {
-                            @Model.ShippingAddress.AddressLine2<br>
-                        }
-                        @Model.ShippingAddress.City, @Model.ShippingAddress.StateProvince @Model.ShippingAddress.PostalCode<br>
-                        @Model.ShippingAddress.Country
-                    </p>
-                </div>
-            }
-        </div>
-
-        <!-- Order Summary -->
-        <div class="lg:col-span-1">
-            <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h2>
-                <div class="space-y-3">
-                    <div class="flex justify-between text-gray-600">
-                        <span>Subtotal</span>
-                        <span>$@Model.Subtotal.ToString("F2")</span>
+            <!-- Order Summary Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 sticky top-24">
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="font-display text-lg font-bold text-fashion-black dark:text-white">Order Summary</h2>
                     </div>
-                    <div class="flex justify-between text-gray-600">
-                        <span>Shipping</span>
-                        <span>$@Model.ShippingTotal.ToString("F2")</span>
-                    </div>
-                    <div class="flex justify-between text-gray-600">
-                        <span>Tax</span>
-                        <span>$@Model.TaxTotal.ToString("F2")</span>
-                    </div>
-                    @if (Model.DiscountTotal > 0)
-                    {
-                        <div class="flex justify-between text-green-600">
-                            <span>Discount</span>
-                            <span>-$@Model.DiscountTotal.ToString("F2")</span>
+                    <div class="p-5">
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>Subtotal</span>
+                                <span class="text-fashion-black dark:text-white">$@Model.Subtotal.ToString("F2")</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>Shipping</span>
+                                <span class="text-fashion-black dark:text-white">$@Model.ShippingTotal.ToString("F2")</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>Tax</span>
+                                <span class="text-fashion-black dark:text-white">$@Model.TaxTotal.ToString("F2")</span>
+                            </div>
+                            @if (Model.DiscountTotal > 0)
+                            {
+                                <div class="flex justify-between text-green-600 dark:text-green-400">
+                                    <span>Discount</span>
+                                    <span>-$@Model.DiscountTotal.ToString("F2")</span>
+                                </div>
+                            }
                         </div>
-                    }
-                </div>
-                <div class="border-t mt-4 pt-4">
-                    <div class="flex justify-between text-lg font-semibold">
-                        <span>Total</span>
-                        <span>$@Model.GrandTotal.ToString("F2")</span>
-                    </div>
-                </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
+                            <div class="flex justify-between">
+                                <span class="font-display text-lg font-bold text-fashion-black dark:text-white">Total</span>
+                                <span class="font-display text-xl font-bold text-fashion-black dark:text-white">$@Model.GrandTotal.ToString("F2")</span>
+                            </div>
+                        </div>
 
-                <div class="mt-6 space-y-3">
-                    <a href="#" class="block w-full text-center border border-primary-600 text-primary-600 py-2 rounded-lg font-medium hover:bg-primary-50 transition">
-                        Track Order
-                    </a>
-                    <a href="/contact" class="block w-full text-center border border-gray-300 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-50 transition">
-                        Need Help?
-                    </a>
+                        <!-- Payment Method -->
+                        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Payment Method</p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-7 bg-gray-100 dark:bg-fashion-charcoal rounded flex items-center justify-center">
+                                    <svg class="w-6 h-4 text-gray-600" viewBox="0 0 24 16" fill="currentColor">
+                                        <rect width="24" height="16" rx="2" fill="currentColor" opacity="0.1"/>
+                                        <text x="12" y="11" text-anchor="middle" font-size="6" fill="currentColor">VISA</text>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-fashion-black dark:text-white">Visa ending in 4242</p>
+                                    <p class="text-xs text-gray-400">Paid on @Model.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-6 space-y-3">
+                            @if (Model.Status == OrderStatus.Shipped)
+                            {
+                                <a href="#" class="flex items-center justify-center gap-2 w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-3 text-xs uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    </svg>
+                                    Track Package
+                                </a>
+                            }
+                            @if (Model.Status == OrderStatus.Delivered)
+                            {
+                                <a href="#" class="flex items-center justify-center gap-2 w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-3 text-xs uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    Buy Again
+                                </a>
+                            }
+                            <a href="/contact" class="flex items-center justify-center gap-2 w-full border-2 border-fashion-black dark:border-white text-fashion-black dark:text-white py-3 text-xs uppercase tracking-widest font-medium hover:bg-fashion-black dark:hover:bg-white hover:text-white dark:hover:text-fashion-black transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                Need Help?
+                            </a>
+                            <a href="/account/orders" class="flex items-center justify-center gap-2 w-full text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                </svg>
+                                Back to Orders
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -118,16 +322,50 @@
 </div>
 
 @functions {
-    string GetStatusColor(OrderStatus status)
+    string GetStatusStyle(OrderStatus status)
     {
         return status switch
         {
-            OrderStatus.Pending => "bg-yellow-100 text-yellow-800",
-            OrderStatus.Processing => "bg-blue-100 text-blue-800",
-            OrderStatus.Shipped => "bg-purple-100 text-purple-800",
-            OrderStatus.Delivered => "bg-green-100 text-green-800",
-            OrderStatus.Cancelled => "bg-red-100 text-red-800",
-            _ => "bg-gray-100 text-gray-800"
+            OrderStatus.Pending => "bg-gold-light text-gold-dark",
+            OrderStatus.Processing => "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400",
+            OrderStatus.Shipped => "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+            OrderStatus.Delivered => "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+            OrderStatus.Cancelled => "bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400",
+            _ => "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+        };
+    }
+
+    IHtmlContent GetStatusIcon(OrderStatus status)
+    {
+        var iconPath = status switch
+        {
+            OrderStatus.Pending => "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+            OrderStatus.Processing => "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15",
+            OrderStatus.Shipped => "M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4",
+            OrderStatus.Delivered => "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+            OrderStatus.Cancelled => "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z",
+            _ => "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        };
+        return new HtmlString($"<svg class=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"{iconPath}\"/></svg>");
+    }
+
+    bool IsStepComplete(OrderStatus current, OrderStatus step)
+    {
+        var order = new[] { OrderStatus.Pending, OrderStatus.Processing, OrderStatus.Shipped, OrderStatus.Delivered };
+        var currentIndex = Array.IndexOf(order, current);
+        var stepIndex = Array.IndexOf(order, step);
+        return currentIndex > stepIndex || (current == OrderStatus.Delivered && step == OrderStatus.Delivered);
+    }
+
+    string GetProgressHeight(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "0%",
+            OrderStatus.Processing => "33%",
+            OrderStatus.Shipped => "66%",
+            OrderStatus.Delivered => "100%",
+            _ => "0%"
         };
     }
 }

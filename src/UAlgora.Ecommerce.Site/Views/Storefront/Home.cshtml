@@ -1,100 +1,113 @@
 @model HomeViewModel
 
-<!-- Hero Carousel -->
-<section class="relative" x-data="heroCarousel()">
-    <div class="overflow-hidden">
-        <div class="flex transition-transform duration-700 ease-out" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
-            <!-- Slide 1 -->
-            <div class="w-full flex-shrink-0 relative bg-gradient-to-r from-primary-700 via-primary-600 to-indigo-500">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                    <div class="grid lg:grid-cols-2 gap-8 items-center">
-                        <div class="text-white">
-                            <span class="inline-block bg-white/20 backdrop-blur px-4 py-1.5 rounded-full text-sm font-medium mb-4">
-                                New Collection 2024
+<!-- Full-Screen Split Hero -->
+<section class="relative min-h-[100vh] lg:min-h-screen" x-data="heroCarousel()">
+    <div class="overflow-hidden h-full">
+        <div class="flex transition-transform duration-1000 ease-out h-full" :style="{ transform: `translateX(-${currentSlide * 100}%)` }">
+            <!-- Slide 1 - Bold Fashion Statement -->
+            <div class="w-full flex-shrink-0 min-h-[100vh] lg:min-h-screen">
+                <div class="grid lg:grid-cols-5 h-full">
+                    <!-- Image Side (60%) -->
+                    <div class="lg:col-span-3 relative h-[50vh] lg:h-full">
+                        <img src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&h=1600&fit=crop"
+                             alt="Fashion Model"
+                             class="w-full h-full object-cover">
+                        <!-- Overlay Text on Image -->
+                        <div class="absolute bottom-8 left-8 lg:bottom-16 lg:left-16">
+                            <span class="font-accent text-7xl lg:text-[12rem] font-bold text-white/20 leading-none tracking-tight">
+                                SS26
                             </span>
-                            <h1 class="text-4xl lg:text-6xl font-bold leading-tight mb-6">
-                                Flat <span class="text-yellow-300">30% Off</span><br>
-                                Fresh & Healthy Products
+                        </div>
+                    </div>
+                    <!-- Text Side (40%) -->
+                    <div class="lg:col-span-2 bg-fashion-black dark:bg-fashion-charcoal flex items-center justify-center p-8 lg:p-16">
+                        <div class="text-white max-w-md">
+                            <span class="inline-block text-primary-400 font-accent text-sm tracking-[0.3em] uppercase mb-4">
+                                New Collection
+                            </span>
+                            <h1 class="font-display text-4xl lg:text-6xl font-bold leading-[1.1] mb-6">
+                                Bold.<br>
+                                <span class="text-primary-400">Fearless.</span><br>
+                                Fashion.
                             </h1>
-                            <p class="text-lg text-primary-100 mb-8 max-w-lg">
-                                Discover our premium collection of products. Quality guaranteed with fast delivery to your doorstep.
+                            <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                                Discover the Spring/Summer 2026 collection. Where confidence meets style.
                             </p>
                             <div class="flex flex-wrap gap-4">
-                                <a href="/products" class="bg-white text-primary-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg inline-flex items-center gap-2">
-                                    Shop Now
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                                    </svg>
+                                <a href="/products" class="bg-white text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-500 hover:text-white transition-all duration-300">
+                                    Shop Collection
                                 </a>
-                                <a href="/deals" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition">
-                                    View Deals
+                                <a href="/products?category=new" class="border border-white/30 text-white px-8 py-4 text-sm uppercase tracking-widest font-medium hover:border-white hover:bg-white hover:text-fashion-black transition-all duration-300">
+                                    What's New
                                 </a>
                             </div>
-                        </div>
-                        <div class="hidden lg:block">
-                            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop" alt="Shopping" class="rounded-2xl shadow-2xl transform hover:scale-105 transition duration-500">
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Slide 2 -->
-            <div class="w-full flex-shrink-0 relative bg-gradient-to-r from-rose-600 via-pink-600 to-rose-500">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                    <div class="grid lg:grid-cols-2 gap-8 items-center">
-                        <div class="text-white">
-                            <span class="inline-block bg-white/20 backdrop-blur px-4 py-1.5 rounded-full text-sm font-medium mb-4">
-                                Limited Time Offer
+            <!-- Slide 2 - Sale Campaign -->
+            <div class="w-full flex-shrink-0 min-h-[100vh] lg:min-h-screen">
+                <div class="grid lg:grid-cols-5 h-full">
+                    <div class="lg:col-span-3 relative h-[50vh] lg:h-full">
+                        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&h=1600&fit=crop"
+                             alt="Sale Fashion"
+                             class="w-full h-full object-cover">
+                        <div class="absolute bottom-8 left-8 lg:bottom-16 lg:left-16">
+                            <span class="font-accent text-7xl lg:text-[12rem] font-bold text-accent-500/30 leading-none tracking-tight">
+                                SALE
                             </span>
-                            <h1 class="text-4xl lg:text-6xl font-bold leading-tight mb-6">
-                                Up to <span class="text-yellow-300">50% Off</span><br>
-                                Electronics & Gadgets
-                            </h1>
-                            <p class="text-lg text-rose-100 mb-8 max-w-lg">
-                                Grab the best deals on laptops, phones, and accessories. Hurry, offer ends soon!
-                            </p>
-                            <div class="flex flex-wrap gap-4">
-                                <a href="/products?category=electronics" class="bg-white text-rose-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg inline-flex items-center gap-2">
-                                    Shop Electronics
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                                    </svg>
-                                </a>
-                            </div>
                         </div>
-                        <div class="hidden lg:block">
-                            <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&h=400&fit=crop" alt="Electronics" class="rounded-2xl shadow-2xl transform hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="lg:col-span-2 bg-accent-600 flex items-center justify-center p-8 lg:p-16">
+                        <div class="text-white max-w-md">
+                            <span class="inline-block text-white/80 font-accent text-sm tracking-[0.3em] uppercase mb-4">
+                                Limited Time
+                            </span>
+                            <h1 class="font-display text-4xl lg:text-6xl font-bold leading-[1.1] mb-6">
+                                Up to<br>
+                                <span class="font-accent text-6xl lg:text-8xl">50%</span><br>
+                                Off Everything
+                            </h1>
+                            <p class="text-white/80 text-lg mb-8 leading-relaxed">
+                                Don't miss out on our biggest sale of the season.
+                            </p>
+                            <a href="/deals" class="inline-block bg-white text-accent-600 px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-fashion-black hover:text-white transition-all duration-300">
+                                Shop the Sale
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Slide 3 -->
-            <div class="w-full flex-shrink-0 relative bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-500">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-                    <div class="grid lg:grid-cols-2 gap-8 items-center">
-                        <div class="text-white">
-                            <span class="inline-block bg-white/20 backdrop-blur px-4 py-1.5 rounded-full text-sm font-medium mb-4">
-                                Free Shipping
+            <!-- Slide 3 - Evening Collection -->
+            <div class="w-full flex-shrink-0 min-h-[100vh] lg:min-h-screen">
+                <div class="grid lg:grid-cols-5 h-full">
+                    <div class="lg:col-span-3 relative h-[50vh] lg:h-full">
+                        <img src="https://images.unsplash.com/photo-1518911710364-17ec553bde5d?w=1200&h=1600&fit=crop"
+                             alt="Evening Collection"
+                             class="w-full h-full object-cover">
+                        <div class="absolute bottom-8 left-8 lg:bottom-16 lg:left-16">
+                            <span class="font-accent text-7xl lg:text-[12rem] font-bold text-gold/30 leading-none tracking-tight">
+                                LUXE
                             </span>
-                            <h1 class="text-4xl lg:text-6xl font-bold leading-tight mb-6">
-                                Fashion <span class="text-yellow-300">Sale</span><br>
-                                New Arrivals
-                            </h1>
-                            <p class="text-lg text-emerald-100 mb-8 max-w-lg">
-                                Explore the latest trends in fashion. Free shipping on all orders over $50.
-                            </p>
-                            <div class="flex flex-wrap gap-4">
-                                <a href="/products?category=clothing" class="bg-white text-emerald-600 px-8 py-4 rounded-lg font-semibold hover:bg-gray-100 transition shadow-lg inline-flex items-center gap-2">
-                                    Shop Fashion
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                                    </svg>
-                                </a>
-                            </div>
                         </div>
-                        <div class="hidden lg:block">
-                            <img src="https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&h=400&fit=crop" alt="Fashion" class="rounded-2xl shadow-2xl transform hover:scale-105 transition duration-500">
+                    </div>
+                    <div class="lg:col-span-2 bg-fashion-charcoal flex items-center justify-center p-8 lg:p-16">
+                        <div class="text-white max-w-md">
+                            <span class="inline-block text-gold font-accent text-sm tracking-[0.3em] uppercase mb-4">
+                                Evening Edit
+                            </span>
+                            <h1 class="font-display text-4xl lg:text-6xl font-bold leading-[1.1] mb-6">
+                                Make an<br>
+                                <span class="text-gold">Entrance.</span>
+                            </h1>
+                            <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                                Elevate your evening wardrobe with statement pieces designed to turn heads.
+                            </p>
+                            <a href="/products?category=evening" class="inline-block bg-gold text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-white transition-all duration-300">
+                                Explore Collection
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -102,233 +115,116 @@
         </div>
     </div>
 
-    <!-- Carousel Controls -->
-    <button @@click="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur hover:bg-white/40 rounded-full flex items-center justify-center text-white transition z-10">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+    <!-- Carousel Navigation -->
+    <button @@click="prevSlide()" class="absolute left-4 lg:left-8 top-1/2 -translate-y-1/2 w-12 h-12 border border-white/30 hover:bg-white hover:text-fashion-black rounded-full flex items-center justify-center text-white transition z-10">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7"/>
         </svg>
     </button>
-    <button @@click="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur hover:bg-white/40 rounded-full flex items-center justify-center text-white transition z-10">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+    <button @@click="nextSlide()" class="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 w-12 h-12 border border-white/30 hover:bg-white hover:text-fashion-black rounded-full flex items-center justify-center text-white transition z-10">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
         </svg>
     </button>
 
-    <!-- Carousel Indicators -->
-    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+    <!-- Slide Indicators -->
+    <div class="absolute bottom-8 left-1/2 -translate-x-1/2 lg:left-auto lg:right-16 lg:translate-x-0 flex gap-3 z-10">
         <template x-for="(slide, index) in totalSlides" :key="index">
             <button @@click="goToSlide(index)"
-                    :class="currentSlide === index ? 'bg-white w-8' : 'bg-white/50 w-3 hover:bg-white/75'"
-                    class="h-3 rounded-full transition-all duration-300"></button>
+                    :class="currentSlide === index ? 'bg-white w-12' : 'bg-white/30 w-3 hover:bg-white/60'"
+                    class="h-0.5 transition-all duration-500"></button>
         </template>
     </div>
 </section>
 
-<!-- Categories Section -->
-<section class="py-12 bg-white dark:bg-gray-800">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
-            <a href="/products?category=electronics" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div class="relative z-10">
-                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+<!-- Scrolling Category Bar -->
+<section class="py-6 bg-white dark:bg-fashion-charcoal border-y border-gray-100 dark:border-fashion-slate overflow-hidden">
+    <div class="flex animate-scroll-x whitespace-nowrap">
+        @for (int i = 0; i < 2; i++)
+        {
+            <div class="flex items-center gap-12 px-6">
+                <a href="/products?category=dresses" class="flex items-center gap-3 group">
+                    <span class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center group-hover:bg-primary-500 transition">
+                        <svg class="w-6 h-6 text-primary-600 dark:text-primary-400 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z M3 6h18 M16 10a4 4 0 01-8 0"/>
                         </svg>
-                    </div>
-                    <h3 class="font-bold text-lg mb-1">Electronics</h3>
-                    <p class="text-blue-100 text-sm">120+ Products</p>
-                </div>
-                <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full"></div>
-            </a>
-
-            <a href="/products?category=clothing" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div class="relative z-10">
-                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </span>
+                    <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">Dresses</span>
+                </a>
+                <a href="/products?category=tops" class="flex items-center gap-3 group">
+                    <span class="w-12 h-12 rounded-full bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center group-hover:bg-accent-500 transition">
+                        <svg class="w-6 h-6 text-accent-600 dark:text-accent-400 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
-                    </div>
-                    <h3 class="font-bold text-lg mb-1">Clothing</h3>
-                    <p class="text-pink-100 text-sm">85+ Products</p>
-                </div>
-                <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full"></div>
-            </a>
-
-            <a href="/products?category=home-garden" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-green-500 p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div class="relative z-10">
-                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </span>
+                    <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">Tops</span>
+                </a>
+                <a href="/products?category=bottoms" class="flex items-center gap-3 group">
+                    <span class="w-12 h-12 rounded-full bg-gold-light dark:bg-gold/30 flex items-center justify-center group-hover:bg-gold transition">
+                        <svg class="w-6 h-6 text-gold-dark dark:text-gold group-hover:text-fashion-black transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
-                    </div>
-                    <h3 class="font-bold text-lg mb-1">Home & Garden</h3>
-                    <p class="text-emerald-100 text-sm">65+ Products</p>
-                </div>
-                <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full"></div>
-            </a>
-
-            <a href="/products?category=sports" class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 p-6 text-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                <div class="relative z-10">
-                    <div class="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </span>
+                    <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">Bottoms</span>
+                </a>
+                <a href="/products?category=outerwear" class="flex items-center gap-3 group">
+                    <span class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-fashion-black dark:group-hover:bg-white transition">
+                        <svg class="w-6 h-6 text-fashion-black dark:text-white group-hover:text-white dark:group-hover:text-fashion-black transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3l3.5 3.5L12 3l3.5 3.5L19 3v13a2 2 0 01-2 2H7a2 2 0 01-2-2V3z"/>
                         </svg>
-                    </div>
-                    <h3 class="font-bold text-lg mb-1">Sports</h3>
-                    <p class="text-orange-100 text-sm">45+ Products</p>
-                </div>
-                <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full"></div>
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Deal of the Day -->
-<section class="py-16 bg-gray-50 dark:bg-gray-900" x-data="dealCountdown()">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="bg-gradient-to-r from-red-600 via-rose-600 to-pink-600 rounded-3xl overflow-hidden shadow-2xl">
-            <div class="grid lg:grid-cols-2 gap-8 p-8 lg:p-12">
-                <!-- Left Side - Deal Info -->
-                <div class="text-white">
-                    <div class="flex items-center gap-2 mb-4">
-                        <svg class="w-8 h-8 text-yellow-300 animate-pulse" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12.586 2.586a2 2 0 00-2.828 0L3.172 9.172a2 2 0 000 2.828l6.586 6.586a2 2 0 002.828 0l6.586-6.586a2 2 0 000-2.828l-6.586-6.586z"/>
+                    </span>
+                    <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">Outerwear</span>
+                </a>
+                <a href="/products?category=accessories" class="flex items-center gap-3 group">
+                    <span class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center group-hover:bg-primary-500 transition">
+                        <svg class="w-6 h-6 text-primary-600 dark:text-primary-400 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                         </svg>
-                        <span class="text-xl font-bold">Deal of the Day</span>
-                    </div>
-                    <h2 class="text-3xl lg:text-5xl font-bold mb-4">
-                        Super Sale<br>
-                        <span class="text-yellow-300">Up to 70% Off!</span>
-                    </h2>
-                    <p class="text-rose-100 text-lg mb-8">
-                        Don't miss out on our biggest sale. Limited time offer on selected products.
-                    </p>
-
-                    <!-- Countdown Timer -->
-                    <div class="mb-8">
-                        <p class="text-sm text-rose-200 mb-3">Hurry! Offer ends in:</p>
-                        <div class="flex gap-3">
-                            <div class="bg-white/20 backdrop-blur rounded-xl p-4 text-center min-w-[70px]">
-                                <span class="block text-3xl font-bold" x-text="days">00</span>
-                                <span class="text-xs text-rose-200">Days</span>
-                            </div>
-                            <div class="bg-white/20 backdrop-blur rounded-xl p-4 text-center min-w-[70px]">
-                                <span class="block text-3xl font-bold" x-text="hours">00</span>
-                                <span class="text-xs text-rose-200">Hours</span>
-                            </div>
-                            <div class="bg-white/20 backdrop-blur rounded-xl p-4 text-center min-w-[70px]">
-                                <span class="block text-3xl font-bold" x-text="minutes">00</span>
-                                <span class="text-xs text-rose-200">Mins</span>
-                            </div>
-                            <div class="bg-white/20 backdrop-blur rounded-xl p-4 text-center min-w-[70px]">
-                                <span class="block text-3xl font-bold" x-text="seconds">00</span>
-                                <span class="text-xs text-rose-200">Secs</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <a href="/deals" class="inline-flex items-center gap-2 bg-white text-rose-600 px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition shadow-lg">
-                        Shop All Deals
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </span>
+                    <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">Accessories</span>
+                </a>
+                <a href="/products?category=shoes" class="flex items-center gap-3 group">
+                    <span class="w-12 h-12 rounded-full bg-accent-100 dark:bg-accent-900/30 flex items-center justify-center group-hover:bg-accent-500 transition">
+                        <svg class="w-6 h-6 text-accent-600 dark:text-accent-400 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
-                    </a>
-                </div>
-
-                <!-- Right Side - Deal Products -->
-                <div class="grid grid-cols-2 gap-4">
-                    @if (Model.DealsOfTheDay.Any())
-                    {
-                        @foreach (var product in Model.DealsOfTheDay.Take(4))
-                        {
-                            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg hover:shadow-xl transition group">
-                                <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 overflow-hidden">
-                                    @if (product.SalePrice.HasValue)
-                                    {
-                                        var discount = (int)Math.Round((1 - (product.SalePrice.Value / product.BasePrice)) * 100);
-                                        <span class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg z-10">
-                                            -@discount%
-                                        </span>
-                                    }
-                                    @if (!string.IsNullOrEmpty(product.PrimaryImageUrl))
-                                    {
-                                        <img src="@product.PrimaryImageUrl" alt="@product.Name" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
-                                    }
-                                    else
-                                    {
-                                        <div class="w-full h-full flex items-center justify-center">
-                                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                        </div>
-                                    }
-                                </div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white text-sm line-clamp-2 mb-2">@product.Name</h4>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-lg font-bold text-rose-600">$@product.CurrentPrice.ToString("F2")</span>
-                                    @if (product.SalePrice.HasValue)
-                                    {
-                                        <span class="text-sm text-gray-400 line-through">$@product.BasePrice.ToString("F2")</span>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        @for (int i = 0; i < 4; i++)
-                        {
-                            <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-lg">
-                                <div class="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-3 overflow-hidden">
-                                    <span class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
-                                        -30%
-                                    </span>
-                                    <div class="w-full h-full flex items-center justify-center">
-                                        <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <h4 class="font-semibold text-gray-900 dark:text-white text-sm mb-2">Sample Product</h4>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-lg font-bold text-rose-600">$49.99</span>
-                                    <span class="text-sm text-gray-400 line-through">$69.99</span>
-                                </div>
-                            </div>
-                        }
-                    }
-                </div>
+                    </span>
+                    <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">Shoes</span>
+                </a>
             </div>
-        </div>
+        }
     </div>
 </section>
 
-<!-- Featured Products -->
-<section class="py-16 bg-white dark:bg-gray-800">
+<!-- Trending Now - 2x2 Grid -->
+<section class="py-20 bg-white dark:bg-fashion-charcoal">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-12">
             <div>
-                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Featured Products</h2>
-                <p class="text-gray-600 dark:text-gray-400 mt-2">Handpicked products just for you</p>
+                <span class="text-primary-500 font-accent text-sm tracking-[0.3em] uppercase">Hot Right Now</span>
+                <h2 class="font-display text-3xl lg:text-5xl font-bold text-fashion-black dark:text-white mt-2">
+                    Trending<span class="text-primary-500">.</span>
+                </h2>
             </div>
-            <a href="/products?featured=true" class="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 font-semibold group">
+            <a href="/products?sort=trending" class="group inline-flex items-center gap-2 text-fashion-black dark:text-white text-sm uppercase tracking-widest font-medium border-b-2 border-fashion-black dark:border-white pb-1 hover:text-primary-500 hover:border-primary-500 transition">
                 View All
-                <svg class="w-5 h-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
             </a>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             @if (Model.FeaturedProducts.Any())
             {
-                @foreach (var product in Model.FeaturedProducts)
+                @foreach (var product in Model.FeaturedProducts.Take(4))
                 {
                     <partial name="_ProductCard" model="product" />
                 }
             }
             else
             {
-                @for (int i = 0; i < 8; i++)
+                @for (int i = 0; i < 4; i++)
                 {
                     <partial name="_ProductCardPlaceholder" />
                 }
@@ -337,66 +233,61 @@
     </div>
 </section>
 
-<!-- Promotional Banners -->
-<section class="py-12 bg-gray-50 dark:bg-gray-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-2 gap-6">
-            <!-- Banner 1 -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 p-8 text-white group">
-                <div class="relative z-10">
-                    <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-sm font-medium mb-3">New Arrival</span>
-                    <h3 class="text-2xl lg:text-3xl font-bold mb-2">Smart Gadgets</h3>
-                    <p class="text-violet-100 mb-4">Explore the latest in technology</p>
-                    <a href="/products?category=electronics" class="inline-flex items-center gap-2 bg-white text-violet-600 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition">
-                        Shop Now
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                        </svg>
-                    </a>
-                </div>
-                <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full group-hover:scale-150 transition duration-500"></div>
-                <div class="absolute right-8 top-8 w-20 h-20 bg-white/10 rounded-full"></div>
-            </div>
+<!-- Collection Banner - Parallax Style -->
+<section class="relative h-[70vh] lg:h-[80vh] overflow-hidden" x-data="{ offset: 0 }" x-on:scroll.window="offset = window.pageYOffset">
+    <div class="absolute inset-0" :style="{ transform: `translateY(${offset * 0.3}px)` }">
+        <img src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=1920&h=1080&fit=crop"
+             alt="Fashion Collection"
+             class="w-full h-[120%] object-cover">
+    </div>
+    <div class="absolute inset-0 bg-gradient-to-r from-fashion-black/80 via-fashion-black/40 to-transparent"></div>
 
-            <!-- Banner 2 -->
-            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 p-8 text-white group">
-                <div class="relative z-10">
-                    <span class="inline-block bg-white/20 px-3 py-1 rounded-full text-sm font-medium mb-3">Summer Collection</span>
-                    <h3 class="text-2xl lg:text-3xl font-bold mb-2">Fashion Trends</h3>
-                    <p class="text-amber-100 mb-4">Up to 40% off on selected items</p>
-                    <a href="/products?category=clothing" class="inline-flex items-center gap-2 bg-white text-amber-600 px-5 py-2.5 rounded-lg font-semibold hover:bg-gray-100 transition">
-                        Shop Now
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                        </svg>
-                    </a>
-                </div>
-                <div class="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full group-hover:scale-150 transition duration-500"></div>
-                <div class="absolute right-8 top-8 w-20 h-20 bg-white/10 rounded-full"></div>
+    <div class="relative h-full flex items-center">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="max-w-xl">
+                <span class="inline-block text-primary-400 font-accent text-sm tracking-[0.3em] uppercase mb-4">
+                    Exclusive Collection
+                </span>
+                <h2 class="font-display text-4xl lg:text-7xl font-bold text-white leading-[1.1] mb-6">
+                    The Art of<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-accent-400">Elegance</span>
+                </h2>
+                <p class="text-gray-300 text-lg mb-8 max-w-md">
+                    Curated pieces that transcend trends. Timeless style for the modern woman.
+                </p>
+                <a href="/products?collection=elegance" class="inline-flex items-center gap-3 bg-white text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-500 hover:text-white transition-all duration-300 group">
+                    <span>Discover Now</span>
+                    <svg class="w-5 h-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </a>
             </div>
         </div>
     </div>
 </section>
 
-<!-- New Arrivals -->
-<section class="py-16 bg-white dark:bg-gray-800">
+<!-- New Arrivals Carousel -->
+<section class="py-20 bg-gray-50 dark:bg-fashion-slate">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-12">
             <div>
-                <h2 class="text-3xl font-bold text-gray-900 dark:text-white">New Arrivals</h2>
-                <p class="text-gray-600 dark:text-gray-400 mt-2">Check out the latest additions to our store</p>
+                <span class="text-accent-500 font-accent text-sm tracking-[0.3em] uppercase">Fresh Drops</span>
+                <h2 class="font-display text-3xl lg:text-5xl font-bold text-fashion-black dark:text-white mt-2">
+                    New Arrivals<span class="text-accent-500">.</span>
+                </h2>
             </div>
-            <a href="/products?sort=newest" class="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 hover:text-primary-700 font-semibold group">
+            <a href="/products?sort=newest" class="group inline-flex items-center gap-2 text-fashion-black dark:text-white text-sm uppercase tracking-widest font-medium border-b-2 border-fashion-black dark:border-white pb-1 hover:text-accent-500 hover:border-accent-500 transition">
                 View All
-                <svg class="w-5 h-5 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
                 </svg>
             </a>
         </div>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
             @if (Model.NewArrivals.Any())
             {
-                @foreach (var product in Model.NewArrivals)
+                @foreach (var product in Model.NewArrivals.Take(8))
                 {
                     <partial name="_ProductCard" model="product" />
                 }
@@ -412,140 +303,254 @@
     </div>
 </section>
 
-<!-- Features Section -->
-<section class="py-16 bg-gray-50 dark:bg-gray-900">
+<!-- Shop by Style - 3 Column Feature -->
+<section class="py-20 bg-white dark:bg-fashion-charcoal">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid md:grid-cols-4 gap-6">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 text-center shadow-sm hover:shadow-lg transition group">
-                <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
-                    <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                    </svg>
+        <div class="text-center mb-12">
+            <span class="text-primary-500 font-accent text-sm tracking-[0.3em] uppercase">Find Your Vibe</span>
+            <h2 class="font-display text-3xl lg:text-5xl font-bold text-fashion-black dark:text-white mt-2">
+                Shop by Style<span class="text-primary-500">.</span>
+            </h2>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Casual -->
+            <a href="/products?style=casual" class="group relative aspect-[3/4] overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=800&fit=crop"
+                     alt="Casual Style"
+                     class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-fashion-black/80 via-transparent to-transparent"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-8">
+                    <span class="text-white/70 text-sm font-accent tracking-[0.2em] uppercase">Effortless</span>
+                    <h3 class="font-display text-3xl lg:text-4xl font-bold text-white mt-1">Casual</h3>
+                    <div class="mt-4 flex items-center gap-2 text-white text-sm uppercase tracking-wider opacity-0 group-hover:opacity-100 transition duration-300 translate-y-2 group-hover:translate-y-0">
+                        <span>Shop Now</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </div>
                 </div>
-                <h3 class="font-bold text-gray-900 dark:text-white mb-2">Free Shipping</h3>
-                <p class="text-gray-600 dark:text-gray-400 text-sm">On orders over $50</p>
+            </a>
+
+            <!-- Evening -->
+            <a href="/products?style=evening" class="group relative aspect-[3/4] overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=600&h=800&fit=crop"
+                     alt="Evening Style"
+                     class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-fashion-black/80 via-transparent to-transparent"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-8">
+                    <span class="text-gold text-sm font-accent tracking-[0.2em] uppercase">Glamorous</span>
+                    <h3 class="font-display text-3xl lg:text-4xl font-bold text-white mt-1">Evening</h3>
+                    <div class="mt-4 flex items-center gap-2 text-white text-sm uppercase tracking-wider opacity-0 group-hover:opacity-100 transition duration-300 translate-y-2 group-hover:translate-y-0">
+                        <span>Shop Now</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Athletic -->
+            <a href="/products?style=athletic" class="group relative aspect-[3/4] overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=600&h=800&fit=crop"
+                     alt="Athletic Style"
+                     class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                <div class="absolute inset-0 bg-gradient-to-t from-fashion-black/80 via-transparent to-transparent"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-8">
+                    <span class="text-accent-400 text-sm font-accent tracking-[0.2em] uppercase">Active</span>
+                    <h3 class="font-display text-3xl lg:text-4xl font-bold text-white mt-1">Athletic</h3>
+                    <div class="mt-4 flex items-center gap-2 text-white text-sm uppercase tracking-wider opacity-0 group-hover:opacity-100 transition duration-300 translate-y-2 group-hover:translate-y-0">
+                        <span>Shop Now</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Bold Sale Banner with Countdown -->
+<section class="py-16 bg-gradient-to-r from-accent-600 via-primary-600 to-accent-600 relative overflow-hidden" x-data="dealCountdown()">
+    <!-- Animated background elements -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-10 -left-10 w-40 h-40 bg-white/10 rounded-full animate-pulse"></div>
+        <div class="absolute -bottom-10 -right-10 w-60 h-60 bg-white/10 rounded-full animate-pulse delay-300"></div>
+        <div class="absolute top-1/2 left-1/4 w-20 h-20 bg-white/5 rounded-full"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div class="grid lg:grid-cols-2 gap-8 items-center">
+            <div class="text-center lg:text-left">
+                <span class="inline-block bg-white/20 backdrop-blur px-4 py-1.5 text-white text-xs font-accent tracking-[0.2em] uppercase mb-4">
+                    Flash Sale
+                </span>
+                <h2 class="font-display text-4xl lg:text-6xl font-bold text-white leading-tight mb-4">
+                    Up to <span class="font-accent text-5xl lg:text-7xl">70%</span><br>
+                    Off Everything!
+                </h2>
+                <p class="text-white/80 text-lg mb-6">
+                    Don't miss out on our biggest sale of the year.
+                </p>
+                <a href="/deals" class="inline-flex items-center gap-2 bg-white text-accent-600 px-8 py-4 text-sm uppercase tracking-widest font-bold hover:bg-fashion-black hover:text-white transition-all duration-300">
+                    Shop All Deals
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                    </svg>
+                </a>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 text-center shadow-sm hover:shadow-lg transition group">
-                <div class="w-16 h-16 bg-secondary-100 dark:bg-secondary-900 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
-                    <svg class="w-8 h-8 text-secondary-600 dark:text-secondary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
+
+            <!-- Countdown Timer -->
+            <div class="flex justify-center lg:justify-end">
+                <div class="grid grid-cols-4 gap-4">
+                    <div class="bg-white/10 backdrop-blur rounded-lg p-4 text-center min-w-[80px]">
+                        <span class="block font-accent text-4xl lg:text-5xl font-bold text-white" x-text="days">00</span>
+                        <span class="text-white/70 text-xs uppercase tracking-wider">Days</span>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur rounded-lg p-4 text-center min-w-[80px]">
+                        <span class="block font-accent text-4xl lg:text-5xl font-bold text-white" x-text="hours">00</span>
+                        <span class="text-white/70 text-xs uppercase tracking-wider">Hours</span>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur rounded-lg p-4 text-center min-w-[80px]">
+                        <span class="block font-accent text-4xl lg:text-5xl font-bold text-white" x-text="minutes">00</span>
+                        <span class="text-white/70 text-xs uppercase tracking-wider">Mins</span>
+                    </div>
+                    <div class="bg-white/10 backdrop-blur rounded-lg p-4 text-center min-w-[80px]">
+                        <span class="block font-accent text-4xl lg:text-5xl font-bold text-white" x-text="seconds">00</span>
+                        <span class="text-white/70 text-xs uppercase tracking-wider">Secs</span>
+                    </div>
                 </div>
-                <h3 class="font-bold text-gray-900 dark:text-white mb-2">Easy Returns</h3>
-                <p class="text-gray-600 dark:text-gray-400 text-sm">30-day return policy</p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 text-center shadow-sm hover:shadow-lg transition group">
-                <div class="w-16 h-16 bg-amber-100 dark:bg-amber-900 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
-                    <svg class="w-8 h-8 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                    </svg>
-                </div>
-                <h3 class="font-bold text-gray-900 dark:text-white mb-2">Secure Payment</h3>
-                <p class="text-gray-600 dark:text-gray-400 text-sm">100% secure checkout</p>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 text-center shadow-sm hover:shadow-lg transition group">
-                <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition">
-                    <svg class="w-8 h-8 text-rose-600 dark:text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
-                    </svg>
-                </div>
-                <h3 class="font-bold text-gray-900 dark:text-white mb-2">24/7 Support</h3>
-                <p class="text-gray-600 dark:text-gray-400 text-sm">Dedicated customer service</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- Testimonials -->
-<section class="py-16 bg-white dark:bg-gray-800">
+<!-- Deals of the Day -->
+@if (Model.DealsOfTheDay.Any())
+{
+<section class="py-20 bg-white dark:bg-fashion-charcoal">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-12">
+            <div>
+                <span class="text-accent-500 font-accent text-sm tracking-[0.3em] uppercase">Limited Time</span>
+                <h2 class="font-display text-3xl lg:text-5xl font-bold text-fashion-black dark:text-white mt-2">
+                    Deals of the Day<span class="text-accent-500">.</span>
+                </h2>
+            </div>
+            <a href="/deals" class="group inline-flex items-center gap-2 text-fashion-black dark:text-white text-sm uppercase tracking-widest font-medium border-b-2 border-fashion-black dark:border-white pb-1 hover:text-accent-500 hover:border-accent-500 transition">
+                View All Deals
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+            @foreach (var product in Model.DealsOfTheDay.Take(4))
+            {
+                <partial name="_ProductCard" model="product" />
+            }
+        </div>
+    </div>
+</section>
+}
+
+<!-- Instagram Feed Grid -->
+<section class="py-20 bg-gray-50 dark:bg-fashion-slate">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">What Our Customers Say</h2>
-            <p class="text-gray-600 dark:text-gray-400">Trusted by thousands of happy customers</p>
+            <span class="text-primary-500 font-accent text-sm tracking-[0.3em] uppercase">@@voguefashion</span>
+            <h2 class="font-display text-3xl lg:text-5xl font-bold text-fashion-black dark:text-white mt-2">
+                Shop the Look<span class="text-primary-500">.</span>
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400 mt-4">Tag us @@voguefashion to be featured</p>
         </div>
-        <div class="grid md:grid-cols-3 gap-8">
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 relative">
-                <div class="absolute -top-4 left-6 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                    </svg>
-                </div>
-                <div class="flex items-center gap-1 mb-4 mt-4">
-                    @for (int i = 0; i < 5; i++)
-                    {
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                    }
-                </div>
-                <p class="text-gray-600 dark:text-gray-300 mb-4">"Amazing products and super fast delivery! The quality exceeded my expectations. Will definitely shop here again."</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-primary-200 dark:bg-primary-800 rounded-full flex items-center justify-center">
-                        <span class="text-primary-700 dark:text-primary-300 font-bold">JD</span>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-900 dark:text-white">John Doe</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Verified Buyer</p>
-                    </div>
-                </div>
-            </div>
 
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 relative">
-                <div class="absolute -top-4 left-6 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
-                    </svg>
-                </div>
-                <div class="flex items-center gap-1 mb-4 mt-4">
-                    @for (int i = 0; i < 5; i++)
-                    {
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            @{
+                var instaImages = new[] {
+                    "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400&h=400&fit=crop",
+                    "https://images.unsplash.com/photo-1485968579580-b6d095142e6e?w=400&h=400&fit=crop",
+                    "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=400&h=400&fit=crop",
+                    "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=400&fit=crop",
+                    "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400&h=400&fit=crop",
+                    "https://images.unsplash.com/photo-1475180429745-7d7a89d69a40?w=400&h=400&fit=crop"
+                };
+            }
+            @foreach (var img in instaImages)
+            {
+                <a href="#" class="group relative aspect-square overflow-hidden">
+                    <img src="@img" alt="Instagram" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    <div class="absolute inset-0 bg-fashion-black/60 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                        <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                         </svg>
-                    }
-                </div>
-                <p class="text-gray-600 dark:text-gray-300 mb-4">"Best online shopping experience! The customer service team was incredibly helpful when I had questions about my order."</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-rose-200 dark:bg-rose-800 rounded-full flex items-center justify-center">
-                        <span class="text-rose-700 dark:text-rose-300 font-bold">SM</span>
                     </div>
-                    <div>
-                        <p class="font-semibold text-gray-900 dark:text-white">Sarah Miller</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Verified Buyer</p>
-                    </div>
-                </div>
-            </div>
+                </a>
+            }
+        </div>
+    </div>
+</section>
 
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 relative">
-                <div class="absolute -top-4 left-6 w-8 h-8 bg-primary-600 rounded-full flex items-center justify-center">
-                    <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+<!-- Trust Badges Bar -->
+<section class="py-16 bg-white dark:bg-fashion-charcoal border-t border-gray-100 dark:border-fashion-slate">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
                     </svg>
                 </div>
-                <div class="flex items-center gap-1 mb-4 mt-4">
-                    @for (int i = 0; i < 5; i++)
-                    {
-                        <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                    }
+                <h3 class="font-medium text-fashion-black dark:text-white mb-1">Free Shipping</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">On orders over $100</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-accent-100 dark:bg-accent-900/30 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-accent-600 dark:text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
                 </div>
-                <p class="text-gray-600 dark:text-gray-300 mb-4">"Great value for money. The deals section always has amazing offers. I've recommended this store to all my friends!"</p>
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-emerald-200 dark:bg-emerald-800 rounded-full flex items-center justify-center">
-                        <span class="text-emerald-700 dark:text-emerald-300 font-bold">MJ</span>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-gray-900 dark:text-white">Mike Johnson</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Verified Buyer</p>
-                    </div>
+                <h3 class="font-medium text-fashion-black dark:text-white mb-1">Easy Returns</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">30-day return policy</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gold-light dark:bg-gold/30 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-gold-dark dark:text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
                 </div>
+                <h3 class="font-medium text-fashion-black dark:text-white mb-1">Secure Checkout</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">100% secure payment</p>
+            </div>
+            <div class="text-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-fashion-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                </div>
+                <h3 class="font-medium text-fashion-black dark:text-white mb-1">24/7 Support</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Dedicated help center</p>
             </div>
         </div>
     </div>
 </section>
 
 @section Scripts {
+<style>
+@@keyframes scroll-x {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+.animate-scroll-x {
+    animation: scroll-x 30s linear infinite;
+}
+.animate-scroll-x:hover {
+    animation-play-state: paused;
+}
+</style>
+
 <script>
 function heroCarousel() {
     return {
@@ -560,7 +565,7 @@ function heroCarousel() {
         startAutoplay() {
             this.autoplayInterval = setInterval(() => {
                 this.nextSlide();
-            }, 5000);
+            }, 6000);
         },
 
         stopAutoplay() {

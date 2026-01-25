@@ -1,165 +1,269 @@
 @model CartViewModel
 
-<div class="bg-white border-b">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <nav class="flex text-sm text-gray-500">
-            <a href="/" class="hover:text-primary-600">Home</a>
+<!-- Hero Header -->
+<section class="bg-fashion-black dark:bg-fashion-charcoal py-12 lg:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav class="flex text-sm text-gray-400 mb-4">
+            <a href="/" class="hover:text-white transition">Home</a>
             <span class="mx-2">/</span>
-            <span class="text-gray-900">Shopping Cart</span>
+            <span class="text-white">Shopping Bag</span>
         </nav>
+        <h1 class="font-display text-3xl lg:text-5xl font-bold text-white">
+            Your Bag<span class="text-primary-400">.</span>
+        </h1>
+    </div>
+</section>
+
+<div class="bg-gray-50 dark:bg-fashion-slate min-h-[60vh]" x-data="cartPage()">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <!-- Empty Cart State -->
+        <template x-if="cart.items.length === 0">
+            <div class="text-center py-20 bg-white dark:bg-fashion-charcoal">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gray-100 dark:bg-fashion-slate rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </div>
+                <h2 class="font-display text-2xl font-bold text-fashion-black dark:text-white mb-2">Your bag is empty</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">Looks like you haven't added anything to your bag yet. Let's change that!</p>
+                <a href="/products" class="inline-block bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 transition">
+                    Start Shopping
+                </a>
+            </div>
+        </template>
+
+        <!-- Cart with Items -->
+        <template x-if="cart.items.length > 0">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Cart Items -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white dark:bg-fashion-charcoal">
+                        <!-- Header -->
+                        <div class="hidden md:flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-fashion-slate">
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</span>
+                        </div>
+
+                        <!-- Cart Items List -->
+                        <div class="divide-y divide-gray-100 dark:divide-fashion-slate">
+                            <template x-for="item in cart.items" :key="item.id + (item.size || '') + (item.color || '')">
+                                <div class="p-6">
+                                    <div class="flex gap-4 lg:gap-6">
+                                        <!-- Product Image -->
+                                        <div class="w-24 h-32 lg:w-32 lg:h-40 bg-gray-50 dark:bg-fashion-slate flex-shrink-0 overflow-hidden">
+                                            <img :src="item.image || 'https://placehold.co/128x160/e2e8f0/64748b?text=Product'"
+                                                 :alt="item.name"
+                                                 class="w-full h-full object-cover">
+                                        </div>
+
+                                        <!-- Product Details -->
+                                        <div class="flex-1 flex flex-col">
+                                            <div class="flex justify-between">
+                                                <div>
+                                                    <h3 class="font-medium text-fashion-black dark:text-white text-base lg:text-lg" x-text="item.name"></h3>
+                                                    <div class="mt-1 space-y-0.5">
+                                                        <template x-if="item.color">
+                                                            <p class="text-sm text-gray-500 dark:text-gray-400">Color: <span x-text="item.color"></span></p>
+                                                        </template>
+                                                        <template x-if="item.size">
+                                                            <p class="text-sm text-gray-500 dark:text-gray-400">Size: <span x-text="item.size"></span></p>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <div class="text-right">
+                                                    <p class="font-semibold text-fashion-black dark:text-white" x-text="'$' + (item.price * item.quantity).toFixed(2)"></p>
+                                                    <template x-if="item.quantity > 1">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'$' + item.price.toFixed(2) + ' each'"></p>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <!-- Quantity & Actions -->
+                                            <div class="mt-auto pt-4 flex items-center justify-between">
+                                                <!-- Quantity Selector -->
+                                                <div class="flex items-center border border-gray-200 dark:border-fashion-slate">
+                                                    <button @@click="updateQuantity(item, item.quantity - 1)"
+                                                            class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-fashion-slate transition">
+                                                        <svg class="w-4 h-4 text-fashion-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                                        </svg>
+                                                    </button>
+                                                    <span class="w-12 text-center text-sm text-fashion-black dark:text-white" x-text="item.quantity"></span>
+                                                    <button @@click="updateQuantity(item, item.quantity + 1)"
+                                                            class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-fashion-slate transition">
+                                                        <svg class="w-4 h-4 text-fashion-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Actions -->
+                                                <div class="flex items-center gap-4">
+                                                    <button @@click="moveToWishlist(item)"
+                                                            class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition flex items-center gap-1.5">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                                        </svg>
+                                                        <span class="hidden sm:inline">Save for Later</span>
+                                                    </button>
+                                                    <button @@click="removeItem(item)"
+                                                            class="text-sm text-gray-500 dark:text-gray-400 hover:text-accent-500 transition flex items-center gap-1.5">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                        </svg>
+                                                        <span class="hidden sm:inline">Remove</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Continue Shopping -->
+                    <div class="flex justify-between items-center mt-6">
+                        <a href="/products" class="inline-flex items-center gap-2 text-fashion-black dark:text-white text-sm uppercase tracking-widest font-medium hover:text-primary-600 dark:hover:text-primary-400 transition group">
+                            <svg class="w-5 h-5 group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            Continue Shopping
+                        </a>
+                        <button @@click="clearCart()" class="text-sm text-gray-500 dark:text-gray-400 hover:text-accent-500 transition">
+                            Clear Bag
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white dark:bg-fashion-charcoal p-6 lg:sticky lg:top-24">
+                        <h2 class="font-display text-xl font-bold text-fashion-black dark:text-white mb-6">Order Summary</h2>
+
+                        <!-- Promo Code -->
+                        <div class="mb-6">
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Promo Code</label>
+                            <div class="flex gap-2">
+                                <input type="text"
+                                       x-model="discountCode"
+                                       placeholder="Enter code"
+                                       class="flex-1 px-4 py-3 border border-gray-200 dark:border-fashion-slate bg-transparent text-fashion-black dark:text-white text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <button @@click="applyDiscount()"
+                                        class="px-4 py-3 bg-gray-100 dark:bg-fashion-slate text-fashion-black dark:text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-200 dark:hover:bg-fashion-black transition">
+                                    Apply
+                                </button>
+                            </div>
+                            <template x-if="discountApplied">
+                                <p class="mt-2 text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span x-text="discountMessage"></span>
+                                </p>
+                            </template>
+                        </div>
+
+                        <!-- Summary Lines -->
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>Subtotal (<span x-text="cart.items.reduce((a, b) => a + b.quantity, 0)"></span> items)</span>
+                                <span x-text="'$' + cart.subtotal.toFixed(2)"></span>
+                            </div>
+                            <template x-if="discount > 0">
+                                <div class="flex justify-between text-green-600 dark:text-green-400">
+                                    <span>Discount</span>
+                                    <span x-text="'-$' + discount.toFixed(2)"></span>
+                                </div>
+                            </template>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>Shipping</span>
+                                <span x-text="cart.subtotal >= 100 ? 'FREE' : '$' + shipping.toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>Estimated Tax</span>
+                                <span x-text="'$' + tax.toFixed(2)"></span>
+                            </div>
+                        </div>
+
+                        <!-- Free Shipping Progress -->
+                        <template x-if="cart.subtotal < 100">
+                            <div class="my-6 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                                    </svg>
+                                    <span class="text-sm font-medium text-primary-700 dark:text-primary-300">
+                                        Add <span x-text="'$' + (100 - cart.subtotal).toFixed(2)"></span> for FREE shipping
+                                    </span>
+                                </div>
+                                <div class="w-full bg-primary-200 dark:bg-primary-800 h-1.5 rounded-full">
+                                    <div class="bg-primary-600 dark:bg-primary-400 h-1.5 rounded-full transition-all duration-500"
+                                         :style="{ width: Math.min(100, (cart.subtotal / 100) * 100) + '%' }"></div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Total -->
+                        <div class="border-t border-gray-100 dark:border-fashion-slate pt-4 my-6">
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-lg font-semibold text-fashion-black dark:text-white">Total</span>
+                                <span class="text-2xl font-bold text-fashion-black dark:text-white" x-text="'$' + total.toFixed(2)"></span>
+                            </div>
+                        </div>
+
+                        <!-- Checkout Button -->
+                        <a href="/checkout"
+                           class="block w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black text-center py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition">
+                            Proceed to Checkout
+                        </a>
+
+                        <!-- Payment Methods -->
+                        <div class="mt-6 flex items-center justify-center gap-3">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" class="h-6 opacity-50">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" class="h-6 opacity-50">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" class="h-5 opacity-50">
+                        </div>
+
+                        <!-- Secure Checkout -->
+                        <div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            Secure 256-bit SSL encryption
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 </div>
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" x-data="cartPage()">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
-
-    <template x-if="cart.items.length === 0">
-        <div class="text-center py-16">
-            <svg class="w-24 h-24 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-            </svg>
-            <h2 class="text-xl font-semibold text-gray-900 mb-2">Your cart is empty</h2>
-            <p class="text-gray-600 mb-6">Looks like you haven't added any items to your cart yet.</p>
-            <a href="/products" class="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition">
-                Continue Shopping
+<!-- You Might Also Like -->
+<section class="py-16 bg-white dark:bg-fashion-charcoal border-t border-gray-100 dark:border-fashion-slate">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-10">
+            <div>
+                <span class="text-primary-500 font-accent text-sm tracking-[0.3em] uppercase">Recommended</span>
+                <h2 class="font-display text-2xl lg:text-4xl font-bold text-fashion-black dark:text-white mt-2">
+                    You Might Also Like<span class="text-primary-500">.</span>
+                </h2>
+            </div>
+            <a href="/products" class="group inline-flex items-center gap-2 text-fashion-black dark:text-white text-sm uppercase tracking-widest font-medium border-b-2 border-fashion-black dark:border-white pb-1 hover:text-primary-500 hover:border-primary-500 transition">
+                View All
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
             </a>
         </div>
-    </template>
-
-    <template x-if="cart.items.length > 0">
-        <div class="grid lg:grid-cols-3 gap-8">
-            <!-- Cart Items -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-                    <!-- Header -->
-                    <div class="hidden md:grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b text-sm font-medium text-gray-500">
-                        <div class="col-span-6">Product</div>
-                        <div class="col-span-2 text-center">Price</div>
-                        <div class="col-span-2 text-center">Quantity</div>
-                        <div class="col-span-2 text-right">Total</div>
-                    </div>
-
-                    <!-- Items -->
-                    <div class="divide-y">
-                        <template x-for="item in cart.items" :key="item.id">
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 p-6 items-center">
-                                <!-- Product -->
-                                <div class="md:col-span-6 flex items-center gap-4">
-                                    <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                                        <img :src="item.image || 'https://placehold.co/80x80/e2e8f0/64748b?text=Product'" :alt="item.name" class="w-full h-full object-cover">
-                                    </div>
-                                    <div>
-                                        <h3 class="font-medium text-gray-900" x-text="item.name"></h3>
-                                        <button @@click="removeItem(item.id)" class="text-sm text-red-600 hover:text-red-700 mt-1">Remove</button>
-                                    </div>
-                                </div>
-
-                                <!-- Price -->
-                                <div class="md:col-span-2 text-center">
-                                    <span class="md:hidden text-sm text-gray-500">Price: </span>
-                                    <span class="text-gray-900" x-text="'$' + item.price.toFixed(2)"></span>
-                                </div>
-
-                                <!-- Quantity -->
-                                <div class="md:col-span-2 flex justify-center">
-                                    <div class="flex items-center border rounded-lg">
-                                        <button @@click="updateQuantity(item.id, item.quantity - 1)" class="px-3 py-2 hover:bg-gray-100 transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
-                                            </svg>
-                                        </button>
-                                        <span class="px-4 py-2" x-text="item.quantity"></span>
-                                        <button @@click="updateQuantity(item.id, item.quantity + 1)" class="px-3 py-2 hover:bg-gray-100 transition">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Total -->
-                                <div class="md:col-span-2 text-right">
-                                    <span class="md:hidden text-sm text-gray-500">Total: </span>
-                                    <span class="font-semibold text-gray-900" x-text="'$' + (item.price * item.quantity).toFixed(2)"></span>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-6 gap-4">
-                    <a href="/products" class="text-primary-600 hover:text-primary-700 font-medium flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                        </svg>
-                        Continue Shopping
-                    </a>
-                    <button @@click="clearCart()" class="text-gray-500 hover:text-gray-700 font-medium">
-                        Clear Cart
-                    </button>
-                </div>
-            </div>
-
-            <!-- Order Summary -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-xl shadow-sm p-6 sticky top-24">
-                    <h2 class="text-lg font-semibold text-gray-900 mb-6">Order Summary</h2>
-
-                    <!-- Discount Code -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Discount Code</label>
-                        <div class="flex gap-2">
-                            <input type="text" x-model="discountCode" placeholder="Enter code" class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                            <button @@click="applyDiscount()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition">
-                                Apply
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="space-y-3 mb-6">
-                        <div class="flex justify-between text-gray-600">
-                            <span>Subtotal</span>
-                            <span x-text="'$' + cart.subtotal.toFixed(2)"></span>
-                        </div>
-                        <div class="flex justify-between text-gray-600">
-                            <span>Shipping</span>
-                            <span x-text="shipping > 0 ? '$' + shipping.toFixed(2) : 'Calculated at checkout'"></span>
-                        </div>
-                        <template x-if="discount > 0">
-                            <div class="flex justify-between text-green-600">
-                                <span>Discount</span>
-                                <span x-text="'-$' + discount.toFixed(2)"></span>
-                            </div>
-                        </template>
-                        <div class="flex justify-between text-gray-600">
-                            <span>Estimated Tax</span>
-                            <span x-text="'$' + tax.toFixed(2)"></span>
-                        </div>
-                    </div>
-
-                    <div class="border-t pt-4 mb-6">
-                        <div class="flex justify-between text-lg font-semibold">
-                            <span>Total</span>
-                            <span x-text="'$' + total.toFixed(2)"></span>
-                        </div>
-                    </div>
-
-                    <a href="/checkout" class="block w-full bg-primary-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-primary-700 transition">
-                        Proceed to Checkout
-                    </a>
-
-                    <div class="mt-6 flex items-center justify-center gap-2 text-sm text-gray-500">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                        </svg>
-                        Secure checkout
-                    </div>
-                </div>
-            </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+            @for (int i = 0; i < 4; i++)
+            {
+                <partial name="_ProductCardPlaceholder" />
+            }
         </div>
-    </template>
-</div>
+    </div>
+</section>
 
 @section Scripts {
 <script>
@@ -168,46 +272,84 @@ function cartPage() {
         cart: JSON.parse(localStorage.getItem('cart') || '{"items":[],"subtotal":0}'),
         discountCode: '',
         discount: 0,
-        shipping: 0,
-        tax: 0,
+        discountApplied: false,
+        discountMessage: '',
+        shipping: 9.99,
+
+        get tax() {
+            return (this.cart.subtotal - this.discount) * 0.08;
+        },
 
         get total() {
             const subtotal = this.cart.subtotal;
-            this.tax = subtotal * 0.08; // 8% tax
-            this.shipping = subtotal >= 50 ? 0 : 5.99;
-            return subtotal + this.tax + this.shipping - this.discount;
+            const shippingCost = subtotal >= 100 ? 0 : this.shipping;
+            return subtotal + this.tax + shippingCost - this.discount;
         },
 
-        updateQuantity(id, quantity) {
+        updateQuantity(item, quantity) {
             if (quantity < 1) {
-                this.removeItem(id);
+                this.removeItem(item);
                 return;
             }
-            CartManager.updateQuantity(id, quantity);
+            // Generate key from item properties
+            const key = item.id + (item.size || '') + (item.color || '');
+            CartManager.updateQuantity(item.id, quantity);
             this.cart = JSON.parse(localStorage.getItem('cart'));
         },
 
-        removeItem(id) {
-            CartManager.removeItem(id);
+        removeItem(item) {
+            CartManager.removeItem(item.id);
             this.cart = JSON.parse(localStorage.getItem('cart'));
         },
 
         clearCart() {
-            if (confirm('Are you sure you want to clear your cart?')) {
+            if (confirm('Are you sure you want to clear your bag?')) {
                 CartManager.clear();
                 this.cart = { items: [], subtotal: 0 };
             }
         },
 
+        moveToWishlist(item) {
+            // Show notification
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-fashion-black text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3';
+            notification.innerHTML = '<svg class="w-5 h-5 text-accent-400" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg><span class="font-medium">Saved for later</span>';
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+
+            this.removeItem(item);
+        },
+
         applyDiscount() {
-            if (this.discountCode.toUpperCase() === 'SAVE10') {
+            const code = this.discountCode.toUpperCase().trim();
+            if (code === 'SAVE10') {
                 this.discount = this.cart.subtotal * 0.1;
-                alert('Discount applied! 10% off');
-            } else if (this.discountCode.toUpperCase() === 'FREESHIP') {
+                this.discountApplied = true;
+                this.discountMessage = 'SAVE10 applied - 10% off';
+            } else if (code === 'SAVE20') {
+                this.discount = this.cart.subtotal * 0.2;
+                this.discountApplied = true;
+                this.discountMessage = 'SAVE20 applied - 20% off';
+            } else if (code === 'FREESHIP') {
                 this.shipping = 0;
-                alert('Free shipping applied!');
+                this.discountApplied = true;
+                this.discountMessage = 'Free shipping applied';
             } else {
-                alert('Invalid discount code');
+                this.discountApplied = false;
+                // Show error notification
+                const notification = document.createElement('div');
+                notification.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-accent-500 text-white px-8 py-4 rounded-full shadow-2xl z-50';
+                notification.innerHTML = '<span class="font-medium">Invalid promo code</span>';
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transition = 'opacity 0.3s';
+                    setTimeout(() => notification.remove(), 300);
+                }, 2000);
             }
         }
     };
