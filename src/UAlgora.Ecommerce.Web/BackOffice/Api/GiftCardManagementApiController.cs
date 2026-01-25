@@ -20,6 +20,23 @@ public class GiftCardManagementApiController : EcommerceManagementApiControllerB
     }
 
     /// <summary>
+    /// Gets all gift cards.
+    /// </summary>
+    [HttpGet("")]
+    [ProducesResponseType<IReadOnlyList<GiftCard>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll([FromQuery] Guid? storeId = null)
+    {
+        if (storeId.HasValue)
+        {
+            var giftCards = await _giftCardService.GetByStoreAsync(storeId.Value);
+            return Ok(giftCards);
+        }
+        // Return all gift cards from default store or empty list
+        var allGiftCards = await _giftCardService.GetByStoreAsync(Guid.Empty);
+        return Ok(allGiftCards ?? new List<GiftCard>());
+    }
+
+    /// <summary>
     /// Gets gift cards by store.
     /// </summary>
     [HttpGet("by-store/{storeId:guid}")]

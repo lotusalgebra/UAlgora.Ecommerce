@@ -26,12 +26,12 @@ public static class EcommerceConstants
 
         // Enterprise features
         public const string Stores = "store";
-        public const string GiftCards = "giftcard";
-        public const string Returns = "return";
+        public const string GiftCards = "giftcards";
+        public const string Returns = "returns";
         public const string Licenses = "license";
-        public const string Webhooks = "webhook";
+        public const string Webhooks = "webhooks";
         public const string Audit = "audit";
-        public const string EmailTemplates = "email-template";
+        public const string EmailTemplates = "emailtemplates";
         public const string PaymentLinks = "payment-link";
     }
 

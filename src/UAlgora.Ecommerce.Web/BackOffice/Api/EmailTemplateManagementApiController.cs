@@ -20,6 +20,17 @@ public class EmailTemplateManagementApiController : EcommerceManagementApiContro
     }
 
     /// <summary>
+    /// Gets all email templates.
+    /// </summary>
+    [HttpGet("")]
+    [ProducesResponseType<IReadOnlyList<EmailTemplate>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll([FromQuery] Guid? storeId = null)
+    {
+        var templates = await _emailTemplateService.GetByStoreAsync(storeId);
+        return Ok(templates);
+    }
+
+    /// <summary>
     /// Gets email templates by store.
     /// </summary>
     [HttpGet("by-store")]

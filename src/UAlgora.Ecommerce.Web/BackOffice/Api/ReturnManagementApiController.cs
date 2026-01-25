@@ -20,6 +20,17 @@ public class ReturnManagementApiController : EcommerceManagementApiControllerBas
     }
 
     /// <summary>
+    /// Gets all returns.
+    /// </summary>
+    [HttpGet("")]
+    [ProducesResponseType<IReadOnlyList<Return>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll()
+    {
+        var returns = await _returnService.GetPendingAsync();
+        return Ok(returns);
+    }
+
+    /// <summary>
     /// Gets pending returns.
     /// </summary>
     [HttpGet("pending")]

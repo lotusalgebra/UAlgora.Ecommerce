@@ -1,18 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 using UAlgora.Ecommerce.Core.Interfaces.Services;
 using UAlgora.Ecommerce.Core.Models.Domain;
-using Umbraco.Cms.Api.Common.Attributes;
-using Umbraco.Cms.Web.Common.Routing;
+using Umbraco.Cms.Api.Management.Routing;
 
 namespace UAlgora.Ecommerce.Web.BackOffice.Api;
 
 /// <summary>
 /// API controller for tax management in the backoffice.
 /// </summary>
-[ApiController]
-[BackOfficeRoute("ecommerce/tax")]
-[MapToApi("ecommerce-management-api")]
-public class TaxManagementApiController : ControllerBase
+[VersionedApiBackOfficeRoute($"{EcommerceConstants.ApiRouteBase}/tax")]
+public class TaxManagementApiController : EcommerceManagementApiControllerBase
 {
     private readonly ITaxService _taxService;
 

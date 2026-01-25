@@ -20,6 +20,23 @@ public class WebhookManagementApiController : EcommerceManagementApiControllerBa
     }
 
     /// <summary>
+    /// Gets all webhooks.
+    /// </summary>
+    [HttpGet("")]
+    [ProducesResponseType<IReadOnlyList<Webhook>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll([FromQuery] Guid? storeId = null)
+    {
+        if (storeId.HasValue)
+        {
+            var webhooks = await _webhookService.GetByStoreAsync(storeId.Value);
+            return Ok(webhooks);
+        }
+        // Return active webhooks by default
+        var activeWebhooks = await _webhookService.GetActiveAsync();
+        return Ok(activeWebhooks);
+    }
+
+    /// <summary>
     /// Gets all active webhooks.
     /// </summary>
     [HttpGet("active")]
