@@ -7,6 +7,7 @@ export class ProductCollection extends UmbElementMixin(LitElement) {
     .collection-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .search-box { flex: 1; max-width: 400px; }
     .search-box uui-input { width: 100%; }
+    .search-box uui-icon { display: flex; align-items: center; padding: 0 8px; color: #666; }
     .collection-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; }
     .collection-table th, .collection-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e0e0e0; }
     .collection-table th { background: #f5f5f5; font-weight: 600; }
