@@ -344,6 +344,19 @@
     {
       "type": "menuItem",
       "kind": "link",
+      "alias": "Umb.MenuItem.Ecommerce.Taxes",
+      "name": "Taxes",
+      "weight": 885,
+      "meta": {
+        "label": "Taxes",
+        "icon": "icon-bill-dollar",
+        "menus": ["Umb.Menu.Ecommerce.Settings"],
+        "href": "/umbraco/section/ecommerce/view/taxes"
+      }
+    },
+    {
+      "type": "menuItem",
+      "kind": "link",
       "alias": "Umb.MenuItem.Ecommerce.Webhooks",
       "name": "Webhooks",
       "weight": 880,
@@ -677,6 +690,24 @@
         "label": "Checkout Steps",
         "pathname": "checkoutsteps",
         "icon": "icon-directions-alt"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Ecommerce"
+        }
+      ]
+    },
+    {
+      "type": "sectionView",
+      "alias": "Umb.SectionView.Ecommerce.Taxes",
+      "name": "Taxes View",
+      "element": "/App_Plugins/Ecommerce/views/collections/tax-collection.js",
+      "weight": 95,
+      "meta": {
+        "label": "Taxes",
+        "pathname": "taxes",
+        "icon": "icon-bill-dollar"
       },
       "conditions": [
         {
