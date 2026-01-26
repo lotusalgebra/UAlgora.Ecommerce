@@ -7,12 +7,28 @@ using UAlgora.Ecommerce.Core.Interfaces.Repositories;
 using UAlgora.Ecommerce.Core.Interfaces.Services;
 using UAlgora.Ecommerce.Core.Models.Domain;
 using UAlgora.Ecommerce.Site.ViewModels;
+using Umbraco.Cms.Core.Web;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Extensions;
 
 namespace UAlgora.Ecommerce.Site.Controllers;
 
 public class StorefrontController : Controller
 {
     private const string AuthScheme = "EcommerceCustomer";
+    private const string LoginPageAlias = "algoraLoginPage";
+    private const string RegisterPageAlias = "algoraRegisterPage";
+    private const string CheckoutPageAlias = "algoraCheckoutPage";
+    private const string CartPageAlias = "algoraCartPage";
+    private const string ProductsPageAlias = "algoraProductsPage";
+    private const string ProductDetailPageAlias = "algoraProductDetailPage";
+    private const string AccountPageAlias = "algoraAccountPage";
+    private const string OrdersPageAlias = "algoraOrdersPage";
+    private const string OrderDetailPageAlias = "algoraOrderDetailPage";
+    private const string WishlistPageAlias = "algoraWishlistPage";
+    private const string DealsPageAlias = "algoraDealsPage";
+    private const string OrderConfirmationPageAlias = "algoraOrderConfirmationPage";
+
     private readonly IProductService _productService;
     private readonly ICategoryService _categoryService;
     private readonly ICartService _cartService;
@@ -20,6 +36,7 @@ public class StorefrontController : Controller
     private readonly IOrderService _orderService;
     private readonly IWishlistService _wishlistService;
     private readonly IReviewService _reviewService;
+    private readonly IUmbracoContextAccessor _umbracoContextAccessor;
 
     public StorefrontController(
         IProductService productService,
@@ -28,7 +45,8 @@ public class StorefrontController : Controller
         ICustomerService customerService,
         IOrderService orderService,
         IWishlistService wishlistService,
-        IReviewService reviewService)
+        IReviewService reviewService,
+        IUmbracoContextAccessor umbracoContextAccessor)
     {
         _productService = productService;
         _categoryService = categoryService;
@@ -37,6 +55,7 @@ public class StorefrontController : Controller
         _orderService = orderService;
         _wishlistService = wishlistService;
         _reviewService = reviewService;
+        _umbracoContextAccessor = umbracoContextAccessor;
     }
 
     [HttpGet("/")]
@@ -74,6 +93,30 @@ public class StorefrontController : Controller
         bool? inStock,
         int page = 1)
     {
+        // Look for CMS-managed Products page
+        var productsPage = FindPageByAlias(ProductsPageAlias);
+        if (productsPage != null)
+        {
+            // Build query string to preserve filters
+            var queryParams = new List<string>();
+            if (!string.IsNullOrEmpty(search)) queryParams.Add($"search={Uri.EscapeDataString(search)}");
+            if (category.HasValue) queryParams.Add($"category={category}");
+            if (!string.IsNullOrEmpty(sort)) queryParams.Add($"sort={sort}");
+            if (minPrice.HasValue) queryParams.Add($"minPrice={minPrice}");
+            if (maxPrice.HasValue) queryParams.Add($"maxPrice={maxPrice}");
+            if (sale == true) queryParams.Add("sale=true");
+            if (inStock == true) queryParams.Add("inStock=true");
+            if (page > 1) queryParams.Add($"page={page}");
+
+            var url = productsPage.Url();
+            if (queryParams.Any())
+            {
+                url += "?" + string.Join("&", queryParams);
+            }
+            return Redirect(url);
+        }
+
+        // Fallback to hardcoded view
         var parameters = new ProductQueryParameters
         {
             Page = page,
@@ -129,6 +172,15 @@ public class StorefrontController : Controller
     [HttpGet("/products/{slug}")]
     public async Task<IActionResult> ProductDetail(string slug)
     {
+        // Look for CMS-managed Product Detail page
+        var productDetailPage = FindPageByAlias(ProductDetailPageAlias);
+        if (productDetailPage != null)
+        {
+            // Redirect to the Umbraco-managed product detail page with slug as query parameter
+            return Redirect(productDetailPage.Url() + $"?slug={Uri.EscapeDataString(slug)}");
+        }
+
+        // Fallback to hardcoded view
         var product = await _productService.GetBySlugAsync(slug);
         if (product == null)
         {
@@ -168,6 +220,15 @@ public class StorefrontController : Controller
     [HttpGet("/cart")]
     public IActionResult Cart()
     {
+        // Look for CMS-managed Cart page
+        var cartPage = FindPageByAlias(CartPageAlias);
+        if (cartPage != null)
+        {
+            // Redirect to the Umbraco-managed cart page
+            return Redirect(cartPage.Url());
+        }
+
+        // Fallback to hardcoded view
         ViewData["Title"] = "Shopping Cart";
         return View("Cart", new CartViewModel());
     }
@@ -175,6 +236,15 @@ public class StorefrontController : Controller
     [HttpGet("/checkout")]
     public IActionResult Checkout()
     {
+        // Look for CMS-managed Checkout page
+        var checkoutPage = FindPageByAlias(CheckoutPageAlias);
+        if (checkoutPage != null)
+        {
+            // Redirect to the Umbraco-managed checkout page
+            return Redirect(checkoutPage.Url());
+        }
+
+        // Fallback to hardcoded view
         var viewModel = new CheckoutViewModel
         {
             ShippingMethods =
@@ -197,6 +267,15 @@ public class StorefrontController : Controller
     [HttpGet("/order-confirmation/{orderNumber}")]
     public async Task<IActionResult> OrderConfirmation(string orderNumber)
     {
+        // Look for CMS-managed Order Confirmation page
+        var orderConfirmationPage = FindPageByAlias(OrderConfirmationPageAlias);
+        if (orderConfirmationPage != null)
+        {
+            // Redirect to the Umbraco-managed order confirmation page with order number as query parameter
+            return Redirect(orderConfirmationPage.Url() + $"?orderNumber={Uri.EscapeDataString(orderNumber)}");
+        }
+
+        // Fallback to hardcoded view
         var order = await _orderService.GetByOrderNumberAsync(orderNumber);
         if (order == null)
         {
@@ -218,6 +297,15 @@ public class StorefrontController : Controller
     [Authorize(AuthenticationSchemes = AuthScheme)]
     public async Task<IActionResult> Account()
     {
+        // Look for CMS-managed Account page
+        var accountPage = FindPageByAlias(AccountPageAlias);
+        if (accountPage != null)
+        {
+            // Redirect to the Umbraco-managed account page
+            return Redirect(accountPage.Url());
+        }
+
+        // Fallback to hardcoded view
         var customerId = GetCurrentCustomerId();
         if (customerId == null)
         {
@@ -258,6 +346,15 @@ public class StorefrontController : Controller
     [Authorize(AuthenticationSchemes = AuthScheme)]
     public async Task<IActionResult> Orders()
     {
+        // Look for CMS-managed Orders page
+        var ordersPage = FindPageByAlias(OrdersPageAlias);
+        if (ordersPage != null)
+        {
+            // Redirect to the Umbraco-managed orders page
+            return Redirect(ordersPage.Url());
+        }
+
+        // Fallback to hardcoded view
         var customerId = GetCurrentCustomerId();
         if (customerId == null)
         {
@@ -275,6 +372,15 @@ public class StorefrontController : Controller
     [Authorize(AuthenticationSchemes = AuthScheme)]
     public async Task<IActionResult> OrderDetail(string orderNumber)
     {
+        // Look for CMS-managed Order Detail page
+        var orderDetailPage = FindPageByAlias(OrderDetailPageAlias);
+        if (orderDetailPage != null)
+        {
+            // Redirect to the Umbraco-managed order detail page with order number as query parameter
+            return Redirect(orderDetailPage.Url() + $"?orderNumber={Uri.EscapeDataString(orderNumber)}");
+        }
+
+        // Fallback to hardcoded view
         var customerId = GetCurrentCustomerId();
         if (customerId == null)
         {
@@ -301,6 +407,15 @@ public class StorefrontController : Controller
     [Authorize(AuthenticationSchemes = AuthScheme)]
     public async Task<IActionResult> Wishlist()
     {
+        // Look for CMS-managed Wishlist page
+        var wishlistPage = FindPageByAlias(WishlistPageAlias);
+        if (wishlistPage != null)
+        {
+            // Redirect to the Umbraco-managed wishlist page
+            return Redirect(wishlistPage.Url());
+        }
+
+        // Fallback to hardcoded view
         var customerId = GetCurrentCustomerId();
         if (customerId == null)
         {
@@ -319,14 +434,40 @@ public class StorefrontController : Controller
     }
 
     [HttpGet("/deals")]
-    public async Task<IActionResult> Deals()
+    public async Task<IActionResult> Deals(string? sort, string? discount, string? category, int page = 1)
     {
+        // Look for CMS-managed Deals page
+        var dealsPage = FindPageByAlias(DealsPageAlias);
+        if (dealsPage != null)
+        {
+            // Build query string to preserve filters
+            var queryParams = new List<string>();
+            if (!string.IsNullOrEmpty(sort)) queryParams.Add($"sort={sort}");
+            if (!string.IsNullOrEmpty(discount)) queryParams.Add($"discount={discount}");
+            if (!string.IsNullOrEmpty(category)) queryParams.Add($"category={Uri.EscapeDataString(category)}");
+            if (page > 1) queryParams.Add($"page={page}");
+
+            var url = dealsPage.Url();
+            if (queryParams.Any())
+            {
+                url += "?" + string.Join("&", queryParams);
+            }
+            return Redirect(url);
+        }
+
+        // Fallback to hardcoded view
         var parameters = new ProductQueryParameters
         {
-            Page = 1,
+            Page = page,
             PageSize = 24,
             OnSale = true,
-            SortBy = ProductSortBy.Newest
+            SortBy = sort switch
+            {
+                "price-asc" => ProductSortBy.PriceLowToHigh,
+                "price-desc" => ProductSortBy.PriceHighToLow,
+                "newest" => ProductSortBy.Newest,
+                _ => ProductSortBy.Newest
+            }
         };
 
         var result = await _productService.GetPagedAsync(parameters);
@@ -337,9 +478,10 @@ public class StorefrontController : Controller
             Products = result.Items.ToList(),
             Categories = categories.Where(c => c.IsVisible).ToList(),
             TotalCount = result.TotalCount,
-            Page = 1,
+            Page = page,
             PageSize = 24,
-            OnSale = true
+            OnSale = true,
+            SortBy = sort
         };
 
         ViewData["Title"] = "Deals & Offers";
@@ -355,6 +497,15 @@ public class StorefrontController : Controller
             return Redirect(returnUrl ?? "/account");
         }
 
+        // Look for CMS-managed Login page
+        var loginPage = FindPageByAlias(LoginPageAlias);
+        if (loginPage != null)
+        {
+            // Redirect to the Umbraco-managed login page
+            return Redirect(loginPage.Url() + (string.IsNullOrEmpty(returnUrl) ? "" : $"?returnUrl={Uri.EscapeDataString(returnUrl)}"));
+        }
+
+        // Fallback to hardcoded view
         ViewData["Title"] = "Login";
         ViewData["ReturnUrl"] = returnUrl ?? "/account";
         return View("Login");
@@ -369,6 +520,15 @@ public class StorefrontController : Controller
             return RedirectToAction(nameof(Account));
         }
 
+        // Look for CMS-managed Register page
+        var registerPage = FindPageByAlias(RegisterPageAlias);
+        if (registerPage != null)
+        {
+            // Redirect to the Umbraco-managed register page
+            return Redirect(registerPage.Url());
+        }
+
+        // Fallback to hardcoded view
         ViewData["Title"] = "Create Account";
         return View("Register");
     }
@@ -393,6 +553,43 @@ public class StorefrontController : Controller
         }
 
         return customerId;
+    }
+
+    /// <summary>
+    /// Finds a published page by its document type alias.
+    /// Searches the entire content tree for the first matching page.
+    /// </summary>
+    private IPublishedContent? FindPageByAlias(string alias)
+    {
+        if (!_umbracoContextAccessor.TryGetUmbracoContext(out var umbracoContext))
+        {
+            return null;
+        }
+
+        var content = umbracoContext.Content;
+        if (content == null)
+        {
+            return null;
+        }
+
+        // Search all root content and their descendants
+        foreach (var root in content.GetAtRoot())
+        {
+            // Check root
+            if (root.ContentType.Alias == alias)
+            {
+                return root;
+            }
+
+            // Check descendants
+            var found = root.DescendantsOrSelf().FirstOrDefault(x => x.ContentType.Alias == alias);
+            if (found != null)
+            {
+                return found;
+            }
+        }
+
+        return null;
     }
 
     #endregion

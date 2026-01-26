@@ -1,0 +1,272 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = "_Layout";
+
+    // Breadcrumb
+    var homeText = Model.Value<string>("breadcrumbHomeText") ?? "Home";
+    var wishlistText = Model.Value<string>("breadcrumbWishlistText") ?? "My Wishlist";
+
+    // Header
+    var pageTitle = Model.Value<string>("pageTitle") ?? "My Wishlist";
+    var itemsCountFormat = Model.Value<string>("itemsCountFormat") ?? "{count} items saved";
+    var shareButtonText = Model.Value<string>("shareButtonText") ?? "Share List";
+    var showShareButton = Model.Value<bool>("showShareButton");
+
+    // Empty State
+    var emptyTitle = Model.Value<string>("emptyTitle") ?? "Your wishlist is empty";
+    var emptyDescription = Model.Value<string>("emptyDescription") ?? "Start adding products you love by clicking the heart icon on any product.";
+    var exploreButtonText = Model.Value<string>("exploreButtonText") ?? "Explore Products";
+    var exploreButtonUrl = Model.Value<string>("exploreButtonUrl") ?? "/products";
+
+    // Product Card
+    var soldOutBadgeText = Model.Value<string>("soldOutBadgeText") ?? "SOLD OUT";
+    var defaultBrandText = Model.Value<string>("defaultBrandText") ?? "Algora";
+    var addedDateFormat = Model.Value<string>("addedDateFormat") ?? "Added {date}";
+    var placeholderImage = Model.Value<string>("placeholderImage") ?? "https://placehold.co/320x400/e2e8f0/64748b?text=Product";
+
+    // Actions
+    var addToBagText = Model.Value<string>("addToBagText") ?? "Add to Bag";
+    var outOfStockText = Model.Value<string>("outOfStockText") ?? "Out of Stock";
+    var clearWishlistText = Model.Value<string>("clearWishlistText") ?? "Clear Wishlist";
+    var addAllToBagText = Model.Value<string>("addAllToBagText") ?? "Add All to Bag";
+    var clearConfirmText = Model.Value<string>("clearConfirmText") ?? "Are you sure you want to clear your wishlist?";
+
+    // Notifications
+    var addedToBagMessage = Model.Value<string>("addedToBagMessage") ?? "Added to bag!";
+    var addedAllToBagFormat = Model.Value<string>("addedAllToBagFormat") ?? "Added {count} items to bag!";
+    var noItemsInStockMessage = Model.Value<string>("noItemsInStockMessage") ?? "No items in stock to add";
+    var itemRemovedMessage = Model.Value<string>("itemRemovedMessage") ?? "Item removed from wishlist";
+    var wishlistClearedMessage = Model.Value<string>("wishlistClearedMessage") ?? "Wishlist cleared";
+
+    // SEO
+    var metaTitle = Model.Value<string>("metaTitle") ?? pageTitle;
+    var metaDescription = Model.Value<string>("metaDescription") ?? "View and manage your saved products";
+    ViewData["Title"] = metaTitle;
+    ViewData["MetaDescription"] = metaDescription;
+}
+
+<div class="min-h-screen bg-gray-50 dark:bg-fashion-charcoal" x-data="wishlistPage()">
+    <!-- Hero Header -->
+    <div class="bg-gradient-to-br from-accent-500 via-primary-600 to-primary-500 dark:from-accent-700 dark:via-primary-800 dark:to-primary-700 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;40&quot; height=&quot;40&quot; viewBox=&quot;0 0 40 40&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cpath d=&quot;M20 20.5V18H0v-2h20v-2.5L25 17l-5 3.5z&quot; fill=&quot;%23fff&quot; fill-opacity=&quot;0.2&quot;/%3E%3C/svg%3E');"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative">
+            <nav class="flex text-sm text-white/60 mb-4">
+                <a href="/" class="hover:text-white transition">@homeText</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">@wishlistText</span>
+            </nav>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="font-display text-3xl lg:text-4xl font-bold text-white flex items-center gap-3">
+                        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                        @pageTitle<span class="text-accent-200">.</span>
+                    </h1>
+                    <p class="text-white/70 mt-2" x-text="formatItemsCount(items.length)"></p>
+                </div>
+                @if (showShareButton)
+                {
+                    <div class="flex items-center gap-3">
+                        <button class="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm text-white text-sm font-medium hover:bg-white/20 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                            </svg>
+                            @shareButtonText
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Empty State -->
+        <template x-if="items.length === 0">
+            <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 py-20 text-center">
+                <div class="w-24 h-24 mx-auto mb-8 bg-accent-50 dark:bg-accent-900/20 rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-accent-300 dark:text-accent-700" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                </div>
+                <h2 class="font-display text-2xl font-bold text-fashion-black dark:text-white mb-3">@emptyTitle</h2>
+                <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">@emptyDescription</p>
+                <a href="@exploreButtonUrl" class="inline-flex items-center gap-2 bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    @exploreButtonText
+                </a>
+            </div>
+        </template>
+
+        <!-- Wishlist Items -->
+        <template x-if="items.length > 0">
+            <div>
+                <!-- Grid View -->
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+                    <template x-for="item in items" :key="item.id">
+                        <div class="group bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 relative">
+                            <!-- Remove Button -->
+                            <button x-on:click="removeItem(item.id)"
+                                    class="absolute top-3 right-3 z-10 w-8 h-8 bg-white dark:bg-fashion-charcoal rounded-full shadow-lg flex items-center justify-center text-gray-400 hover:text-accent-500 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+
+                            <!-- Image -->
+                            <a :href="'/products/' + item.slug" class="block">
+                                <div class="aspect-[4/5] bg-gray-100 dark:bg-fashion-charcoal overflow-hidden">
+                                    <img :src="item.image || '@placeholderImage'"
+                                         :alt="item.name"
+                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                </div>
+                            </a>
+
+                            <!-- Stock Badge -->
+                            <div class="absolute top-3 left-3">
+                                <span x-show="!item.inStock" class="bg-accent-500 text-white text-xs font-accent tracking-wider px-2.5 py-1">
+                                    @soldOutBadgeText
+                                </span>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="p-4">
+                                <p class="text-xs text-gray-400 uppercase tracking-wider mb-1" x-text="item.brand || '@defaultBrandText'"></p>
+                                <a :href="'/products/' + item.slug" class="block">
+                                    <h3 class="text-sm font-medium text-fashion-black dark:text-white line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition" x-text="item.name"></h3>
+                                </a>
+                                <div class="flex items-baseline gap-2 mt-2">
+                                    <span class="font-display text-lg font-bold text-fashion-black dark:text-white" x-text="'$' + item.price.toFixed(2)"></span>
+                                    <template x-if="item.originalPrice && item.originalPrice > item.price">
+                                        <span class="text-sm text-gray-400 line-through" x-text="'$' + item.originalPrice.toFixed(2)"></span>
+                                    </template>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-2" x-text="formatAddedDate(item.addedAt)"></p>
+
+                                <!-- Add to Bag -->
+                                <button x-show="item.inStock" x-on:click="addToCart(item)"
+                                        class="w-full mt-4 bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-3 text-xs uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                                    @addToBagText
+                                </button>
+                                <button x-show="!item.inStock" disabled
+                                        class="w-full mt-4 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600 py-3 text-xs uppercase tracking-widest font-medium cursor-not-allowed">
+                                    @outOfStockText
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Actions -->
+                <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-800">
+                    <button x-on:click="clearWishlist()" class="text-sm text-gray-500 dark:text-gray-400 hover:text-accent-600 dark:hover:text-accent-400 font-medium flex items-center gap-2 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        @clearWishlistText
+                    </button>
+                    <button x-on:click="addAllToCart()" class="flex items-center gap-2 bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                        </svg>
+                        @addAllToBagText
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function wishlistPage() {
+    // CMS Configuration
+    const config = {
+        itemsCountFormat: '@Html.Raw(itemsCountFormat.Replace("'", "\\'"))',
+        addedDateFormat: '@Html.Raw(addedDateFormat.Replace("'", "\\'"))',
+        clearConfirmText: '@Html.Raw(clearConfirmText.Replace("'", "\\'"))',
+        addedToBagMessage: '@Html.Raw(addedToBagMessage.Replace("'", "\\'"))',
+        addedAllToBagFormat: '@Html.Raw(addedAllToBagFormat.Replace("'", "\\'"))',
+        noItemsInStockMessage: '@Html.Raw(noItemsInStockMessage.Replace("'", "\\'"))',
+        itemRemovedMessage: '@Html.Raw(itemRemovedMessage.Replace("'", "\\'"))',
+        wishlistClearedMessage: '@Html.Raw(wishlistClearedMessage.Replace("'", "\\'"))'
+    };
+
+    return {
+        items: JSON.parse(localStorage.getItem('wishlist') || '[]'),
+
+        formatItemsCount(count) {
+            return config.itemsCountFormat.replace('{count}', count);
+        },
+
+        formatAddedDate(date) {
+            return config.addedDateFormat.replace('{date}', date);
+        },
+
+        addToCart(item) {
+            CartManager.addItem({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                image: item.image,
+                size: 'M'
+            });
+            this.showNotification(config.addedToBagMessage);
+        },
+
+        addAllToCart() {
+            const inStockItems = this.items.filter(i => i.inStock);
+            if (inStockItems.length === 0) {
+                this.showNotification(config.noItemsInStockMessage);
+                return;
+            }
+            inStockItems.forEach(item => {
+                CartManager.addItem({
+                    id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    image: item.image,
+                    size: 'M'
+                });
+            });
+            this.showNotification(config.addedAllToBagFormat.replace('{count}', inStockItems.length));
+        },
+
+        removeItem(id) {
+            this.items = this.items.filter(i => i.id !== id);
+            localStorage.setItem('wishlist', JSON.stringify(this.items));
+            this.showNotification(config.itemRemovedMessage);
+        },
+
+        clearWishlist() {
+            if (confirm(config.clearConfirmText)) {
+                this.items = [];
+                localStorage.setItem('wishlist', JSON.stringify(this.items));
+                this.showNotification(config.wishlistClearedMessage);
+            }
+        },
+
+        showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-fashion-black text-white px-6 py-3 shadow-2xl z-50 flex items-center gap-2 text-sm font-medium';
+            notification.innerHTML = `
+                <svg class="w-5 h-5 text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                ${message}
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 2500);
+        }
+    };
+}
+</script>
+}

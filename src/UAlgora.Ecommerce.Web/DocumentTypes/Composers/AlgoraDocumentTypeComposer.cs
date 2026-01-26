@@ -32,6 +32,18 @@ public sealed class AlgoraDocumentTypeComposer : IComposer
         // Site Settings & Pages
         builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, SiteSettingsDocumentTypeProvider>();
         builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, HomePageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, LoginPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, RegisterPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, CheckoutPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, CartPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, ProductsPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, ProductDetailPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, AccountPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, OrdersPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, OrderDetailPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, WishlistPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, DealsPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, OrderConfirmationPageDocumentTypeProvider>();
 
         // Commerce Document Types
         builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, CatalogDocumentTypeProvider>();

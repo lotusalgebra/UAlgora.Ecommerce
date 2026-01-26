@@ -1,0 +1,648 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using UAlgora.Ecommerce.Core.Interfaces.Repositories
+@using UAlgora.Ecommerce.Core.Interfaces.Services
+@using UAlgora.Ecommerce.Core.Models.Domain
+@inject IProductRepository ProductRepository
+@inject ICategoryRepository CategoryRepository
+@inject IReviewService ReviewService
+
+@{
+    Layout = "_Layout";
+
+    // Get product slug from URL
+    var slug = Context.Request.RouteValues["slug"]?.ToString()
+               ?? Context.Request.Query["slug"].ToString();
+
+    Product? product = null;
+    Category? category = null;
+    IReadOnlyList<Review> reviews = [];
+    IReadOnlyList<Product> relatedProducts = [];
+    double averageRating = 0;
+    int reviewCount = 0;
+
+    if (!string.IsNullOrEmpty(slug))
+    {
+        product = await ProductRepository.GetBySlugAsync(slug);
+        if (product != null)
+        {
+            reviews = await ReviewService.GetReviewsByProductIdAsync(product.Id, approvedOnly: true);
+            reviewCount = reviews.Count;
+            averageRating = reviews.Any() ? reviews.Average(r => r.Rating) : 0;
+
+            if (product.CategoryIds.Any())
+            {
+                category = await CategoryRepository.GetByIdAsync(product.CategoryIds.First());
+            }
+
+            relatedProducts = await ProductRepository.GetRelatedAsync(product.Id, 4);
+        }
+    }
+
+    // CMS values with fallbacks
+    // Breadcrumb
+    var breadcrumbHome = Model.Value<string>("breadcrumbHome") ?? "Home";
+    var breadcrumbShop = Model.Value<string>("breadcrumbShop") ?? "Shop";
+
+    // Labels
+    var newBadgeText = Model.Value<string>("newBadgeText") ?? "NEW";
+    var newBadgeDays = Model.Value<int>("newBadgeDays");
+    if (newBadgeDays <= 0) newBadgeDays = 14;
+    var reviewsLabel = Model.Value<string>("reviewsLabel") ?? "reviews";
+    var saveLabel = Model.Value<string>("saveLabel") ?? "Save";
+    var colorLabel = Model.Value<string>("colorLabel") ?? "Color";
+    var sizeLabel = Model.Value<string>("sizeLabel") ?? "Size";
+    var sizeGuideText = Model.Value<string>("sizeGuideText") ?? "Size Guide";
+    var selectLabel = Model.Value<string>("selectLabel") ?? "Select";
+    var zoomText = Model.Value<string>("zoomText") ?? "Click to zoom";
+
+    // Buttons
+    var addToBagText = Model.Value<string>("addToBagText") ?? "Add to Bag";
+    var soldOutText = Model.Value<string>("soldOutText") ?? "Sold Out";
+    var notifyMeText = Model.Value<string>("notifyMeText") ?? "Notify Me When Available";
+    var selectSizeAlert = Model.Value<string>("selectSizeAlert") ?? "Please select a size";
+    var addedToWishlistText = Model.Value<string>("addedToWishlistText") ?? "Added to wishlist";
+    var removedFromWishlistText = Model.Value<string>("removedFromWishlistText") ?? "Removed from wishlist";
+
+    // Trust Badges
+    var freeShippingText = Model.Value<string>("freeShippingText") ?? "Free shipping over $100";
+    var easyReturnsText = Model.Value<string>("easyReturnsText") ?? "30-day easy returns";
+    var secureCheckoutText = Model.Value<string>("secureCheckoutText") ?? "Secure checkout";
+    var shippingTimeText = Model.Value<string>("shippingTimeText") ?? "Ships in 1-2 days";
+
+    // Accordion
+    var descriptionTitle = Model.Value<string>("descriptionTitle") ?? "Description";
+    var noDescriptionText = Model.Value<string>("noDescriptionText") ?? "No description available for this product.";
+    var detailsCareTitle = Model.Value<string>("detailsCareTitle") ?? "Details & Care";
+    var careInstructions = Model.Value<string>("careInstructions") ?? "Machine wash cold\nDo not bleach\nTumble dry low";
+    var shippingReturnsTitle = Model.Value<string>("shippingReturnsTitle") ?? "Shipping & Returns";
+    var shippingReturnsContent = Model.Value<string>("shippingReturnsContent")
+        ?? "<p class=\"mb-2\"><strong>Free Standard Shipping</strong> on orders over $100</p><p class=\"mb-2\">Express delivery available at checkout</p><p>Free returns within 30 days of purchase. Items must be unworn with tags attached.</p>";
+
+    // Related Products
+    var relatedEnabled = Model.Value<bool>("relatedEnabled");
+    var relatedLabel = Model.Value<string>("relatedLabel") ?? "Style It";
+    var relatedTitle = Model.Value<string>("relatedTitle") ?? "Complete the Look";
+    var relatedViewAllText = Model.Value<string>("relatedViewAllText") ?? "View All";
+    var relatedCount = Model.Value<int>("relatedCount");
+    if (relatedCount <= 0) relatedCount = 4;
+
+    // Reviews Section
+    var reviewsEnabled = Model.Value<bool>("reviewsEnabled");
+    var reviewsSectionLabel = Model.Value<string>("reviewsSectionLabel") ?? "Customer Reviews";
+    var reviewsSectionTitle = Model.Value<string>("reviewsSectionTitle") ?? "What People Say";
+    var noReviewsText = Model.Value<string>("noReviewsText") ?? "No reviews yet";
+    var writeReviewText = Model.Value<string>("writeReviewText") ?? "Write a Review";
+    var reviewsCountToShow = Model.Value<int>("reviewsCount");
+    if (reviewsCountToShow <= 0) reviewsCountToShow = 6;
+
+    // Recently Viewed
+    var recentlyViewedEnabled = Model.Value<bool>("recentlyViewedEnabled");
+    var recentlyViewedLabel = Model.Value<string>("recentlyViewedLabel") ?? "Your History";
+    var recentlyViewedTitle = Model.Value<string>("recentlyViewedTitle") ?? "Recently Viewed";
+    var recentlyViewedEmptyText = Model.Value<string>("recentlyViewedEmptyText") ?? "Your recently viewed items will appear here.";
+
+    // SEO
+    var metaTitleTemplate = Model.Value<string>("metaTitleTemplate") ?? "{productName} | {brand}";
+    var metaDescriptionTemplate = Model.Value<string>("metaDescriptionTemplate") ?? "{shortDescription}";
+
+    // Set page title
+    if (product != null)
+    {
+        var pageTitle = metaTitleTemplate
+            .Replace("{productName}", product.Name)
+            .Replace("{brand}", product.Brand ?? "")
+            .Replace("{category}", category?.Name ?? "");
+        ViewBag.Title = pageTitle;
+    }
+    else
+    {
+        ViewBag.Title = "Product Not Found";
+    }
+}
+
+@if (product == null)
+{
+    <div class="min-h-[60vh] flex items-center justify-center bg-white dark:bg-fashion-charcoal">
+        <div class="text-center">
+            <h1 class="font-display text-4xl font-bold text-fashion-black dark:text-white mb-4">Product Not Found</h1>
+            <p class="text-gray-600 dark:text-gray-400 mb-8">The product you're looking for doesn't exist or has been removed.</p>
+            <a href="/products" class="inline-block bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 transition">
+                Browse Products
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Breadcrumb -->
+    <div class="bg-white dark:bg-fashion-charcoal border-b border-gray-100 dark:border-fashion-slate">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <nav class="flex text-sm text-gray-500 dark:text-gray-400">
+                <a href="/" class="hover:text-fashion-black dark:hover:text-white transition">@breadcrumbHome</a>
+                <span class="mx-2">/</span>
+                <a href="/products" class="hover:text-fashion-black dark:hover:text-white transition">@breadcrumbShop</a>
+                @if (category != null)
+                {
+                    <span class="mx-2">/</span>
+                    <a href="/products?category=@category.Id" class="hover:text-fashion-black dark:hover:text-white transition">@category.Name</a>
+                }
+                <span class="mx-2">/</span>
+                <span class="text-fashion-black dark:text-white">@product.Name</span>
+            </nav>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-fashion-charcoal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+            <!-- Product Details Grid -->
+            <div class="grid lg:grid-cols-12 gap-8 lg:gap-12" x-data="productDetail()">
+                <!-- Left: Sticky Image Gallery (55%) -->
+                <div class="lg:col-span-7">
+                    <div class="lg:sticky lg:top-24">
+                        <!-- Main Image -->
+                        <div class="relative aspect-[4/5] bg-gray-50 dark:bg-fashion-slate overflow-hidden mb-4">
+                            @if (!string.IsNullOrEmpty(product.PrimaryImageUrl))
+                            {
+                                <img :src="selectedImage || '@product.PrimaryImageUrl'"
+                                     alt="@product.Name"
+                                     class="w-full h-full object-cover transition-opacity duration-300"
+                                     x-transition>
+                            }
+                            else
+                            {
+                                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-fashion-charcoal dark:to-fashion-slate">
+                                    <svg class="w-32 h-32 text-gray-200 dark:text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                            }
+
+                            <!-- Badges -->
+                            <div class="absolute top-4 left-4 flex flex-col gap-2">
+                                @if (product.IsOnSale && product.DiscountPercentage.HasValue)
+                                {
+                                    <span class="bg-accent-500 text-white text-xs font-accent tracking-wide px-3 py-1.5">
+                                        -@product.DiscountPercentage?.ToString("F0")%
+                                    </span>
+                                }
+                                @if ((DateTime.UtcNow - product.CreatedAt).TotalDays < newBadgeDays)
+                                {
+                                    <span class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black text-xs font-accent tracking-wide px-3 py-1.5">
+                                        @newBadgeText
+                                    </span>
+                                }
+                            </div>
+
+                            <!-- Zoom Indicator -->
+                            <div class="absolute bottom-4 right-4 bg-white/80 dark:bg-fashion-black/80 backdrop-blur px-3 py-1.5 rounded-full text-xs text-fashion-black dark:text-white flex items-center gap-1.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+                                </svg>
+                                @zoomText
+                            </div>
+                        </div>
+
+                        <!-- Thumbnail Gallery -->
+                        <div class="grid grid-cols-5 gap-2">
+                            @{
+                                var images = new List<string> { product.PrimaryImageUrl ?? "" };
+                            }
+                            @foreach (var (img, idx) in images.Select((img, idx) => (img, idx)))
+                            {
+                                <button x-on:click="selectedImage = '@img'"
+                                        class="aspect-square bg-gray-50 dark:bg-fashion-slate overflow-hidden transition"
+                                        :class="selectedImage === '@img' ? 'ring-2 ring-fashion-black dark:ring-white' : 'hover:opacity-80'">
+                                    @if (!string.IsNullOrEmpty(img))
+                                    {
+                                        <img src="@img" alt="View @(idx + 1)" class="w-full h-full object-cover">
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-fashion-charcoal dark:to-fashion-slate"></div>
+                                    }
+                                </button>
+                            }
+                            @for (int i = images.Count; i < 5; i++)
+                            {
+                                <div class="aspect-square bg-gray-50 dark:bg-fashion-slate overflow-hidden">
+                                    <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-fashion-charcoal dark:to-fashion-slate"></div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Product Info (45%) -->
+                <div class="lg:col-span-5">
+                    <!-- Brand -->
+                    @if (!string.IsNullOrEmpty(product.Brand))
+                    {
+                        <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em] mb-2">@product.Brand</p>
+                    }
+
+                    <!-- Product Name -->
+                    <h1 class="font-display text-2xl lg:text-4xl font-bold text-fashion-black dark:text-white leading-tight mb-4">
+                        @product.Name
+                    </h1>
+
+                    <!-- Rating -->
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="flex">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <svg class="w-4 h-4 @(i <= Math.Round(averageRating) ? "text-gold" : "text-gray-200 dark:text-gray-700")" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                            }
+                        </div>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">@averageRating.ToString("F1") (@reviewCount @reviewsLabel)</span>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="flex items-baseline gap-3 mb-6">
+                        <span class="text-2xl lg:text-3xl font-semibold text-fashion-black dark:text-white">
+                            $@product.CurrentPrice.ToString("F2")
+                        </span>
+                        @if (product.SalePrice.HasValue)
+                        {
+                            <span class="text-lg text-gray-400 line-through">$@product.BasePrice.ToString("F2")</span>
+                            <span class="text-accent-500 text-sm font-medium uppercase tracking-wide">@saveLabel $@((product.BasePrice - product.CurrentPrice).ToString("F2"))</span>
+                        }
+                    </div>
+
+                    <!-- Short Description -->
+                    @if (!string.IsNullOrEmpty(product.ShortDescription))
+                    {
+                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed mb-8">@product.ShortDescription</p>
+                    }
+
+                    <!-- Color Selector -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">@colorLabel: <span class="font-normal text-gray-500" x-text="selectedColorName">Black</span></span>
+                        </div>
+                        <div class="flex gap-2">
+                            @foreach (var (color, hex, name) in new[] { ("#000", "#000", "Black"), ("#fff", "#fff", "White"), ("#be123c", "#be123c", "Wine"), ("#1e40af", "#1e40af", "Navy") })
+                            {
+                                <button x-on:click="selectedColor = '@hex'; selectedColorName = '@name'"
+                                        class="w-10 h-10 rounded-full border-2 transition"
+                                        :class="selectedColor === '@hex' ? 'border-fashion-black dark:border-white' : 'border-gray-200 dark:border-fashion-slate hover:border-gray-400'"
+                                        style="background-color: @hex"
+                                        title="@name">
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Size Selector -->
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">@sizeLabel: <span class="font-normal text-gray-500" x-text="selectedSize || '@selectLabel'"></span></span>
+                            <button class="text-sm text-primary-600 dark:text-primary-400 hover:underline">@sizeGuideText</button>
+                        </div>
+                        <div class="grid grid-cols-5 gap-2">
+                            @foreach (var (size, available) in new[] { ("XS", true), ("S", true), ("M", true), ("L", false), ("XL", true) })
+                            {
+                                <button x-on:click="@(available ? $"selectedSize = '{size}'" : "")"
+                                        class="py-3 border text-sm font-medium transition @(available ? "text-fashion-black dark:text-white hover:border-fashion-black dark:hover:border-white" : "text-gray-300 dark:text-gray-600 cursor-not-allowed line-through")"
+                                        :class="selectedSize === '@size' ? 'border-fashion-black dark:border-white bg-fashion-black dark:bg-white text-white dark:text-fashion-black' : 'border-gray-200 dark:border-fashion-slate'"
+                                        @(available ? "" : "disabled")>
+                                    @size
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Quantity & Add to Cart -->
+                    @if (product.IsInStock)
+                    {
+                        <div class="flex gap-3 mb-6">
+                            <!-- Quantity Selector -->
+                            <div class="flex items-center border border-gray-200 dark:border-fashion-slate">
+                                <button x-on:click="quantity = Math.max(1, quantity - 1)"
+                                        class="w-12 h-12 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-fashion-slate transition">
+                                    <svg class="w-4 h-4 text-fashion-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                    </svg>
+                                </button>
+                                <input type="number" x-model="quantity" min="1"
+                                       class="w-14 h-12 text-center border-0 border-x border-gray-200 dark:border-fashion-slate bg-transparent text-fashion-black dark:text-white focus:ring-0">
+                                <button x-on:click="quantity++"
+                                        class="w-12 h-12 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-fashion-slate transition">
+                                    <svg class="w-4 h-4 text-fashion-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Add to Bag Button -->
+                            <button x-on:click="addToBag()"
+                                    class="flex-1 bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-3 px-6 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-all duration-300 flex items-center justify-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                                @addToBagText
+                            </button>
+
+                            <!-- Wishlist Button -->
+                            <button x-on:click="toggleWishlist()"
+                                    class="w-12 h-12 border border-gray-200 dark:border-fashion-slate flex items-center justify-center hover:border-accent-500 hover:text-accent-500 transition"
+                                    :class="isWishlisted ? 'text-accent-500 border-accent-500' : 'text-fashion-black dark:text-white'">
+                                <svg class="w-5 h-5" :fill="isWishlisted ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-6">
+                            <button disabled class="w-full bg-gray-200 dark:bg-fashion-slate text-gray-500 dark:text-gray-500 py-4 text-sm uppercase tracking-widest font-medium cursor-not-allowed">
+                                @soldOutText
+                            </button>
+                            <button class="w-full mt-3 border border-fashion-black dark:border-white text-fashion-black dark:text-white py-3 text-sm uppercase tracking-wider font-medium hover:bg-fashion-black dark:hover:bg-white hover:text-white dark:hover:text-fashion-black transition">
+                                @notifyMeText
+                            </button>
+                        </div>
+                    }
+
+                    <!-- Trust Features -->
+                    <div class="grid grid-cols-2 gap-4 py-6 border-t border-gray-100 dark:border-fashion-slate">
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                            </svg>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">@freeShippingText</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">@easyReturnsText</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                            </svg>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">@secureCheckoutText</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">@shippingTimeText</span>
+                        </div>
+                    </div>
+
+                    <!-- Accordion Details -->
+                    <div class="border-t border-gray-100 dark:border-fashion-slate">
+                        <!-- Description -->
+                        <div x-data="{ open: true }" class="border-b border-gray-100 dark:border-fashion-slate">
+                            <button x-on:click="open = !open" class="w-full flex items-center justify-between py-4">
+                                <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">@descriptionTitle</span>
+                                <svg class="w-4 h-4 text-gray-400 transition" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div x-show="open" x-collapse>
+                                <div class="pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    @if (!string.IsNullOrEmpty(product.Description))
+                                    {
+                                        @Html.Raw(product.Description)
+                                    }
+                                    else
+                                    {
+                                        <p>@noDescriptionText</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Details & Care -->
+                        <div x-data="{ open: false }" class="border-b border-gray-100 dark:border-fashion-slate">
+                            <button x-on:click="open = !open" class="w-full flex items-center justify-between py-4">
+                                <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">@detailsCareTitle</span>
+                                <svg class="w-4 h-4 text-gray-400 transition" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div x-show="open" x-collapse>
+                                <div class="pb-4">
+                                    <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                                        <li>SKU: @product.Sku</li>
+                                        @if (!string.IsNullOrEmpty(product.Brand))
+                                        {
+                                            <li>Brand: @product.Brand</li>
+                                        }
+                                        @if (product.Weight.HasValue)
+                                        {
+                                            <li>Weight: @product.Weight @product.WeightUnit</li>
+                                        }
+                                        @foreach (var instruction in careInstructions.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                                        {
+                                            <li>@instruction.Trim()</li>
+                                        }
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Shipping -->
+                        <div x-data="{ open: false }" class="border-b border-gray-100 dark:border-fashion-slate">
+                            <button x-on:click="open = !open" class="w-full flex items-center justify-between py-4">
+                                <span class="text-sm font-medium text-fashion-black dark:text-white uppercase tracking-wider">@shippingReturnsTitle</span>
+                                <svg class="w-4 h-4 text-gray-400 transition" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div x-show="open" x-collapse>
+                                <div class="pb-4 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                    @Html.Raw(shippingReturnsContent)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complete the Look -->
+    @if (relatedEnabled && relatedProducts.Any())
+    {
+        <section class="py-16 bg-gray-50 dark:bg-fashion-slate">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-10">
+                    <div>
+                        <span class="text-primary-500 font-accent text-sm tracking-[0.3em] uppercase">@relatedLabel</span>
+                        <h2 class="font-display text-2xl lg:text-4xl font-bold text-fashion-black dark:text-white mt-2">
+                            @relatedTitle<span class="text-primary-500">.</span>
+                        </h2>
+                    </div>
+                    <a href="/products?category=@category?.Id" class="group inline-flex items-center gap-2 text-fashion-black dark:text-white text-sm uppercase tracking-widest font-medium border-b-2 border-fashion-black dark:border-white pb-1 hover:text-primary-500 hover:border-primary-500 transition">
+                        @relatedViewAllText
+                        <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+                    @foreach (var relatedProduct in relatedProducts.Take(relatedCount))
+                    {
+                        <partial name="_ProductCard" model="relatedProduct" />
+                    }
+                </div>
+            </div>
+        </section>
+    }
+
+    <!-- Reviews Section -->
+    @if (reviewsEnabled)
+    {
+        <section class="py-16 bg-white dark:bg-fashion-charcoal">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-10">
+                    <div>
+                        <span class="text-accent-500 font-accent text-sm tracking-[0.3em] uppercase">@reviewsSectionLabel</span>
+                        <h2 class="font-display text-2xl lg:text-4xl font-bold text-fashion-black dark:text-white mt-2">
+                            @reviewsSectionTitle<span class="text-accent-500">.</span>
+                        </h2>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <div class="flex">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <svg class="w-5 h-5 @(i <= Math.Round(averageRating) ? "text-gold" : "text-gray-200 dark:text-gray-700")" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
+                                }
+                            </div>
+                            <span class="text-lg font-semibold text-fashion-black dark:text-white">@averageRating.ToString("F1")</span>
+                            <span class="text-gray-500 dark:text-gray-400">(@reviewCount @reviewsLabel)</span>
+                        </div>
+                    </div>
+                </div>
+
+                @if (reviews.Any())
+                {
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        @foreach (var review in reviews.Take(reviewsCountToShow))
+                        {
+                            <div class="bg-gray-50 dark:bg-fashion-slate p-6">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                                        <span class="text-primary-600 dark:text-primary-400 font-semibold text-sm">@(review.ReviewerName?.Substring(0, 1).ToUpper() ?? "A")</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium text-fashion-black dark:text-white text-sm">@(review.ReviewerName ?? "Anonymous")</p>
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    <svg class="w-3 h-3 @(i <= review.Rating ? "text-gold" : "text-gray-200 dark:text-gray-600")" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                    </svg>
+                                                }
+                                            </div>
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">@review.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(review.Title))
+                                {
+                                    <h4 class="font-medium text-fashion-black dark:text-white mb-2">@review.Title</h4>
+                                }
+                                <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">@review.Content</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-16 bg-gray-50 dark:bg-fashion-slate">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-fashion-charcoal rounded-full flex items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">@noReviewsText</p>
+                        <button class="inline-block bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-6 py-3 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 transition">
+                            @writeReviewText
+                        </button>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    <!-- Recently Viewed -->
+    @if (recentlyViewedEnabled)
+    {
+        <section class="py-16 bg-gray-50 dark:bg-fashion-slate border-t border-gray-100 dark:border-fashion-charcoal">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <span class="text-primary-500 font-accent text-sm tracking-[0.3em] uppercase">@recentlyViewedLabel</span>
+                        <h2 class="font-display text-2xl lg:text-3xl font-bold text-fashion-black dark:text-white mt-1">
+                            @recentlyViewedTitle<span class="text-primary-500">.</span>
+                        </h2>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" x-data="{ items: [] }">
+                    <template x-if="items.length === 0">
+                        <p class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
+                            @recentlyViewedEmptyText
+                        </p>
+                    </template>
+                </div>
+            </div>
+        </section>
+    }
+
+    @section Scripts {
+    <script>
+    function productDetail() {
+        return {
+            selectedImage: '@(product?.PrimaryImageUrl ?? "")',
+            selectedColor: '#000',
+            selectedColorName: 'Black',
+            selectedSize: '',
+            quantity: 1,
+            isWishlisted: false,
+
+            addToBag() {
+                if (!this.selectedSize) {
+                    alert('@selectSizeAlert');
+                    return;
+                }
+                CartManager.addItem({
+                    id: '@product?.Id',
+                    name: '@product?.Name.Replace("'", "\\'")',
+                    price: @(product?.CurrentPrice ?? 0),
+                    image: '@product?.PrimaryImageUrl',
+                    size: this.selectedSize,
+                    color: this.selectedColorName,
+                    quantity: this.quantity
+                });
+            },
+
+            toggleWishlist() {
+                this.isWishlisted = !this.isWishlisted;
+                const notification = document.createElement('div');
+                notification.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-fashion-black text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3';
+                notification.innerHTML = this.isWishlisted
+                    ? '<svg class="w-5 h-5 text-accent-400" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg><span class="font-medium">@addedToWishlistText</span>'
+                    : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg><span class="font-medium">@removedFromWishlistText</span>';
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transition = 'opacity 0.3s';
+                    setTimeout(() => notification.remove(), 300);
+                }, 2000);
+            }
+        };
+    }
+    </script>
+    }
+}

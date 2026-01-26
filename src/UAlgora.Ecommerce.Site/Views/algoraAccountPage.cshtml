@@ -1,0 +1,450 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Microsoft.AspNetCore.Authentication
+@using System.Security.Claims
+@using UAlgora.Ecommerce.Core.Constants
+@using UAlgora.Ecommerce.Core.Interfaces.Services
+@using UAlgora.Ecommerce.Core.Models.Domain
+@using UAlgora.Ecommerce.Site.ViewModels
+@inject ICustomerService CustomerService
+@inject IOrderService OrderService
+
+@{
+    Layout = "_Layout";
+
+    // Get CMS labels with defaults
+    var breadcrumbHome = Model.Value<string>("breadcrumbHome") ?? "Home";
+    var breadcrumbAccount = Model.Value<string>("breadcrumbAccount") ?? "My Account";
+
+    // Hero section
+    var welcomeTextTemplate = Model.Value<string>("welcomeText") ?? "Welcome back, {firstName}";
+    var memberSinceText = Model.Value<string>("memberSinceText") ?? "Member since";
+    var goldMemberLabel = Model.Value<string>("goldMemberLabel") ?? "Gold Member";
+    var goldMemberThreshold = Model.Value<int?>("goldMemberThreshold") ?? 1000;
+    var memberLabel = Model.Value<string>("memberLabel") ?? "Member";
+    var editProfileText = Model.Value<string>("editProfileText") ?? "Edit Profile";
+
+    // Sidebar navigation
+    var navDashboard = Model.Value<string>("navDashboard") ?? "Dashboard";
+    var navOrders = Model.Value<string>("navOrders") ?? "My Orders";
+    var navWishlist = Model.Value<string>("navWishlist") ?? "Wishlist";
+    var navAddresses = Model.Value<string>("navAddresses") ?? "Addresses";
+    var navSettings = Model.Value<string>("navSettings") ?? "Settings";
+    var navSignOut = Model.Value<string>("navSignOut") ?? "Sign Out";
+
+    // Stats cards
+    var statsOrdersLabel = Model.Value<string>("statsOrdersLabel") ?? "Orders";
+    var statsOrdersSubtext = Model.Value<string>("statsOrdersSubtext") ?? "Total orders placed";
+    var statsEmailLabel = Model.Value<string>("statsEmailLabel") ?? "Email";
+    var statsEmailSubtext = Model.Value<string>("statsEmailSubtext") ?? "Account email";
+    var statsPointsLabel = Model.Value<string>("statsPointsLabel") ?? "Points";
+    var statsPointsSubtext = Model.Value<string>("statsPointsSubtext") ?? "Reward points";
+    var statsCreditLabel = Model.Value<string>("statsCreditLabel") ?? "Credit";
+    var statsCreditSubtext = Model.Value<string>("statsCreditSubtext") ?? "Store credit";
+
+    // Orders section
+    var ordersTitle = Model.Value<string>("ordersTitle") ?? "Recent Orders";
+    var ordersViewAll = Model.Value<string>("ordersViewAll") ?? "View All";
+    var ordersCount = Model.Value<int?>("ordersCount") ?? 5;
+    var noOrdersTitle = Model.Value<string>("noOrdersTitle") ?? "No orders yet";
+    var noOrdersText = Model.Value<string>("noOrdersText") ?? "When you place an order, it will appear here for you to track.";
+    var startShoppingText = Model.Value<string>("startShoppingText") ?? "Start Shopping";
+
+    // Wishlist section
+    var wishlistEnabled = Model.Value<bool?>("wishlistEnabled") ?? true;
+    var wishlistTitle = Model.Value<string>("wishlistTitle") ?? "Your Wishlist";
+    var wishlistViewAll = Model.Value<string>("wishlistViewAll") ?? "View All";
+    var emptyWishlistTitle = Model.Value<string>("emptyWishlistTitle") ?? "Your wishlist is empty";
+    var emptyWishlistText = Model.Value<string>("emptyWishlistText") ?? "Save items you love and we'll remind you when they go on sale.";
+    var browseProductsText = Model.Value<string>("browseProductsText") ?? "Browse Products";
+
+    // Addresses section
+    var addressesEnabled = Model.Value<bool?>("addressesEnabled") ?? true;
+    var addressesTitle = Model.Value<string>("addressesTitle") ?? "Saved Addresses";
+    var addNewText = Model.Value<string>("addNewText") ?? "Add New";
+    var defaultLabel = Model.Value<string>("defaultLabel") ?? "Default";
+    var shippingLabel = Model.Value<string>("shippingLabel") ?? "Shipping Address";
+    var billingLabel = Model.Value<string>("billingLabel") ?? "Billing Address";
+    var bothLabel = Model.Value<string>("bothLabel") ?? "Shipping & Billing";
+    var editText = Model.Value<string>("editText") ?? "Edit";
+    var noAddressTitle = Model.Value<string>("noAddressTitle") ?? "No address saved";
+    var noAddressText = Model.Value<string>("noAddressText") ?? "Add your shipping address for faster checkout";
+    var addAddressText = Model.Value<string>("addAddressText") ?? "Add Address";
+    var addAnotherText = Model.Value<string>("addAnotherText") ?? "Add another address";
+
+    // SEO
+    var metaTitle = Model.Value<string>("metaTitle") ?? "My Account";
+    ViewData["Title"] = metaTitle;
+
+    var metaDescription = Model.Value<string>("metaDescription");
+    if (!string.IsNullOrEmpty(metaDescription))
+    {
+        ViewData["Description"] = metaDescription;
+    }
+
+    // Get current customer from authentication
+    var customerIdClaim = Context.User.FindFirst("CustomerId")?.Value
+        ?? Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+    Customer? customer = null;
+    List<Order> recentOrders = new();
+    List<Address> addresses = new();
+
+    if (!string.IsNullOrEmpty(customerIdClaim) && Guid.TryParse(customerIdClaim, out var customerId))
+    {
+        customer = await CustomerService.GetByIdAsync(customerId);
+        if (customer != null)
+        {
+            var allOrders = await OrderService.GetByCustomerIdAsync(customerId);
+            recentOrders = allOrders.OrderByDescending(o => o.PlacedAt ?? o.CreatedAt).Take(ordersCount).ToList();
+            addresses = customer.Addresses?.ToList() ?? new List<Address>();
+        }
+    }
+
+    // Redirect to login if not authenticated
+    if (customer == null)
+    {
+        Context.Response.Redirect("/login?returnUrl=" + Uri.EscapeDataString("/account"));
+        return;
+    }
+
+    var firstName = customer.FirstName ?? "Customer";
+    var welcomeText = welcomeTextTemplate.Replace("{firstName}", firstName);
+    var totalOrders = recentOrders.Count;
+    var loyaltyPoints = customer.LoyaltyPoints;
+    var storeCreditBalance = customer.StoreCreditBalance;
+    var memberSince = customer.CreatedAt;
+    var isGoldMember = loyaltyPoints >= goldMemberThreshold;
+}
+
+<div class="min-h-screen bg-gray-50 dark:bg-fashion-charcoal">
+    <!-- Hero Header -->
+    <div class="bg-gradient-to-br from-fashion-black via-fashion-charcoal to-fashion-slate dark:from-fashion-black dark:to-fashion-charcoal relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%23ffffff\" fill-opacity=\"0.4\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
+            <nav class="flex text-sm text-gray-400 mb-6">
+                <a href="/" class="hover:text-white transition">@breadcrumbHome</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">@breadcrumbAccount</span>
+            </nav>
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center ring-4 ring-white/20">
+                        <span class="text-white font-display text-3xl font-bold">@firstName.Substring(0, 1).ToUpper()</span>
+                    </div>
+                    <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full border-4 border-fashion-black flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="text-white">
+                    <h1 class="font-display text-3xl font-bold">@welcomeText<span class="text-primary-400">.</span></h1>
+                    <p class="text-gray-400 mt-1">@memberSinceText @memberSince.ToString("MMMM yyyy")</p>
+                    <div class="flex items-center gap-4 mt-3">
+                        @if (isGoldMember)
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-gold/20 text-gold rounded-full text-sm font-medium">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                                @goldMemberLabel
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary-500/20 text-primary-300 rounded-full text-sm font-medium">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                @memberLabel
+                            </span>
+                        }
+                        <a href="/account/settings" class="text-sm text-gray-400 hover:text-white transition">@editProfileText</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid lg:grid-cols-12 gap-8">
+            <!-- Sidebar -->
+            <aside class="lg:col-span-3">
+                <nav class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 sticky top-8">
+                    <ul>
+                        <li>
+                            <a href="/account" class="flex items-center gap-3 px-5 py-4 bg-primary-50 dark:bg-primary-900/20 border-l-4 border-primary-500 text-fashion-black dark:text-white font-medium">
+                                <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                                </svg>
+                                @navDashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/account/orders" class="flex items-center gap-3 px-5 py-4 border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-fashion-charcoal hover:text-fashion-black dark:hover:text-white transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                                @navOrders
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/wishlist" class="flex items-center gap-3 px-5 py-4 border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-fashion-charcoal hover:text-fashion-black dark:hover:text-white transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                                @navWishlist
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/account/addresses" class="flex items-center gap-3 px-5 py-4 border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-fashion-charcoal hover:text-fashion-black dark:hover:text-white transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                @navAddresses
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/account/settings" class="flex items-center gap-3 px-5 py-4 border-l-4 border-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-fashion-charcoal hover:text-fashion-black dark:hover:text-white transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                @navSettings
+                            </a>
+                        </li>
+                        <li class="border-t border-gray-200 dark:border-gray-800">
+                            <a href="/logout" class="flex items-center gap-3 px-5 py-4 text-accent-600 dark:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                                </svg>
+                                @navSignOut
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="lg:col-span-9 space-y-8">
+                <!-- Quick Stats -->
+                <div class="grid sm:grid-cols-4 gap-4">
+                    <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs text-gray-400 uppercase tracking-wider">@statsOrdersLabel</span>
+                        </div>
+                        <p class="font-display text-3xl font-bold text-fashion-black dark:text-white">@totalOrders</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">@statsOrdersSubtext</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-accent-100 dark:bg-accent-900/30 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-accent-600 dark:text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs text-gray-400 uppercase tracking-wider">@statsEmailLabel</span>
+                        </div>
+                        <p class="font-display text-sm font-bold text-fashion-black dark:text-white truncate">@customer.Email</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">@statsEmailSubtext</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-gold-light/50 dark:bg-gold/20 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-gold" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs text-gray-400 uppercase tracking-wider">@statsPointsLabel</span>
+                        </div>
+                        <p class="font-display text-3xl font-bold text-fashion-black dark:text-white">@loyaltyPoints.ToString("N0")</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">@statsPointsSubtext</p>
+                    </div>
+
+                    <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                                <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs text-gray-400 uppercase tracking-wider">@statsCreditLabel</span>
+                        </div>
+                        <p class="font-display text-3xl font-bold text-fashion-black dark:text-white">$@storeCreditBalance.ToString("N2")</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">@statsCreditSubtext</p>
+                    </div>
+                </div>
+
+                <!-- Recent Orders -->
+                <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800">
+                    <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-800">
+                        <h3 class="font-display text-xl font-bold text-fashion-black dark:text-white">@ordersTitle</h3>
+                        <a href="/account/orders" class="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium flex items-center gap-1">
+                            @ordersViewAll
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </div>
+
+                    @if (recentOrders.Any())
+                    {
+                        <div class="divide-y divide-gray-200 dark:divide-gray-800">
+                            @foreach (var order in recentOrders)
+                            {
+                                <a href="/account/orders/@order.OrderNumber" class="flex items-center justify-between p-6 hover:bg-gray-50 dark:hover:bg-fashion-charcoal transition">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                                            <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p class="font-medium text-fashion-black dark:text-white">Order #@order.OrderNumber</p>
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">@((order.PlacedAt ?? order.CreatedAt).ToString("MMM d, yyyy"))</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="font-medium text-fashion-black dark:text-white">$@order.GrandTotal.ToString("N2")</p>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium @(order.Status switch
+                                        {
+                                            OrderStatus.Pending => "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+                                            OrderStatus.Confirmed => "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+                                            OrderStatus.Processing => "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+                                            OrderStatus.Shipped => "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
+                                            OrderStatus.Delivered => "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+                                            OrderStatus.Cancelled => "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+                                            _ => "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400"
+                                        })">
+                                            @order.Status
+                                        </span>
+                                    </div>
+                                </a>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="p-12 text-center">
+                            <div class="w-20 h-20 mx-auto mb-6 bg-gray-100 dark:bg-fashion-charcoal rounded-full flex items-center justify-center">
+                                <svg class="w-10 h-10 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                            </div>
+                            <h4 class="font-display text-xl font-bold text-fashion-black dark:text-white mb-2">@noOrdersTitle</h4>
+                            <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">@noOrdersText</p>
+                            <a href="/products" class="inline-flex items-center gap-2 bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-6 py-3 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                                </svg>
+                                @startShoppingText
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                @if (wishlistEnabled)
+                {
+                    <!-- Wishlist Preview -->
+                    <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800">
+                        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-800">
+                            <h3 class="font-display text-xl font-bold text-fashion-black dark:text-white">@wishlistTitle</h3>
+                            <a href="/wishlist" class="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium flex items-center gap-1">
+                                @wishlistViewAll
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+
+                        <div class="p-12 text-center">
+                            <div class="w-20 h-20 mx-auto mb-6 bg-accent-50 dark:bg-accent-900/20 rounded-full flex items-center justify-center">
+                                <svg class="w-10 h-10 text-accent-300 dark:text-accent-700" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                            </div>
+                            <h4 class="font-display text-xl font-bold text-fashion-black dark:text-white mb-2">@emptyWishlistTitle</h4>
+                            <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-sm mx-auto">@emptyWishlistText</p>
+                            <a href="/products" class="inline-flex items-center gap-2 border-2 border-fashion-black dark:border-white text-fashion-black dark:text-white px-6 py-3 text-sm uppercase tracking-widest font-medium hover:bg-fashion-black dark:hover:bg-white hover:text-white dark:hover:text-fashion-black transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                </svg>
+                                @browseProductsText
+                            </a>
+                        </div>
+                    </div>
+                }
+
+                @if (addressesEnabled)
+                {
+                    <!-- Saved Addresses -->
+                    <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800">
+                        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-800">
+                            <h3 class="font-display text-xl font-bold text-fashion-black dark:text-white">@addressesTitle</h3>
+                            <button class="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                @addNewText
+                            </button>
+                        </div>
+
+                        <div class="p-6 grid md:grid-cols-2 gap-4">
+                            @if (addresses.Any())
+                            {
+                                @foreach (var address in addresses)
+                                {
+                                    <div class="border border-gray-200 dark:border-gray-700 p-4 relative">
+                                        @if (address.IsDefaultShipping || address.IsDefaultBilling)
+                                        {
+                                            <span class="absolute top-3 right-3 text-xs bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-2 py-0.5 uppercase tracking-wider">@defaultLabel</span>
+                                        }
+                                        <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">@(address.Type == AddressType.Shipping ? shippingLabel : address.Type == AddressType.Billing ? billingLabel : bothLabel)</p>
+                                        <p class="font-medium text-fashion-black dark:text-white">@address.FirstName @address.LastName</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@address.AddressLine1</p>
+                                        @if (!string.IsNullOrEmpty(address.AddressLine2))
+                                        {
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">@address.AddressLine2</p>
+                                        }
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@address.City, @address.StateProvince @address.PostalCode</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@address.Country</p>
+                                        <button class="mt-4 text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium">
+                                            @editText
+                                        </button>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="border border-gray-200 dark:border-gray-700 p-4 relative">
+                                    <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">@shippingLabel</p>
+                                    <p class="font-medium text-fashion-black dark:text-white">@noAddressTitle</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">@noAddressText</p>
+                                    <button class="mt-4 text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium">
+                                        @addAddressText
+                                    </button>
+                                </div>
+                            }
+                            <div class="border border-dashed border-gray-300 dark:border-gray-700 p-4 flex flex-col items-center justify-center text-center min-h-[140px]">
+                                <svg class="w-8 h-8 text-gray-300 dark:text-gray-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                <p class="text-sm text-gray-400 dark:text-gray-500">@addAnotherText</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </main>
+        </div>
+    </div>
+</div>

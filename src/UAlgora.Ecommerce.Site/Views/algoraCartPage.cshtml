@@ -1,0 +1,438 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Extensions
+@{
+    Layout = "_Layout";
+
+    // Hero
+    var pageTitle = Model.Value<string>("pageTitle") ?? "Your Bag";
+    var breadcrumbHome = Model.Value<string>("breadcrumbHome") ?? "Home";
+    var breadcrumbCurrent = Model.Value<string>("breadcrumbCurrent") ?? "Shopping Bag";
+
+    // Empty Cart
+    var emptyTitle = Model.Value<string>("emptyTitle") ?? "Your bag is empty";
+    var emptyMessage = Model.Value<string>("emptyMessage") ?? "Looks like you haven't added anything to your bag yet. Let's change that!";
+    var emptyButtonText = Model.Value<string>("emptyButtonText") ?? "Start Shopping";
+    var emptyButtonUrl = Model.Value<string>("emptyButtonUrl") ?? "/products";
+
+    // Cart Items
+    var productColumnHeader = Model.Value<string>("productColumnHeader") ?? "Product";
+    var totalColumnHeader = Model.Value<string>("totalColumnHeader") ?? "Total";
+    var colorLabel = Model.Value<string>("colorLabel") ?? "Color";
+    var sizeLabel = Model.Value<string>("sizeLabel") ?? "Size";
+    var eachLabel = Model.Value<string>("eachLabel") ?? "each";
+    var saveForLaterText = Model.Value<string>("saveForLaterText") ?? "Save for Later";
+    var removeText = Model.Value<string>("removeText") ?? "Remove";
+    var continueShoppingText = Model.Value<string>("continueShoppingText") ?? "Continue Shopping";
+    var clearBagText = Model.Value<string>("clearBagText") ?? "Clear Bag";
+
+    // Promo Code
+    var promoCodeEnabled = Model.Value<bool>("promoCodeEnabled", defaultValue: true);
+    var promoCodeLabel = Model.Value<string>("promoCodeLabel") ?? "Promo Code";
+    var promoCodePlaceholder = Model.Value<string>("promoCodePlaceholder") ?? "Enter code";
+    var promoCodeButtonText = Model.Value<string>("promoCodeButtonText") ?? "Apply";
+
+    // Order Summary
+    var orderSummaryTitle = Model.Value<string>("orderSummaryTitle") ?? "Order Summary";
+    var subtotalLabel = Model.Value<string>("subtotalLabel") ?? "Subtotal";
+    var itemsLabel = Model.Value<string>("itemsLabel") ?? "items";
+    var discountLabel = Model.Value<string>("discountLabel") ?? "Discount";
+    var shippingLabel = Model.Value<string>("shippingLabel") ?? "Shipping";
+    var taxLabel = Model.Value<string>("taxLabel") ?? "Estimated Tax";
+    var totalLabel = Model.Value<string>("totalLabel") ?? "Total";
+    var checkoutButtonText = Model.Value<string>("checkoutButtonText") ?? "Proceed to Checkout";
+    var secureCheckoutText = Model.Value<string>("secureCheckoutText") ?? "Secure 256-bit SSL encryption";
+
+    // Free Shipping
+    var freeShippingEnabled = Model.Value<bool>("freeShippingEnabled", defaultValue: true);
+    var freeShippingThreshold = Model.Value<int>("freeShippingThreshold", defaultValue: 100);
+    var freeShippingMessage = Model.Value<string>("freeShippingMessage") ?? "Add {amount} for FREE shipping";
+    var standardShippingCost = Model.Value<decimal>("standardShippingCost", defaultValue: 9.99m);
+    var freeLabel = Model.Value<string>("freeLabel") ?? "FREE";
+
+    // Recommendations
+    var recommendationsEnabled = Model.Value<bool>("recommendationsEnabled", defaultValue: true);
+    var recommendationsLabel = Model.Value<string>("recommendationsLabel") ?? "Recommended";
+    var recommendationsTitle = Model.Value<string>("recommendationsTitle") ?? "You Might Also Like";
+    var viewAllText = Model.Value<string>("viewAllText") ?? "View All";
+    var recommendationsCount = Model.Value<int>("recommendationsCount", defaultValue: 4);
+
+    // SEO
+    var metaTitle = Model.Value<string>("metaTitle") ?? "Shopping Cart";
+    var metaDescription = Model.Value<string>("metaDescription");
+
+    ViewData["Title"] = metaTitle;
+    if (!string.IsNullOrEmpty(metaDescription))
+    {
+        ViewData["Description"] = metaDescription;
+    }
+}
+
+<!-- Hero Header -->
+<section class="bg-fashion-black dark:bg-fashion-charcoal py-12 lg:py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <nav class="flex text-sm text-gray-400 mb-4">
+            <a href="/" class="hover:text-white transition">@breadcrumbHome</a>
+            <span class="mx-2">/</span>
+            <span class="text-white">@breadcrumbCurrent</span>
+        </nav>
+        <h1 class="font-display text-3xl lg:text-5xl font-bold text-white">
+            @pageTitle<span class="text-primary-400">.</span>
+        </h1>
+    </div>
+</section>
+
+<div class="bg-gray-50 dark:bg-fashion-slate min-h-[60vh]" x-data="cartPage()">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+        <!-- Empty Cart State -->
+        <template x-if="cart.items.length === 0">
+            <div class="text-center py-20 bg-white dark:bg-fashion-charcoal">
+                <div class="w-24 h-24 mx-auto mb-6 bg-gray-100 dark:bg-fashion-slate rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                    </svg>
+                </div>
+                <h2 class="font-display text-2xl font-bold text-fashion-black dark:text-white mb-2">@emptyTitle</h2>
+                <p class="text-gray-600 dark:text-gray-400 mb-8 max-w-md mx-auto">@emptyMessage</p>
+                <a href="@emptyButtonUrl" class="inline-block bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 transition">
+                    @emptyButtonText
+                </a>
+            </div>
+        </template>
+
+        <!-- Cart with Items -->
+        <template x-if="cart.items.length > 0">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Cart Items -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white dark:bg-fashion-charcoal">
+                        <!-- Header -->
+                        <div class="hidden md:flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-fashion-slate">
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">@productColumnHeader</span>
+                            <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">@totalColumnHeader</span>
+                        </div>
+
+                        <!-- Cart Items List -->
+                        <div class="divide-y divide-gray-100 dark:divide-fashion-slate">
+                            <template x-for="item in cart.items" :key="item.id + (item.size || '') + (item.color || '')">
+                                <div class="p-6">
+                                    <div class="flex gap-4 lg:gap-6">
+                                        <!-- Product Image -->
+                                        <div class="w-24 h-32 lg:w-32 lg:h-40 bg-gray-50 dark:bg-fashion-slate flex-shrink-0 overflow-hidden">
+                                            <img :src="item.image || 'https://placehold.co/128x160/e2e8f0/64748b?text=Product'"
+                                                 :alt="item.name"
+                                                 class="w-full h-full object-cover">
+                                        </div>
+
+                                        <!-- Product Details -->
+                                        <div class="flex-1 flex flex-col">
+                                            <div class="flex justify-between">
+                                                <div>
+                                                    <h3 class="font-medium text-fashion-black dark:text-white text-base lg:text-lg" x-text="item.name"></h3>
+                                                    <div class="mt-1 space-y-0.5">
+                                                        <template x-if="item.color">
+                                                            <p class="text-sm text-gray-500 dark:text-gray-400">@colorLabel: <span x-text="item.color"></span></p>
+                                                        </template>
+                                                        <template x-if="item.size">
+                                                            <p class="text-sm text-gray-500 dark:text-gray-400">@sizeLabel: <span x-text="item.size"></span></p>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                                <div class="text-right">
+                                                    <p class="font-semibold text-fashion-black dark:text-white" x-text="'$' + (item.price * item.quantity).toFixed(2)"></p>
+                                                    <template x-if="item.quantity > 1">
+                                                        <p class="text-xs text-gray-500 dark:text-gray-400" x-text="'$' + item.price.toFixed(2) + ' @eachLabel'"></p>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <!-- Quantity & Actions -->
+                                            <div class="mt-auto pt-4 flex items-center justify-between">
+                                                <!-- Quantity Selector -->
+                                                <div class="flex items-center border border-gray-200 dark:border-fashion-slate">
+                                                    <button x-on:click="updateQuantity(item, item.quantity - 1)"
+                                                            class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-fashion-slate transition">
+                                                        <svg class="w-4 h-4 text-fashion-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+                                                        </svg>
+                                                    </button>
+                                                    <span class="w-12 text-center text-sm text-fashion-black dark:text-white" x-text="item.quantity"></span>
+                                                    <button x-on:click="updateQuantity(item, item.quantity + 1)"
+                                                            class="w-10 h-10 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-fashion-slate transition">
+                                                        <svg class="w-4 h-4 text-fashion-black dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                                        </svg>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Actions -->
+                                                <div class="flex items-center gap-4">
+                                                    <button x-on:click="moveToWishlist(item)"
+                                                            class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition flex items-center gap-1.5">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                                        </svg>
+                                                        <span class="hidden sm:inline">@saveForLaterText</span>
+                                                    </button>
+                                                    <button x-on:click="removeItem(item)"
+                                                            class="text-sm text-gray-500 dark:text-gray-400 hover:text-accent-500 transition flex items-center gap-1.5">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                        </svg>
+                                                        <span class="hidden sm:inline">@removeText</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Continue Shopping -->
+                    <div class="flex justify-between items-center mt-6">
+                        <a href="/products" class="inline-flex items-center gap-2 text-fashion-black dark:text-white text-sm uppercase tracking-widest font-medium hover:text-primary-600 dark:hover:text-primary-400 transition group">
+                            <svg class="w-5 h-5 group-hover:-translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                            @continueShoppingText
+                        </a>
+                        <button x-on:click="clearCart()" class="text-sm text-gray-500 dark:text-gray-400 hover:text-accent-500 transition">
+                            @clearBagText
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white dark:bg-fashion-charcoal p-6 lg:sticky lg:top-24">
+                        <h2 class="font-display text-xl font-bold text-fashion-black dark:text-white mb-6">@orderSummaryTitle</h2>
+
+                        @if (promoCodeEnabled)
+                        {
+                        <!-- Promo Code -->
+                        <div class="mb-6">
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">@promoCodeLabel</label>
+                            <div class="flex gap-2">
+                                <input type="text"
+                                       x-model="discountCode"
+                                       placeholder="@promoCodePlaceholder"
+                                       class="flex-1 px-4 py-3 border border-gray-200 dark:border-fashion-slate bg-transparent text-fashion-black dark:text-white text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                <button x-on:click="applyDiscount()"
+                                        class="px-4 py-3 bg-gray-100 dark:bg-fashion-slate text-fashion-black dark:text-white text-sm font-medium uppercase tracking-wider hover:bg-gray-200 dark:hover:bg-fashion-black transition">
+                                    @promoCodeButtonText
+                                </button>
+                            </div>
+                            <template x-if="discountApplied">
+                                <p class="mt-2 text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    <span x-text="discountMessage"></span>
+                                </p>
+                            </template>
+                        </div>
+                        }
+
+                        <!-- Summary Lines -->
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>@subtotalLabel (<span x-text="cart.items.reduce((a, b) => a + b.quantity, 0)"></span> @itemsLabel)</span>
+                                <span x-text="'$' + cart.subtotal.toFixed(2)"></span>
+                            </div>
+                            <template x-if="discount > 0">
+                                <div class="flex justify-between text-green-600 dark:text-green-400">
+                                    <span>@discountLabel</span>
+                                    <span x-text="'-$' + discount.toFixed(2)"></span>
+                                </div>
+                            </template>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>@shippingLabel</span>
+                                <span x-text="cart.subtotal >= freeShippingThreshold ? '@freeLabel' : '$' + shipping.toFixed(2)"></span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>@taxLabel</span>
+                                <span x-text="'$' + tax.toFixed(2)"></span>
+                            </div>
+                        </div>
+
+                        @if (freeShippingEnabled)
+                        {
+                        <!-- Free Shipping Progress -->
+                        <template x-if="cart.subtotal < freeShippingThreshold">
+                            <div class="my-6 p-4 bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                                    </svg>
+                                    <span class="text-sm font-medium text-primary-700 dark:text-primary-300" x-text="'@freeShippingMessage'.replace('{amount}', '$' + (freeShippingThreshold - cart.subtotal).toFixed(2))">
+                                    </span>
+                                </div>
+                                <div class="w-full bg-primary-200 dark:bg-primary-800 h-1.5 rounded-full">
+                                    <div class="bg-primary-600 dark:bg-primary-400 h-1.5 rounded-full transition-all duration-500"
+                                         :style="{ width: Math.min(100, (cart.subtotal / freeShippingThreshold) * 100) + '%' }"></div>
+                                </div>
+                            </div>
+                        </template>
+                        }
+
+                        <!-- Total -->
+                        <div class="border-t border-gray-100 dark:border-fashion-slate pt-4 my-6">
+                            <div class="flex justify-between items-baseline">
+                                <span class="text-lg font-semibold text-fashion-black dark:text-white">@totalLabel</span>
+                                <span class="text-2xl font-bold text-fashion-black dark:text-white" x-text="'$' + total.toFixed(2)"></span>
+                            </div>
+                        </div>
+
+                        <!-- Checkout Button -->
+                        <a href="/checkout"
+                           class="block w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black text-center py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition">
+                            @checkoutButtonText
+                        </a>
+
+                        <!-- Payment Methods -->
+                        <div class="mt-6 flex items-center justify-center gap-3">
+                            <div class="w-10 h-6 bg-gradient-to-br from-blue-600 to-blue-800 rounded flex items-center justify-center">
+                                <span class="text-white text-[8px] font-bold italic">VISA</span>
+                            </div>
+                            <div class="w-10 h-6 bg-gradient-to-br from-red-500 to-orange-500 rounded flex items-center justify-center">
+                                <div class="flex -space-x-1">
+                                    <div class="w-3 h-3 rounded-full bg-red-600 opacity-80"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-400 opacity-80"></div>
+                                </div>
+                            </div>
+                            <span class="text-[#003087] font-bold text-sm italic">Pay<span class="text-[#0070BA]">Pal</span></span>
+                        </div>
+
+                        <!-- Secure Checkout -->
+                        <div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            @secureCheckoutText
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</div>
+
+@if (recommendationsEnabled)
+{
+<!-- You Might Also Like -->
+<section class="py-16 bg-white dark:bg-fashion-charcoal border-t border-gray-100 dark:border-fashion-slate">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-10">
+            <div>
+                <span class="text-primary-500 font-accent text-sm tracking-[0.3em] uppercase">@recommendationsLabel</span>
+                <h2 class="font-display text-2xl lg:text-4xl font-bold text-fashion-black dark:text-white mt-2">
+                    @recommendationsTitle<span class="text-primary-500">.</span>
+                </h2>
+            </div>
+            <a href="/products" class="group inline-flex items-center gap-2 text-fashion-black dark:text-white text-sm uppercase tracking-widest font-medium border-b-2 border-fashion-black dark:border-white pb-1 hover:text-primary-500 hover:border-primary-500 transition">
+                @viewAllText
+                <svg class="w-4 h-4 group-hover:translate-x-1 transition" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                </svg>
+            </a>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+            @for (int i = 0; i < recommendationsCount; i++)
+            {
+                <partial name="_ProductCardPlaceholder" />
+            }
+        </div>
+    </div>
+</section>
+}
+
+@section Scripts {
+<script>
+function cartPage() {
+    return {
+        cart: JSON.parse(localStorage.getItem('cart') || '{"items":[],"subtotal":0}'),
+        discountCode: '',
+        discount: 0,
+        discountApplied: false,
+        discountMessage: '',
+        shipping: @standardShippingCost,
+        freeShippingThreshold: @freeShippingThreshold,
+
+        get tax() {
+            return (this.cart.subtotal - this.discount) * 0.08;
+        },
+
+        get total() {
+            const subtotal = this.cart.subtotal;
+            const shippingCost = subtotal >= this.freeShippingThreshold ? 0 : this.shipping;
+            return subtotal + this.tax + shippingCost - this.discount;
+        },
+
+        updateQuantity(item, quantity) {
+            if (quantity < 1) {
+                this.removeItem(item);
+                return;
+            }
+            CartManager.updateQuantity(item.id, quantity);
+            this.cart = JSON.parse(localStorage.getItem('cart'));
+        },
+
+        removeItem(item) {
+            CartManager.removeItem(item.id);
+            this.cart = JSON.parse(localStorage.getItem('cart'));
+        },
+
+        clearCart() {
+            if (confirm('Are you sure you want to clear your bag?')) {
+                CartManager.clear();
+                this.cart = { items: [], subtotal: 0 };
+            }
+        },
+
+        moveToWishlist(item) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-fashion-black text-white px-8 py-4 rounded-full shadow-2xl z-50 flex items-center gap-3';
+            notification.innerHTML = '<svg class="w-5 h-5 text-accent-400" fill="currentColor" viewBox="0 0 24 24"><path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg><span class="font-medium">Saved for later</span>';
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transition = 'opacity 0.3s';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+
+            this.removeItem(item);
+        },
+
+        applyDiscount() {
+            const code = this.discountCode.toUpperCase().trim();
+            if (code === 'SAVE10') {
+                this.discount = this.cart.subtotal * 0.1;
+                this.discountApplied = true;
+                this.discountMessage = 'SAVE10 applied - 10% off';
+            } else if (code === 'SAVE20') {
+                this.discount = this.cart.subtotal * 0.2;
+                this.discountApplied = true;
+                this.discountMessage = 'SAVE20 applied - 20% off';
+            } else if (code === 'FREESHIP') {
+                this.shipping = 0;
+                this.discountApplied = true;
+                this.discountMessage = 'Free shipping applied';
+            } else {
+                this.discountApplied = false;
+                const notification = document.createElement('div');
+                notification.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-accent-500 text-white px-8 py-4 rounded-full shadow-2xl z-50';
+                notification.innerHTML = '<span class="font-medium">Invalid promo code</span>';
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    notification.style.transition = 'opacity 0.3s';
+                    setTimeout(() => notification.remove(), 300);
+                }, 2000);
+            }
+        }
+    };
+}
+</script>
+}

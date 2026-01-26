@@ -73,6 +73,66 @@ public static class AlgoraDocumentTypeConstants
     /// </summary>
     public const string ContentPageAlias = "algoraContentPage";
 
+    /// <summary>
+    /// Login Page document type alias
+    /// </summary>
+    public const string LoginPageAlias = "algoraLoginPage";
+
+    /// <summary>
+    /// Register Page document type alias
+    /// </summary>
+    public const string RegisterPageAlias = "algoraRegisterPage";
+
+    /// <summary>
+    /// Checkout Page document type alias
+    /// </summary>
+    public const string CheckoutPageAlias = "algoraCheckoutPage";
+
+    /// <summary>
+    /// Cart Page document type alias
+    /// </summary>
+    public const string CartPageAlias = "algoraCartPage";
+
+    /// <summary>
+    /// Products Listing Page document type alias
+    /// </summary>
+    public const string ProductsPageAlias = "algoraProductsPage";
+
+    /// <summary>
+    /// Product Detail Page document type alias
+    /// </summary>
+    public const string ProductDetailPageAlias = "algoraProductDetailPage";
+
+    /// <summary>
+    /// Account Dashboard Page document type alias
+    /// </summary>
+    public const string AccountPageAlias = "algoraAccountPage";
+
+    /// <summary>
+    /// Orders Page document type alias
+    /// </summary>
+    public const string OrdersPageAlias = "algoraOrdersPage";
+
+    /// <summary>
+    /// Order Detail Page document type alias
+    /// </summary>
+    public const string OrderDetailPageAlias = "algoraOrderDetailPage";
+
+    /// <summary>
+    /// Wishlist Page document type alias
+    /// </summary>
+    public const string WishlistPageAlias = "algoraWishlistPage";
+
+    /// <summary>
+    /// Deals/Sale Page document type alias
+    /// </summary>
+    public const string DealsPageAlias = "algoraDealsPage";
+
+    /// <summary>
+    /// Order Confirmation Page document type alias
+    /// </summary>
+    public const string OrderConfirmationPageAlias = "algoraOrderConfirmationPage";
+
     // ============ Enterprise E-Commerce Document Types ============
 
     /// <summary>
@@ -166,6 +226,17 @@ public static class AlgoraDocumentTypeConstants
     public const string FeatureIcon = "icon-wand";
     public const string SettingsIcon = "icon-settings";
     public const string PageIcon = "icon-document";
+    public const string LoginIcon = "icon-enter";
+    public const string RegisterIcon = "icon-add";
+    public const string CheckoutPageIcon = "icon-credit-card-alt";
+    public const string CartPageIcon = "icon-shopping-basket";
+    public const string ProductsPageIcon = "icon-grid";
+    public const string AccountPageIcon = "icon-user";
+    public const string OrdersPageIcon = "icon-invoice";
+    public const string OrderDetailPageIcon = "icon-receipt";
+    public const string WishlistPageIcon = "icon-hearts";
+    public const string DealsPageIcon = "icon-tag";
+    public const string OrderConfirmationPageIcon = "icon-check";
 
     // Enterprise Icons
     public const string StoreIcon = "icon-store";

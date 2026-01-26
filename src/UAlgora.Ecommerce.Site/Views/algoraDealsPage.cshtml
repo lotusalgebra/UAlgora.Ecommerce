@@ -1,0 +1,369 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using UAlgora.Ecommerce.Core.Constants
+@using UAlgora.Ecommerce.Core.Models.Domain
+@using UAlgora.Ecommerce.Core.Interfaces.Services
+@using UAlgora.Ecommerce.Core.Interfaces.Repositories
+@inject IProductService ProductService
+@inject ICategoryService CategoryService
+@{
+    Layout = "_Layout";
+
+    // Get query parameters
+    var sort = Context.Request.Query["sort"].ToString();
+    var discount = Context.Request.Query["discount"].ToString();
+    var categoryFilter = Context.Request.Query["category"].ToString();
+    var pageParam = Context.Request.Query["page"].ToString();
+    int.TryParse(pageParam, out int currentPage);
+    if (currentPage < 1) currentPage = 1;
+
+    // Hero
+    var heroBadgeText = Model.Value<string>("heroBadgeText") ?? "Limited Time Offers";
+    var heroTitle = Model.Value<string>("heroTitle") ?? "SALE";
+    var heroSubtitle = Model.Value<string>("heroSubtitle") ?? "";
+    var maxDiscountPercent = Model.Value<int?>("maxDiscountPercent") ?? 70;
+
+    // Countdown
+    var showCountdown = Model.Value<bool>("showCountdown");
+    var countdownLabel = Model.Value<string>("countdownLabel") ?? "Flash Sale Ends In";
+    var countdownSubtext = Model.Value<string>("countdownSubtext") ?? "Don't Miss Out!";
+    var countdownEndDate = Model.Value<DateTime?>("countdownEndDate");
+    var hoursLabel = Model.Value<string>("hoursLabel") ?? "Hours";
+    var minutesLabel = Model.Value<string>("minutesLabel") ?? "Minutes";
+    var secondsLabel = Model.Value<string>("secondsLabel") ?? "Seconds";
+    var shopNowText = Model.Value<string>("shopNowText") ?? "Shop Now";
+
+    // Discount Tiers
+    var showDiscountTiers = Model.Value<bool>("showDiscountTiers");
+    var tier1Percent = Model.Value<int?>("tier1Percent") ?? 20;
+    var tier2Percent = Model.Value<int?>("tier2Percent") ?? 30;
+    var tier3Percent = Model.Value<int?>("tier3Percent") ?? 50;
+    var tier4Percent = Model.Value<int?>("tier4Percent") ?? 70;
+    var tierSuffix = Model.Value<string>("tierSuffix") ?? "Off & More";
+
+    // Categories
+    var showCategoryPills = Model.Value<bool>("showCategoryPills");
+    var allDealsText = Model.Value<string>("allDealsText") ?? "All Deals";
+    var categoryListStr = Model.Value<string>("categoryList") ?? "Dresses, Tops, Bottoms, Outerwear, Accessories, Shoes";
+    var categoryList = categoryListStr.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+    // Products Section
+    var sectionTitle = Model.Value<string>("sectionTitle") ?? "All Deals";
+    var productCountFormat = Model.Value<string>("productCountFormat") ?? "{count} products on sale";
+    var sortByLabel = Model.Value<string>("sortByLabel") ?? "Sort by: Featured";
+    var sortPriceLowText = Model.Value<string>("sortPriceLowText") ?? "Price: Low to High";
+    var sortPriceHighText = Model.Value<string>("sortPriceHighText") ?? "Price: High to Low";
+    var sortDiscountText = Model.Value<string>("sortDiscountText") ?? "Biggest Discount";
+    var sortNewestText = Model.Value<string>("sortNewestText") ?? "Newest First";
+    var pageSize = Model.Value<int?>("pageSize") ?? 24;
+
+    // Empty State
+    var emptyTitle = Model.Value<string>("emptyTitle") ?? "No deals right now";
+    var emptyDescription = Model.Value<string>("emptyDescription") ?? "Check back soon for amazing discounts on your favorite styles!";
+    var browseAllText = Model.Value<string>("browseAllText") ?? "Browse All Products";
+    var browseAllUrl = Model.Value<string>("browseAllUrl") ?? "/products";
+
+    // Newsletter
+    var showNewsletter = Model.Value<bool>("showNewsletter");
+    var newsletterBadge = Model.Value<string>("newsletterBadge") ?? "Never Miss a Deal";
+    var newsletterTitle = Model.Value<string>("newsletterTitle") ?? "Get Exclusive Offers";
+    var newsletterDescription = Model.Value<string>("newsletterDescription") ?? "Be the first to know about new arrivals, exclusive discounts, and special offers. Join our VIP list!";
+    var newsletterPlaceholder = Model.Value<string>("newsletterPlaceholder") ?? "Enter your email";
+    var newsletterButtonText = Model.Value<string>("newsletterButtonText") ?? "Subscribe";
+    var newsletterDisclaimer = Model.Value<string>("newsletterDisclaimer") ?? "Unsubscribe anytime. We respect your privacy.";
+
+    // SEO
+    var metaTitle = Model.Value<string>("metaTitle") ?? "Deals & Offers";
+    var metaDescription = Model.Value<string>("metaDescription") ?? "Shop our best deals and discounts";
+    ViewData["Title"] = metaTitle;
+    ViewData["MetaDescription"] = metaDescription;
+
+    // Load products
+    var parameters = new ProductQueryParameters
+    {
+        Page = currentPage,
+        PageSize = pageSize,
+        OnSale = true,
+        SortBy = sort switch
+        {
+            "price-asc" => ProductSortBy.PriceLowToHigh,
+            "price-desc" => ProductSortBy.PriceHighToLow,
+            "discount" => ProductSortBy.PriceHighToLow, // Approximate for discount
+            "newest" => ProductSortBy.Newest,
+            _ => ProductSortBy.Newest
+        }
+    };
+
+    var result = await ProductService.GetPagedAsync(parameters);
+    var products = result.Items.ToList();
+    var totalCount = result.TotalCount;
+    var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+    // Build subtitle if not set
+    if (string.IsNullOrEmpty(heroSubtitle))
+    {
+        heroSubtitle = $"Up to <span class=\"font-display font-bold text-gold\">{maxDiscountPercent}% OFF</span> on selected styles. Don't miss out!";
+    }
+}
+
+<div class="min-h-screen bg-gray-50 dark:bg-fashion-charcoal">
+    <!-- Hero Banner -->
+    <section class="bg-gradient-to-br from-accent-500 via-accent-600 to-primary-600 dark:from-accent-700 dark:via-accent-800 dark:to-primary-800 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute inset-0 animate-pulse" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;100&quot; height=&quot;100&quot; viewBox=&quot;0 0 100 100&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Ctext x=&quot;50&quot; y=&quot;50&quot; font-size=&quot;60&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;middle&quot; fill=&quot;%23fff&quot; opacity=&quot;0.3&quot;%3E%%3C/text%3E%3C/svg%3E');"></div>
+        </div>
+        <div class="absolute -top-20 -left-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-20 -right-20 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative">
+            <div class="text-center">
+                <span class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm text-white px-5 py-2 text-sm font-accent tracking-widest uppercase mb-6">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd"/>
+                    </svg>
+                    @heroBadgeText
+                </span>
+                <h1 class="font-display text-5xl lg:text-7xl font-bold text-white mb-6">
+                    @heroTitle<span class="text-gold">.</span>
+                </h1>
+                <p class="text-xl lg:text-2xl text-white/80 max-w-2xl mx-auto font-light">
+                    @Html.Raw(heroSubtitle)
+                </p>
+            </div>
+        </div>
+    </section>
+
+    @if (showCountdown)
+    {
+        <!-- Countdown Timer -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-10" x-data="countdown('@(countdownEndDate?.ToString("o") ?? "")')">
+            <div class="bg-fashion-black dark:bg-fashion-slate border border-gray-800 p-8">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+                    <div class="text-white text-center lg:text-left">
+                        <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">@countdownLabel</p>
+                        <p class="font-display text-xl font-bold">@countdownSubtext</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-accent-500 flex items-center justify-center">
+                                <span class="font-display text-3xl font-bold text-white" x-text="hours">00</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2 uppercase tracking-wider">@hoursLabel</p>
+                        </div>
+                        <span class="text-2xl text-accent-500 font-bold">:</span>
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-accent-500 flex items-center justify-center">
+                                <span class="font-display text-3xl font-bold text-white" x-text="minutes">00</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2 uppercase tracking-wider">@minutesLabel</p>
+                        </div>
+                        <span class="text-2xl text-accent-500 font-bold">:</span>
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-accent-500 flex items-center justify-center">
+                                <span class="font-display text-3xl font-bold text-white" x-text="seconds">00</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-2 uppercase tracking-wider">@secondsLabel</p>
+                        </div>
+                    </div>
+                    <div>
+                        <a href="#deals" class="inline-flex items-center gap-2 bg-white text-fashion-black px-6 py-3 text-sm uppercase tracking-widest font-medium hover:bg-gold transition-colors">
+                            @shopNowText
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        @if (showDiscountTiers)
+        {
+            <!-- Discount Tiers -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+                <a href="@(Model.Url())?discount=@tier1Percent" class="group block p-6 bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 text-center hover:border-accent-500 transition">
+                    <span class="font-accent text-4xl lg:text-5xl text-accent-500">@tier1Percent%</span>
+                    <p class="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-2 group-hover:text-fashion-black dark:group-hover:text-white transition">@tierSuffix</p>
+                </a>
+                <a href="@(Model.Url())?discount=@tier2Percent" class="group block p-6 bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 text-center hover:border-accent-500 transition">
+                    <span class="font-accent text-4xl lg:text-5xl text-accent-500">@tier2Percent%</span>
+                    <p class="text-xs uppercase tracking-widest text-gray-500 dark:text-gray-400 mt-2 group-hover:text-fashion-black dark:group-hover:text-white transition">@tierSuffix</p>
+                </a>
+                <a href="@(Model.Url())?discount=@tier3Percent" class="group block p-6 bg-accent-500 text-center hover:bg-accent-600 transition">
+                    <span class="font-accent text-4xl lg:text-5xl text-white">@tier3Percent%</span>
+                    <p class="text-xs uppercase tracking-widest text-white/80 mt-2">@tierSuffix</p>
+                </a>
+                <a href="@(Model.Url())?discount=@tier4Percent" class="group block p-6 bg-fashion-black dark:bg-gold text-center hover:bg-gold dark:hover:bg-gold-dark transition">
+                    <span class="font-accent text-4xl lg:text-5xl text-gold dark:text-fashion-black group-hover:text-fashion-black">@tier4Percent%</span>
+                    <p class="text-xs uppercase tracking-widest text-gray-400 dark:text-fashion-black/80 group-hover:text-fashion-black/80 mt-2">@tierSuffix</p>
+                </a>
+            </div>
+        }
+
+        @if (showCategoryPills)
+        {
+            <!-- Category Pills -->
+            <div class="flex flex-wrap gap-3 mb-8 justify-center">
+                <a href="@Model.Url()" class="px-6 py-3 bg-fashion-black dark:bg-white text-white dark:text-fashion-black text-xs uppercase tracking-widest font-medium">
+                    @allDealsText
+                </a>
+                @foreach (var category in categoryList)
+                {
+                    <a href="@(Model.Url())?category=@category.ToLower()" class="px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs uppercase tracking-widest font-medium hover:border-fashion-black dark:hover:border-white hover:text-fashion-black dark:hover:text-white transition">
+                        @category
+                    </a>
+                }
+            </div>
+        }
+
+        <!-- Products Section -->
+        <div id="deals" class="mb-12">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="font-display text-2xl font-bold text-fashion-black dark:text-white">
+                        @sectionTitle<span class="text-accent-500">.</span>
+                    </h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">@productCountFormat.Replace("{count}", totalCount.ToString())</p>
+                </div>
+                <div class="relative">
+                    <select class="appearance-none px-5 py-3 pr-10 border border-gray-300 dark:border-gray-700 bg-white dark:bg-fashion-black text-fashion-black dark:text-white text-sm focus:ring-2 focus:ring-accent-500 focus:border-accent-500"
+                            onchange="window.location.href='@(Model.Url())?sort=' + this.value">
+                        <option value="">@sortByLabel</option>
+                        <option value="price-asc" selected="@(sort == "price-asc" ? "selected" : null)">@sortPriceLowText</option>
+                        <option value="price-desc" selected="@(sort == "price-desc" ? "selected" : null)">@sortPriceHighText</option>
+                        <option value="discount" selected="@(sort == "discount" ? "selected" : null)">@sortDiscountText</option>
+                        <option value="newest" selected="@(sort == "newest" ? "selected" : null)">@sortNewestText</option>
+                    </select>
+                    <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
+            </div>
+
+            @if (products.Any())
+            {
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+                    @foreach (var product in products)
+                    {
+                        <partial name="_ProductCard" model="product" />
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 py-20 text-center">
+                    <div class="w-24 h-24 mx-auto mb-8 bg-gray-100 dark:bg-fashion-charcoal rounded-full flex items-center justify-center">
+                        <svg class="w-12 h-12 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold text-fashion-black dark:text-white mb-3">@emptyTitle</h3>
+                    <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">@emptyDescription</p>
+                    <a href="@browseAllUrl" class="inline-flex items-center gap-2 bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                        @browseAllText
+                    </a>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <nav class="flex justify-center mb-12">
+                <div class="flex items-center gap-2">
+                    @if (currentPage > 1)
+                    {
+                        <a href="@(Model.Url())?page=@(currentPage - 1)@(string.IsNullOrEmpty(sort) ? "" : "&sort=" + sort)" class="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-fashion-black dark:hover:border-white hover:text-fashion-black dark:hover:text-white transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </a>
+                    }
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        var pageClass = i == currentPage
+                            ? "bg-fashion-black dark:bg-white text-white dark:text-fashion-black"
+                            : "border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-fashion-black dark:hover:border-white hover:text-fashion-black dark:hover:text-white";
+                        <a href="@(Model.Url())?page=@i@(string.IsNullOrEmpty(sort) ? "" : "&sort=" + sort)" class="w-10 h-10 flex items-center justify-center text-sm font-medium transition @pageClass">
+                            @i
+                        </a>
+                    }
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="@(Model.Url())?page=@(currentPage + 1)@(string.IsNullOrEmpty(sort) ? "" : "&sort=" + sort)" class="w-10 h-10 flex items-center justify-center border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:border-fashion-black dark:hover:border-white hover:text-fashion-black dark:hover:text-white transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    }
+                </div>
+            </nav>
+        }
+    </div>
+
+    @if (showNewsletter)
+    {
+        <!-- Newsletter CTA -->
+        <section class="bg-fashion-black dark:bg-fashion-slate py-16 lg:py-20">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <span class="text-accent-500 font-accent text-sm tracking-[0.3em] uppercase">@newsletterBadge</span>
+                <h2 class="font-display text-3xl lg:text-4xl font-bold text-white mt-3 mb-4">
+                    @newsletterTitle<span class="text-accent-500">.</span>
+                </h2>
+                <p class="text-gray-400 mb-8 max-w-xl mx-auto">
+                    @newsletterDescription
+                </p>
+                <form class="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
+                    <div class="relative flex-1">
+                        <input type="email" placeholder="@newsletterPlaceholder"
+                               class="w-full px-5 py-4 bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition">
+                    </div>
+                    <button type="submit" class="bg-accent-500 text-white px-8 py-4 text-sm uppercase tracking-widest font-medium hover:bg-accent-600 transition-colors flex items-center justify-center gap-2">
+                        @newsletterButtonText
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </button>
+                </form>
+                <p class="text-xs text-gray-500 mt-4">@newsletterDisclaimer</p>
+            </div>
+        </section>
+    }
+</div>
+
+@section Scripts {
+<script>
+function countdown(endDateStr) {
+    return {
+        hours: '00',
+        minutes: '00',
+        seconds: '00',
+        endDate: null,
+        init() {
+            if (endDateStr) {
+                this.endDate = new Date(endDateStr);
+            }
+            this.updateCountdown();
+            setInterval(() => this.updateCountdown(), 1000);
+        },
+        updateCountdown() {
+            const now = new Date();
+            let target;
+            if (this.endDate) {
+                target = this.endDate;
+            } else {
+                // Default to end of day
+                target = new Date();
+                target.setHours(23, 59, 59, 999);
+            }
+            const diff = Math.max(0, target - now);
+
+            this.hours = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
+            this.minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            this.seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+        }
+    };
+}
+</script>
+}

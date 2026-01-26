@@ -1,0 +1,470 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Microsoft.AspNetCore.Html
+@using System.Security.Claims
+@using UAlgora.Ecommerce.Core.Constants
+@using UAlgora.Ecommerce.Core.Interfaces.Services
+@using UAlgora.Ecommerce.Core.Models.Domain
+@inject IOrderService OrderService
+
+@{
+    Layout = "_Layout";
+
+    // Get CMS labels with defaults
+    var breadcrumbHome = Model.Value<string>("breadcrumbHome") ?? "Home";
+    var breadcrumbAccount = Model.Value<string>("breadcrumbAccount") ?? "Account";
+    var breadcrumbOrders = Model.Value<string>("breadcrumbOrders") ?? "Orders";
+
+    // Header
+    var orderLabel = Model.Value<string>("orderLabel") ?? "Order";
+    var placedOnLabel = Model.Value<string>("placedOnLabel") ?? "Placed on";
+
+    // Timeline
+    var statusTitle = Model.Value<string>("statusTitle") ?? "Order Status";
+    var confirmedTitle = Model.Value<string>("confirmedTitle") ?? "Order Confirmed";
+    var confirmedText = Model.Value<string>("confirmedText") ?? "Your order has been placed successfully";
+    var processingTitle = Model.Value<string>("processingTitle") ?? "Processing";
+    var processingText = Model.Value<string>("processingText") ?? "We're preparing your order for shipment";
+    var shippedTitle = Model.Value<string>("shippedTitle") ?? "Shipped";
+    var shippedText = Model.Value<string>("shippedText") ?? "Your package is on its way";
+    var trackingLabel = Model.Value<string>("trackingLabel") ?? "Tracking:";
+    var deliveredTitle = Model.Value<string>("deliveredTitle") ?? "Delivered";
+    var deliveredText = Model.Value<string>("deliveredText") ?? "Package has been delivered";
+
+    // Order items
+    var itemsTitle = Model.Value<string>("itemsTitle") ?? "Order Items";
+    var itemsCountFormat = Model.Value<string>("itemsCountFormat") ?? "{count} item(s)";
+    var skuLabel = Model.Value<string>("skuLabel") ?? "SKU:";
+    var sizeLabel = Model.Value<string>("sizeLabel") ?? "Size:";
+    var qtyLabel = Model.Value<string>("qtyLabel") ?? "Qty:";
+    var eachLabel = Model.Value<string>("eachLabel") ?? "each";
+
+    // Addresses
+    var shippingAddressTitle = Model.Value<string>("shippingAddressTitle") ?? "Shipping Address";
+    var billingAddressTitle = Model.Value<string>("billingAddressTitle") ?? "Billing Address";
+
+    // Summary
+    var summaryTitle = Model.Value<string>("summaryTitle") ?? "Order Summary";
+    var subtotalLabel = Model.Value<string>("subtotalLabel") ?? "Subtotal";
+    var shippingLabel = Model.Value<string>("shippingLabel") ?? "Shipping";
+    var taxLabel = Model.Value<string>("taxLabel") ?? "Tax";
+    var discountLabel = Model.Value<string>("discountLabel") ?? "Discount";
+    var totalLabel = Model.Value<string>("totalLabel") ?? "Total";
+    var paymentMethodTitle = Model.Value<string>("paymentMethodTitle") ?? "Payment Method";
+    var paidOnLabel = Model.Value<string>("paidOnLabel") ?? "Paid on";
+
+    // Actions
+    var trackPackageText = Model.Value<string>("trackPackageText") ?? "Track Package";
+    var buyAgainText = Model.Value<string>("buyAgainText") ?? "Buy Again";
+    var needHelpText = Model.Value<string>("needHelpText") ?? "Need Help?";
+    var needHelpUrl = Model.Value<string>("needHelpUrl") ?? "/contact";
+    var backToOrdersText = Model.Value<string>("backToOrdersText") ?? "Back to Orders";
+
+    // SEO
+    var metaTitleTemplate = Model.Value<string>("metaTitleTemplate") ?? "Order {orderNumber}";
+
+    // Get order number from query string or route
+    var orderNumber = Context.Request.Query["orderNumber"].FirstOrDefault()
+        ?? Context.Request.RouteValues["orderNumber"]?.ToString();
+
+    Order? order = null;
+
+    if (!string.IsNullOrEmpty(orderNumber))
+    {
+        order = await OrderService.GetByOrderNumberAsync(orderNumber);
+    }
+
+    // Verify customer owns this order
+    var customerIdClaim = Context.User.FindFirst("CustomerId")?.Value
+        ?? Context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+    if (order == null || string.IsNullOrEmpty(customerIdClaim) || !Guid.TryParse(customerIdClaim, out var customerId) || order.CustomerId != customerId)
+    {
+        Context.Response.Redirect("/account/orders");
+        return;
+    }
+
+    var metaTitle = metaTitleTemplate.Replace("{orderNumber}", order.OrderNumber);
+    ViewData["Title"] = metaTitle;
+
+    var metaDescription = Model.Value<string>("metaDescription");
+    if (!string.IsNullOrEmpty(metaDescription))
+    {
+        ViewData["Description"] = metaDescription;
+    }
+
+    var itemsCountText = itemsCountFormat.Replace("{count}", order.Lines.Count.ToString());
+
+    // Helper functions
+    string GetStatusStyle(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "bg-gold-light text-gold-dark",
+            OrderStatus.Confirmed => "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400",
+            OrderStatus.Processing => "bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400",
+            OrderStatus.Shipped => "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400",
+            OrderStatus.Delivered => "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400",
+            OrderStatus.Cancelled => "bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400",
+            OrderStatus.Refunded => "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400",
+            _ => "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
+        };
+    }
+
+    string GetStatusIcon(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z",
+            OrderStatus.Confirmed => "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+            OrderStatus.Processing => "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15",
+            OrderStatus.Shipped => "M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4",
+            OrderStatus.Delivered => "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+            OrderStatus.Cancelled => "M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z",
+            OrderStatus.Refunded => "M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6",
+            _ => "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        };
+    }
+
+    bool IsStepComplete(OrderStatus current, OrderStatus step)
+    {
+        var statusOrder = new[] { OrderStatus.Pending, OrderStatus.Confirmed, OrderStatus.Processing, OrderStatus.Shipped, OrderStatus.Delivered };
+        var currentIndex = Array.IndexOf(statusOrder, current);
+        var stepIndex = Array.IndexOf(statusOrder, step);
+        return currentIndex > stepIndex || (current == OrderStatus.Delivered && step == OrderStatus.Delivered);
+    }
+
+    string GetProgressHeight(OrderStatus status)
+    {
+        return status switch
+        {
+            OrderStatus.Pending => "0%",
+            OrderStatus.Confirmed => "15%",
+            OrderStatus.Processing => "40%",
+            OrderStatus.Shipped => "70%",
+            OrderStatus.Delivered => "100%",
+            _ => "0%"
+        };
+    }
+}
+
+<div class="min-h-screen bg-gray-50 dark:bg-fashion-charcoal">
+    <!-- Hero Header -->
+    <div class="bg-gradient-to-br from-fashion-black via-fashion-charcoal to-fashion-slate dark:from-fashion-black dark:to-fashion-charcoal">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <nav class="flex text-sm text-gray-400 mb-4">
+                <a href="/" class="hover:text-white transition">@breadcrumbHome</a>
+                <span class="mx-2">/</span>
+                <a href="/account" class="hover:text-white transition">@breadcrumbAccount</a>
+                <span class="mx-2">/</span>
+                <a href="/account/orders" class="hover:text-white transition">@breadcrumbOrders</a>
+                <span class="mx-2">/</span>
+                <span class="text-white">@order.OrderNumber</span>
+            </nav>
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="font-display text-3xl lg:text-4xl font-bold text-white">
+                        @orderLabel @order.OrderNumber<span class="text-primary-400">.</span>
+                    </h1>
+                    <p class="text-gray-400 mt-1">@placedOnLabel @order.CreatedAt.ToString("MMMM dd, yyyy 'at' h:mm tt")</p>
+                </div>
+                <span class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium uppercase tracking-wider @GetStatusStyle(order.Status)">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="@GetStatusIcon(order.Status)"/>
+                    </svg>
+                    @order.Status
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid lg:grid-cols-3 gap-8">
+            <!-- Order Items & Info -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Order Status Timeline -->
+                <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800">
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="font-display text-lg font-bold text-fashion-black dark:text-white">@statusTitle</h2>
+                    </div>
+                    <div class="p-5">
+                        <div class="relative">
+                            <!-- Progress Line -->
+                            <div class="absolute left-5 top-5 bottom-5 w-0.5 bg-gray-200 dark:bg-gray-700">
+                                <div class="w-full bg-green-500 transition-all" style="height: @GetProgressHeight(order.Status)"></div>
+                            </div>
+
+                            <!-- Timeline Steps -->
+                            <div class="space-y-8">
+                                <!-- Confirmed -->
+                                <div class="relative flex items-start gap-4">
+                                    <div class="w-10 h-10 flex-shrink-0 @(IsStepComplete(order.Status, OrderStatus.Pending) ? "bg-green-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400") rounded-full flex items-center justify-center z-10">
+                                        @if (IsStepComplete(order.Status, OrderStatus.Pending))
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-sm font-bold">1</span>
+                                        }
+                                    </div>
+                                    <div class="pt-1.5">
+                                        <p class="font-medium text-fashion-black dark:text-white">@confirmedTitle</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@confirmedText</p>
+                                        @if (IsStepComplete(order.Status, OrderStatus.Pending))
+                                        {
+                                            <p class="text-xs text-gray-400 mt-1">@order.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")</p>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Processing -->
+                                <div class="relative flex items-start gap-4">
+                                    <div class="w-10 h-10 flex-shrink-0 @(IsStepComplete(order.Status, OrderStatus.Processing) ? "bg-green-500 text-white" : order.Status == OrderStatus.Processing ? "bg-primary-500 text-white animate-pulse" : "bg-gray-200 dark:bg-gray-700 text-gray-400") rounded-full flex items-center justify-center z-10">
+                                        @if (IsStepComplete(order.Status, OrderStatus.Processing))
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                            </svg>
+                                        }
+                                    </div>
+                                    <div class="pt-1.5">
+                                        <p class="font-medium @(order.Status == OrderStatus.Processing ? "text-primary-600 dark:text-primary-400" : "text-fashion-black dark:text-white")">@processingTitle</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@processingText</p>
+                                    </div>
+                                </div>
+
+                                <!-- Shipped -->
+                                <div class="relative flex items-start gap-4">
+                                    <div class="w-10 h-10 flex-shrink-0 @(IsStepComplete(order.Status, OrderStatus.Shipped) ? "bg-green-500 text-white" : order.Status == OrderStatus.Shipped ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400") rounded-full flex items-center justify-center z-10">
+                                        @if (IsStepComplete(order.Status, OrderStatus.Shipped))
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        }
+                                        else
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                                            </svg>
+                                        }
+                                    </div>
+                                    <div class="pt-1.5">
+                                        <p class="font-medium @(order.Status == OrderStatus.Shipped ? "text-blue-600 dark:text-blue-400" : "text-fashion-black dark:text-white")">@shippedTitle</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@shippedText</p>
+                                        @if (order.Status == OrderStatus.Shipped || order.Status == OrderStatus.Delivered)
+                                        {
+                                            <p class="text-xs text-gray-400 mt-1">@trackingLabel #TRK123456789</p>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Delivered -->
+                                <div class="relative flex items-start gap-4">
+                                    <div class="w-10 h-10 flex-shrink-0 @(order.Status == OrderStatus.Delivered ? "bg-green-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-400") rounded-full flex items-center justify-center z-10">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                                        </svg>
+                                    </div>
+                                    <div class="pt-1.5">
+                                        <p class="font-medium @(order.Status == OrderStatus.Delivered ? "text-green-600 dark:text-green-400" : "text-fashion-black dark:text-white")">@deliveredTitle</p>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@deliveredText</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800">
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <h2 class="font-display text-lg font-bold text-fashion-black dark:text-white">@itemsTitle</h2>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">@itemsCountText</span>
+                    </div>
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach (var line in order.Lines)
+                        {
+                            <div class="p-5 flex gap-4">
+                                <!-- Product Image -->
+                                <div class="flex-shrink-0 w-24 h-28 bg-gray-100 dark:bg-fashion-charcoal overflow-hidden group">
+                                    <img src="@(line.ImageUrl ?? "https://placehold.co/96x112/e2e8f0/64748b?text=Product")"
+                                         alt="@line.ProductName"
+                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                </div>
+
+                                <!-- Product Info -->
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="font-medium text-fashion-black dark:text-white">@line.ProductName</h3>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">@skuLabel @line.Sku</p>
+                                    @if (!string.IsNullOrEmpty(line.VariantName))
+                                    {
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">@sizeLabel @line.VariantName</p>
+                                    }
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">@qtyLabel @line.Quantity</p>
+                                </div>
+
+                                <!-- Price -->
+                                <div class="text-right flex-shrink-0">
+                                    <p class="font-display text-lg font-bold text-fashion-black dark:text-white">$@line.LineTotal.ToString("F2")</p>
+                                    <p class="text-sm text-gray-400">$@line.UnitPrice.ToString("F2") @eachLabel</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Addresses -->
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Shipping Address -->
+                    @if (order.ShippingAddress != null)
+                    {
+                        <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 p-5">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="font-display font-bold text-fashion-black dark:text-white">@shippingAddressTitle</h3>
+                            </div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                <p class="font-medium text-fashion-black dark:text-white">@order.ShippingAddress.FirstName @order.ShippingAddress.LastName</p>
+                                <p>@order.ShippingAddress.AddressLine1</p>
+                                @if (!string.IsNullOrEmpty(order.ShippingAddress.AddressLine2))
+                                {
+                                    <p>@order.ShippingAddress.AddressLine2</p>
+                                }
+                                <p>@order.ShippingAddress.City, @order.ShippingAddress.StateProvince @order.ShippingAddress.PostalCode</p>
+                                <p>@order.ShippingAddress.Country</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Billing Address -->
+                    @if (order.BillingAddress != null)
+                    {
+                        <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 p-5">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-10 h-10 bg-accent-100 dark:bg-accent-900/30 rounded-full flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-accent-600 dark:text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="font-display font-bold text-fashion-black dark:text-white">@billingAddressTitle</h3>
+                            </div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                                <p class="font-medium text-fashion-black dark:text-white">@order.BillingAddress.FirstName @order.BillingAddress.LastName</p>
+                                <p>@order.BillingAddress.AddressLine1</p>
+                                @if (!string.IsNullOrEmpty(order.BillingAddress.AddressLine2))
+                                {
+                                    <p>@order.BillingAddress.AddressLine2</p>
+                                }
+                                <p>@order.BillingAddress.City, @order.BillingAddress.StateProvince @order.BillingAddress.PostalCode</p>
+                                <p>@order.BillingAddress.Country</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white dark:bg-fashion-black border border-gray-200 dark:border-gray-800 sticky top-24">
+                    <div class="p-5 border-b border-gray-200 dark:border-gray-700">
+                        <h2 class="font-display text-lg font-bold text-fashion-black dark:text-white">@summaryTitle</h2>
+                    </div>
+                    <div class="p-5">
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>@subtotalLabel</span>
+                                <span class="text-fashion-black dark:text-white">$@order.Subtotal.ToString("F2")</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>@shippingLabel</span>
+                                <span class="text-fashion-black dark:text-white">$@order.ShippingTotal.ToString("F2")</span>
+                            </div>
+                            <div class="flex justify-between text-gray-600 dark:text-gray-400">
+                                <span>@taxLabel</span>
+                                <span class="text-fashion-black dark:text-white">$@order.TaxTotal.ToString("F2")</span>
+                            </div>
+                            @if (order.DiscountTotal > 0)
+                            {
+                                <div class="flex justify-between text-green-600 dark:text-green-400">
+                                    <span>@discountLabel</span>
+                                    <span>-$@order.DiscountTotal.ToString("F2")</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700 mt-4 pt-4">
+                            <div class="flex justify-between">
+                                <span class="font-display text-lg font-bold text-fashion-black dark:text-white">@totalLabel</span>
+                                <span class="font-display text-xl font-bold text-fashion-black dark:text-white">$@order.GrandTotal.ToString("F2")</span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                            <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">@paymentMethodTitle</p>
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-7 bg-gray-100 dark:bg-fashion-charcoal rounded flex items-center justify-center">
+                                    <svg class="w-6 h-4 text-gray-600" viewBox="0 0 24 16" fill="currentColor">
+                                        <rect width="24" height="16" rx="2" fill="currentColor" opacity="0.1"/>
+                                        <text x="12" y="11" text-anchor="middle" font-size="6" fill="currentColor">VISA</text>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-fashion-black dark:text-white">Visa ending in 4242</p>
+                                    <p class="text-xs text-gray-400">@paidOnLabel @order.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mt-6 space-y-3">
+                            @if (order.Status == OrderStatus.Shipped)
+                            {
+                                <a href="#" class="flex items-center justify-center gap-2 w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-3 text-xs uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    </svg>
+                                    @trackPackageText
+                                </a>
+                            }
+                            @if (order.Status == OrderStatus.Delivered)
+                            {
+                                <a href="#" class="flex items-center justify-center gap-2 w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-3 text-xs uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    @buyAgainText
+                                </a>
+                            }
+                            <a href="@needHelpUrl" class="flex items-center justify-center gap-2 w-full border-2 border-fashion-black dark:border-white text-fashion-black dark:text-white py-3 text-xs uppercase tracking-widest font-medium hover:bg-fashion-black dark:hover:bg-white hover:text-white dark:hover:text-fashion-black transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                @needHelpText
+                            </a>
+                            <a href="/account/orders" class="flex items-center justify-center gap-2 w-full text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 font-medium transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                </svg>
+                                @backToOrdersText
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
