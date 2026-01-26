@@ -1,5 +1,5 @@
 // Algora Commerce Extension Entry Point
-// Version 2.8.6
+// Version 2.8.7
 
 // Import dashboard
 import './views/dashboard.js';
@@ -25,4 +25,4 @@ import './views/collections/paymentlink-collection.js';
 import './views/collections/license-collection.js';
 import './views/collections/checkoutstep-collection.js';
 
-console.log('Algora Commerce extension loaded v2.8.6');
+console.log('Algora Commerce extension loaded v2.8.7');

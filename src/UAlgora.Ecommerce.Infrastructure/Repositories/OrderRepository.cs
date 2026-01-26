@@ -18,6 +18,10 @@ public class OrderRepository : SoftDeleteRepository<Order>, IOrderRepository
     public async Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default)
     {
         return await DbSet
+            .Include(o => o.Lines)
+            .Include(o => o.ShippingAddress)
+            .Include(o => o.BillingAddress)
+            .Include(o => o.Customer)
             .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber, ct);
     }
 
@@ -140,6 +144,7 @@ public class OrderRepository : SoftDeleteRepository<Order>, IOrderRepository
     public async Task<IReadOnlyList<Order>> GetByCustomerIdAsync(Guid customerId, CancellationToken ct = default)
     {
         return await DbSet
+            .Include(o => o.Lines)
             .Where(o => o.CustomerId == customerId)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(ct);
@@ -148,6 +153,7 @@ public class OrderRepository : SoftDeleteRepository<Order>, IOrderRepository
     public async Task<IReadOnlyList<Order>> GetByCustomerEmailAsync(string email, CancellationToken ct = default)
     {
         return await DbSet
+            .Include(o => o.Lines)
             .Where(o => o.CustomerEmail == email)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(ct);

@@ -277,18 +277,25 @@ public class StorefrontController : Controller
             return Redirect(orderConfirmationPage.Url() + $"?orderNumber={Uri.EscapeDataString(orderNumber)}");
         }
 
-        // Fallback to hardcoded view
+        // Try to load the order from database
         var order = await _orderService.GetByOrderNumberAsync(orderNumber);
-        if (order == null)
+
+        // Get customer email from authentication if order not found
+        string customerEmail = order?.CustomerEmail ?? string.Empty;
+        if (string.IsNullOrEmpty(customerEmail))
         {
-            return NotFound();
+            var authResult = await HttpContext.AuthenticateAsync(AuthScheme);
+            if (authResult.Succeeded)
+            {
+                customerEmail = authResult.Principal?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value ?? string.Empty;
+            }
         }
 
         var viewModel = new OrderConfirmationViewModel
         {
-            Order = order,
+            Order = order, // May be null for demo/test orders
             OrderNumber = orderNumber,
-            Email = order.CustomerEmail ?? string.Empty
+            Email = customerEmail
         };
 
         ViewData["Title"] = "Order Confirmation";
@@ -437,11 +444,24 @@ public class StorefrontController : Controller
             return RedirectToAction(nameof(Login));
         }
 
-        var orders = await _orderService.GetByCustomerIdAsync(customerId.Value);
-        var orderedOrders = orders.OrderByDescending(o => o.PlacedAt ?? o.CreatedAt).ToList();
+        // Get orders by customer ID
+        var ordersByCustomerId = await _orderService.GetByCustomerIdAsync(customerId.Value);
+
+        // Also get guest orders by email (for orders placed before login)
+        var customer = await _customerService.GetByIdAsync(customerId.Value);
+        var guestOrders = new List<Order>();
+        if (customer != null && !string.IsNullOrEmpty(customer.Email))
+        {
+            var ordersByEmail = await _orderService.GetByCustomerEmailAsync(customer.Email);
+            guestOrders = ordersByEmail.Where(o => o.CustomerId == null).ToList();
+        }
+
+        // Merge and deduplicate orders
+        var allOrders = ordersByCustomerId.Union(guestOrders).DistinctBy(o => o.Id)
+            .OrderByDescending(o => o.PlacedAt ?? o.CreatedAt).ToList();
 
         ViewData["Title"] = "My Orders";
-        return View("Orders", orderedOrders);
+        return View("Orders", allOrders);
     }
 
     [HttpGet("/account/orders/{orderNumber}")]
@@ -469,8 +489,13 @@ public class StorefrontController : Controller
             return NotFound();
         }
 
-        // Verify the order belongs to the current customer
-        if (order.CustomerId != customerId)
+        // Verify the order belongs to the current customer (by ID or email for guest orders)
+        var customer = await _customerService.GetByIdAsync(customerId.Value);
+        var isOwner = order.CustomerId == customerId ||
+                      (order.CustomerId == null && !string.IsNullOrEmpty(order.CustomerEmail) &&
+                       customer != null && string.Equals(order.CustomerEmail, customer.Email, StringComparison.OrdinalIgnoreCase));
+
+        if (!isOwner)
         {
             return Forbid();
         }

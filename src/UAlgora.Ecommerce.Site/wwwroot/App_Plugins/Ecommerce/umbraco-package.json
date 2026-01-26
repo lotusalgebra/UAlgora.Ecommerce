@@ -2,7 +2,7 @@
   "$schema": "../../umbraco-package-schema.json",
   "id": "UAlgora.Ecommerce",
   "name": "Algora Commerce",
-  "version": "2.8.6",
+  "version": "2.8.7",
   "allowTelemetry": true,
   "extensions": [
     {

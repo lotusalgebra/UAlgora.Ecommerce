@@ -339,7 +339,7 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
       </div>
       <div class="tabs">
         <div class="tab ${this._activeTab === 'details' ? 'active' : ''}" @click=${() => this._activeTab = 'details'}>Order Details</div>
-        <div class="tab ${this._activeTab === 'items' ? 'active' : ''}" @click=${() => this._activeTab = 'items'}>Items (${o.items?.length || 0})</div>
+        <div class="tab ${this._activeTab === 'items' ? 'active' : ''}" @click=${() => this._activeTab = 'items'}>Items (${o.lines?.length || o.items?.length || 0})</div>
         <div class="tab ${this._activeTab === 'customer' ? 'active' : ''}" @click=${() => this._activeTab = 'customer'}>Customer</div>
         <div class="tab ${this._activeTab === 'shipping' ? 'active' : ''}" @click=${() => this._activeTab = 'shipping'}>Shipping</div>
         <div class="tab ${this._activeTab === 'status' ? 'active' : ''}" @click=${() => this._activeTab = 'status'}>Status & History</div>
@@ -364,7 +364,7 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
         </div>
         <div class="info-card">
           <div class="info-card-label">Items</div>
-          <div class="info-card-value">${o.items?.length || o.itemCount || 0}</div>
+          <div class="info-card-value">${o.lines?.length || o.items?.length || o.itemCount || 0}</div>
         </div>
         <div class="info-card">
           <div class="info-card-label">Order Date</div>
@@ -440,7 +440,7 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
 
   _renderItemsTab() {
     const o = this._selectedOrder;
-    const items = o.items || [];
+    const items = o.lines || o.items || [];
     return html`
       <div class="section">
         <div class="section-title">Order Items (${items.length})</div>
@@ -469,7 +469,7 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
                 <td><span class="product-sku">${item.sku || '-'}</span></td>
                 <td class="text-right">${this._formatCurrency(item.unitPrice, o.currencyCode)}</td>
                 <td class="text-right">${item.quantity}</td>
-                <td class="text-right"><strong>${this._formatCurrency(item.totalPrice, o.currencyCode)}</strong></td>
+                <td class="text-right"><strong>${this._formatCurrency(item.lineTotal || item.totalPrice, o.currencyCode)}</strong></td>
               </tr>
             `)}
           </tbody>
