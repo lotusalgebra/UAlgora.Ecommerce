@@ -24,7 +24,7 @@ public sealed class HomePageDocumentTypeProvider : IDocumentTypeDefinitionProvid
             IconColor = BrandColor,
             AllowedAsRoot = true,
             DefaultTemplate = "algoraHome",
-            AllowedChildTypes = [HeroSlideAlias, BannerAlias, TestimonialAlias, FeatureAlias, LoginPageAlias, RegisterPageAlias, CheckoutPageAlias, CartPageAlias, ProductsPageAlias, ProductDetailPageAlias, AccountPageAlias, OrdersPageAlias, OrderDetailPageAlias, WishlistPageAlias, DealsPageAlias, OrderConfirmationPageAlias],
+            AllowedChildTypes = [HeroSlideAlias, BannerAlias, TestimonialAlias, FeatureAlias, LoginPageAlias, RegisterPageAlias, CheckoutPageAlias, CartPageAlias, ProductsPageAlias, ProductDetailPageAlias, AccountPageAlias, OrdersPageAlias, OrderDetailPageAlias, WishlistPageAlias, DealsPageAlias, OrderConfirmationPageAlias, AddressesPageAlias, SettingsPageAlias],
             PropertyGroups = GetPropertyGroups()
         };
     }

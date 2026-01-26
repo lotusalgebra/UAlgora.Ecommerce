@@ -1,0 +1,326 @@
+@model UAlgora.Ecommerce.Site.ViewModels.SettingsViewModel
+@{
+    ViewData["Title"] = "Account Settings";
+}
+
+<div class="min-h-screen bg-gray-50 dark:bg-fashion-charcoal py-8 lg:py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm mb-8">
+            <a href="/" class="text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition">Home</a>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <a href="/account" class="text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition">My Account</a>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <span class="text-fashion-black dark:text-white font-medium">Settings</span>
+        </nav>
+
+        <div class="grid lg:grid-cols-4 gap-8">
+            <!-- Sidebar Navigation -->
+            <aside class="lg:col-span-1">
+                <nav class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+                    <a href="/account" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-fashion-charcoal transition border-b border-gray-100 dark:border-gray-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/account/orders" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-fashion-charcoal transition border-b border-gray-100 dark:border-gray-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                        </svg>
+                        <span>Orders</span>
+                    </a>
+                    <a href="/account/addresses" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-fashion-charcoal transition border-b border-gray-100 dark:border-gray-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>Addresses</span>
+                    </a>
+                    <a href="/wishlist" class="flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-fashion-charcoal transition border-b border-gray-100 dark:border-gray-800">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                        </svg>
+                        <span>Wishlist</span>
+                    </a>
+                    <a href="/account/settings" class="flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400 border-l-4 border-primary-500">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span class="font-medium">Settings</span>
+                    </a>
+                    <a href="/logout" class="flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span>Sign Out</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="lg:col-span-3" x-data="settingsManager()">
+                <h1 class="font-display text-3xl font-bold text-fashion-black dark:text-white mb-6">Account Settings</h1>
+
+                <!-- Profile Information -->
+                <section class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 mb-6">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h2 class="font-display text-xl font-bold text-fashion-black dark:text-white">Profile Information</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Update your personal details</p>
+                    </div>
+
+                    <form x-on:submit.prevent="updateProfile()" class="p-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
+                                <input type="text" x-model="profile.firstName" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
+                                <input type="text" x-model="profile.lastName" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                                <input type="email" x-model="profile.email" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-fashion-charcoal text-gray-500 dark:text-gray-400 rounded-lg cursor-not-allowed" disabled>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Contact support to change your email</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                                <input type="tel" x-model="profile.phone" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+                                <input type="date" x-model="profile.dateOfBirth" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex justify-end">
+                            <button type="submit" :disabled="savingProfile" class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-3 text-sm uppercase tracking-wider font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition rounded-lg disabled:opacity-50">
+                                <span x-text="savingProfile ? 'Saving...' : 'Save Changes'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Change Password -->
+                <section class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 mb-6">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h2 class="font-display text-xl font-bold text-fashion-black dark:text-white">Change Password</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Update your password to keep your account secure</p>
+                    </div>
+
+                    <form x-on:submit.prevent="changePassword()" class="p-6">
+                        <div class="space-y-4 max-w-md">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Current Password</label>
+                                <input type="password" x-model="passwords.current" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+                                <input type="password" x-model="passwords.new" required minlength="8" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Minimum 8 characters</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm New Password</label>
+                                <input type="password" x-model="passwords.confirm" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <button type="submit" :disabled="changingPassword" class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-3 text-sm uppercase tracking-wider font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition rounded-lg disabled:opacity-50">
+                                <span x-text="changingPassword ? 'Updating...' : 'Update Password'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Notification Preferences -->
+                <section class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 mb-6">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h2 class="font-display text-xl font-bold text-fashion-black dark:text-white">Notification Preferences</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage how we communicate with you</p>
+                    </div>
+
+                    <div class="p-6 space-y-4">
+                        <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-fashion-charcoal rounded-lg cursor-pointer group">
+                            <div>
+                                <p class="font-medium text-fashion-black dark:text-white">Marketing Emails</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Receive news about sales, new arrivals, and exclusive offers</p>
+                            </div>
+                            <input type="checkbox" x-model="notifications.marketing" x-on:change="updateNotifications()" class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-fashion-charcoal rounded-lg cursor-pointer group">
+                            <div>
+                                <p class="font-medium text-fashion-black dark:text-white">SMS Notifications</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Get order updates and delivery alerts via text message</p>
+                            </div>
+                            <input type="checkbox" x-model="notifications.sms" x-on:change="updateNotifications()" class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-fashion-charcoal rounded-lg cursor-pointer group">
+                            <div>
+                                <p class="font-medium text-fashion-black dark:text-white">Order Updates</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Receive email notifications about your order status</p>
+                            </div>
+                            <input type="checkbox" x-model="notifications.orders" x-on:change="updateNotifications()" class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500" checked disabled>
+                            <span class="text-xs text-gray-400 ml-2">(Required)</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Danger Zone -->
+                <section class="bg-white dark:bg-fashion-black rounded-lg border border-red-200 dark:border-red-900">
+                    <div class="p-6 border-b border-red-100 dark:border-red-900/50">
+                        <h2 class="font-display text-xl font-bold text-red-600 dark:text-red-400">Danger Zone</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Irreversible actions for your account</p>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-fashion-black dark:text-white">Delete Account</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Permanently delete your account and all associated data</p>
+                            </div>
+                            <button x-on:click="confirmDeleteAccount()" class="px-6 py-2.5 border-2 border-red-500 text-red-500 text-sm uppercase tracking-wider font-medium hover:bg-red-500 hover:text-white transition rounded-lg">
+                                Delete Account
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function settingsManager() {
+    return {
+        savingProfile: false,
+        changingPassword: false,
+        profile: {
+            firstName: '@Model.FirstName',
+            lastName: '@Model.LastName',
+            email: '@Model.Email',
+            phone: '@Model.Phone'
+        },
+        passwords: {
+            current: '',
+            new: '',
+            confirm: ''
+        },
+        notifications: {
+            marketing: @(Model.AcceptsMarketing ? "true" : "false"),
+            sms: false,
+            orders: true
+        },
+
+        async updateProfile() {
+            this.savingProfile = true;
+            try {
+                const response = await fetch('/api/ecommerce/customer/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName: this.profile.firstName,
+                        lastName: this.profile.lastName,
+                        phone: this.profile.phone
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Profile updated successfully!');
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Failed to update profile');
+                }
+            } catch (e) {
+                alert('An error occurred. Please try again.');
+            } finally {
+                this.savingProfile = false;
+            }
+        },
+
+        async changePassword() {
+            if (this.passwords.new !== this.passwords.confirm) {
+                alert('New passwords do not match');
+                return;
+            }
+            if (this.passwords.new.length < 8) {
+                alert('Password must be at least 8 characters');
+                return;
+            }
+
+            this.changingPassword = true;
+            try {
+                const response = await fetch('/api/ecommerce/auth/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        currentPassword: this.passwords.current,
+                        newPassword: this.passwords.new
+                    })
+                });
+
+                if (response.ok) {
+                    alert('Password changed successfully!');
+                    this.passwords = { current: '', new: '', confirm: '' };
+                } else {
+                    const error = await response.json();
+                    alert(error.message || 'Failed to change password');
+                }
+            } catch (e) {
+                alert('An error occurred. Please try again.');
+            } finally {
+                this.changingPassword = false;
+            }
+        },
+
+        async updateNotifications() {
+            try {
+                await fetch('/api/ecommerce/customer/notifications', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        marketingEmails: this.notifications.marketing,
+                        smsNotifications: this.notifications.sms
+                    })
+                });
+            } catch (e) {
+                console.error('Failed to update notifications');
+            }
+        },
+
+        confirmDeleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.')) {
+                if (confirm('This is your final warning. Type DELETE in the next prompt to confirm.')) {
+                    const input = prompt('Type DELETE to confirm account deletion:');
+                    if (input === 'DELETE') {
+                        this.deleteAccount();
+                    }
+                }
+            }
+        },
+
+        async deleteAccount() {
+            try {
+                const response = await fetch('/api/ecommerce/customer/account', { method: 'DELETE' });
+                if (response.ok) {
+                    window.location.href = '/?deleted=true';
+                } else {
+                    alert('Failed to delete account. Please contact support.');
+                }
+            } catch (e) {
+                alert('An error occurred. Please try again.');
+            }
+        }
+    };
+}
+</script>
+}

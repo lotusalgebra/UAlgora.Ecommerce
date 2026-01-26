@@ -28,6 +28,8 @@ public class StorefrontController : Controller
     private const string WishlistPageAlias = "algoraWishlistPage";
     private const string DealsPageAlias = "algoraDealsPage";
     private const string OrderConfirmationPageAlias = "algoraOrderConfirmationPage";
+    private const string AddressesPageAlias = "algoraAddressesPage";
+    private const string SettingsPageAlias = "algoraSettingsPage";
 
     private readonly IProductService _productService;
     private readonly ICategoryService _categoryService;
@@ -340,6 +342,80 @@ public class StorefrontController : Controller
 
         ViewData["Title"] = "My Account";
         return View("Account", viewModel);
+    }
+
+    [HttpGet("/account/addresses")]
+    [Authorize(AuthenticationSchemes = AuthScheme)]
+    public async Task<IActionResult> Addresses()
+    {
+        // Look for CMS-managed Addresses page
+        var addressesPage = FindPageByAlias(AddressesPageAlias);
+        if (addressesPage != null)
+        {
+            return Redirect(addressesPage.Url());
+        }
+
+        // Fallback to hardcoded view
+        var customerId = GetCurrentCustomerId();
+        if (customerId == null)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        var customer = await _customerService.GetByIdAsync(customerId.Value);
+        if (customer == null)
+        {
+            await HttpContext.SignOutAsync(AuthScheme);
+            return RedirectToAction(nameof(Login));
+        }
+
+        var viewModel = new AddressesViewModel
+        {
+            CustomerId = customer.Id,
+            Addresses = customer.Addresses?.ToList() ?? []
+        };
+
+        ViewData["Title"] = "My Addresses";
+        return View("Addresses", viewModel);
+    }
+
+    [HttpGet("/account/settings")]
+    [Authorize(AuthenticationSchemes = AuthScheme)]
+    public async Task<IActionResult> Settings()
+    {
+        // Look for CMS-managed Settings page
+        var settingsPage = FindPageByAlias(SettingsPageAlias);
+        if (settingsPage != null)
+        {
+            return Redirect(settingsPage.Url());
+        }
+
+        // Fallback to hardcoded view
+        var customerId = GetCurrentCustomerId();
+        if (customerId == null)
+        {
+            return RedirectToAction(nameof(Login));
+        }
+
+        var customer = await _customerService.GetByIdAsync(customerId.Value);
+        if (customer == null)
+        {
+            await HttpContext.SignOutAsync(AuthScheme);
+            return RedirectToAction(nameof(Login));
+        }
+
+        var viewModel = new SettingsViewModel
+        {
+            CustomerId = customer.Id,
+            FirstName = customer.FirstName,
+            LastName = customer.LastName,
+            Email = customer.Email,
+            Phone = customer.Phone,
+            AcceptsMarketing = customer.AcceptsMarketing
+        };
+
+        ViewData["Title"] = "Account Settings";
+        return View("Settings", viewModel);
     }
 
     [HttpGet("/account/orders")]

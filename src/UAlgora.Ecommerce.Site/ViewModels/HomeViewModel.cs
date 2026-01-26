@@ -155,3 +155,20 @@ public class WishlistViewModel
     public Wishlist? Wishlist { get; set; }
     public List<WishlistItem> Items { get; set; } = [];
 }
+
+public class AddressesViewModel
+{
+    public Guid CustomerId { get; set; }
+    public List<Address> Addresses { get; set; } = [];
+}
+
+public class SettingsViewModel
+{
+    public Guid CustomerId { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? Phone { get; set; }
+    public bool AcceptsMarketing { get; set; }
+    public string FullName => $"{FirstName} {LastName}";
+}

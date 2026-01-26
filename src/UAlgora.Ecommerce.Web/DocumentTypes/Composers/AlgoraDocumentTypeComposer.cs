@@ -44,6 +44,8 @@ public sealed class AlgoraDocumentTypeComposer : IComposer
         builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, WishlistPageDocumentTypeProvider>();
         builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, DealsPageDocumentTypeProvider>();
         builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, OrderConfirmationPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, AddressesPageDocumentTypeProvider>();
+        builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, SettingsPageDocumentTypeProvider>();
 
         // Commerce Document Types
         builder.Services.AddSingleton<IDocumentTypeDefinitionProvider, CatalogDocumentTypeProvider>();

@@ -1,0 +1,356 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Extensions
+@using UAlgora.Ecommerce.Core.Interfaces.Services
+@using UAlgora.Ecommerce.Core.Models.Domain
+@using System.Security.Claims
+@inject ICustomerService CustomerService
+@{
+    Layout = "_Layout";
+
+    // Check authentication
+    var isAuthenticated = Context.User?.Identity?.IsAuthenticated ?? false;
+    if (!isAuthenticated)
+    {
+        Context.Response.Redirect("/login?returnUrl=/account/addresses");
+        return;
+    }
+
+    // Load customer data
+    Customer? customer = null;
+    var customerIdClaim = Context.User?.FindFirst("CustomerId")?.Value
+                          ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (Guid.TryParse(customerIdClaim, out var customerId))
+    {
+        customer = await CustomerService.GetByIdAsync(customerId);
+    }
+
+    if (customer == null)
+    {
+        Context.Response.Redirect("/login?returnUrl=/account/addresses");
+        return;
+    }
+
+    var addresses = customer.Addresses?.ToList() ?? new List<Address>();
+
+    // CMS Properties - Breadcrumb
+    var breadcrumbHomeText = Model.Value<string>("breadcrumbHomeText") ?? "Home";
+    var breadcrumbAccountText = Model.Value<string>("breadcrumbAccountText") ?? "My Account";
+    var breadcrumbAddressesText = Model.Value<string>("breadcrumbAddressesText") ?? "Addresses";
+
+    // CMS Properties - Header
+    var pageTitle = Model.Value<string>("pageTitle") ?? "My Addresses";
+    var addButtonText = Model.Value<string>("addButtonText") ?? "Add New Address";
+
+    // CMS Properties - Empty State
+    var emptyTitle = Model.Value<string>("emptyTitle") ?? "No Addresses Saved";
+    var emptyDescription = Model.Value<string>("emptyDescription") ?? "Add your shipping and billing addresses for faster checkout";
+    var emptyButtonText = Model.Value<string>("emptyButtonText") ?? "Add Your First Address";
+
+    // CMS Properties - Address Card
+    var defaultShippingBadge = Model.Value<string>("defaultShippingBadge") ?? "Default Shipping";
+    var defaultBillingBadge = Model.Value<string>("defaultBillingBadge") ?? "Default Billing";
+    var editButtonText = Model.Value<string>("editButtonText") ?? "Edit";
+    var setShippingDefaultText = Model.Value<string>("setShippingDefaultText") ?? "Set as Shipping Default";
+    var setBillingDefaultText = Model.Value<string>("setBillingDefaultText") ?? "Set as Billing Default";
+    var deleteButtonText = Model.Value<string>("deleteButtonText") ?? "Delete";
+
+    // CMS Properties - Modal
+    var addModalTitle = Model.Value<string>("addModalTitle") ?? "Add New Address";
+    var editModalTitle = Model.Value<string>("editModalTitle") ?? "Edit Address";
+    var cancelButtonText = Model.Value<string>("cancelButtonText") ?? "Cancel";
+    var saveButtonText = Model.Value<string>("saveButtonText") ?? "Save Address";
+    var updateButtonText = Model.Value<string>("updateButtonText") ?? "Update Address";
+
+    // SEO
+    var metaTitle = Model.Value<string>("metaTitle") ?? "My Addresses";
+    var metaDescription = Model.Value<string>("metaDescription");
+
+    ViewData["Title"] = metaTitle;
+    if (!string.IsNullOrEmpty(metaDescription))
+    {
+        ViewData["Description"] = metaDescription;
+    }
+}
+
+<div class="min-h-screen bg-gray-50 dark:bg-fashion-charcoal py-8 lg:py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm mb-8">
+            <a href="/" class="text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition">@breadcrumbHomeText</a>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <a href="/account" class="text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition">@breadcrumbAccountText</a>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <span class="text-fashion-black dark:text-white font-medium">@breadcrumbAddressesText</span>
+        </nav>
+
+        <div class="grid lg:grid-cols-4 gap-8">
+            <!-- Sidebar Navigation -->
+            @await Html.PartialAsync("_AccountSidebar", "addresses")
+
+            <!-- Main Content -->
+            <main class="lg:col-span-3" x-data="addressManager()">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="font-display text-3xl font-bold text-fashion-black dark:text-white">@pageTitle</h1>
+                    <button x-on:click="openAddModal()" class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-6 py-2.5 text-sm uppercase tracking-wider font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        @addButtonText
+                    </button>
+                </div>
+
+                @if (addresses.Any())
+                {
+                    <div class="grid md:grid-cols-2 gap-6">
+                        @foreach (var address in addresses)
+                        {
+                            <div class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 p-6 relative group">
+                                <!-- Default Badges -->
+                                <div class="flex gap-2 mb-4">
+                                    @if (address.IsDefaultShipping)
+                                    {
+                                        <span class="px-2 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400 text-xs font-medium rounded">@defaultShippingBadge</span>
+                                    }
+                                    @if (address.IsDefaultBilling)
+                                    {
+                                        <span class="px-2 py-1 bg-accent-100 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 text-xs font-medium rounded">@defaultBillingBadge</span>
+                                    }
+                                </div>
+
+                                <div class="space-y-1 text-gray-700 dark:text-gray-300">
+                                    <p class="font-semibold text-fashion-black dark:text-white">@address.FirstName @address.LastName</p>
+                                    <p>@address.AddressLine1</p>
+                                    @if (!string.IsNullOrEmpty(address.AddressLine2))
+                                    {
+                                        <p>@address.AddressLine2</p>
+                                    }
+                                    <p>@address.City, @address.StateProvince @address.PostalCode</p>
+                                    <p>@address.Country</p>
+                                    @if (!string.IsNullOrEmpty(address.Phone))
+                                    {
+                                        <p class="pt-2 text-gray-500 dark:text-gray-400">@address.Phone</p>
+                                    }
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="flex gap-4 mt-6 pt-4 border-t border-gray-100 dark:border-gray-800">
+                                    <button x-on:click="editAddress('@address.Id')" class="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium">@editButtonText</button>
+                                    @if (!address.IsDefaultShipping)
+                                    {
+                                        <button x-on:click="setDefaultShipping('@address.Id')" class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">@setShippingDefaultText</button>
+                                    }
+                                    @if (!address.IsDefaultBilling)
+                                    {
+                                        <button x-on:click="setDefaultBilling('@address.Id')" class="text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400">@setBillingDefaultText</button>
+                                    }
+                                    <button x-on:click="deleteAddress('@address.Id')" class="text-sm text-red-600 dark:text-red-400 hover:underline ml-auto">@deleteButtonText</button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <!-- Empty State -->
+                    <div class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 p-12 text-center">
+                        <div class="w-20 h-20 mx-auto mb-6 bg-gray-100 dark:bg-fashion-charcoal rounded-full flex items-center justify-center">
+                            <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-display text-xl font-bold text-fashion-black dark:text-white mb-2">@emptyTitle</h3>
+                        <p class="text-gray-500 dark:text-gray-400 mb-6">@emptyDescription</p>
+                        <button x-on:click="openAddModal()" class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-3 text-sm uppercase tracking-wider font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition">
+                            @emptyButtonText
+                        </button>
+                    </div>
+                }
+
+                <!-- Add/Edit Address Modal -->
+                <div x-show="showModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-modal="true">
+                    <div class="flex items-center justify-center min-h-screen px-4">
+                        <div x-on:click="closeModal()" class="fixed inset-0 bg-black/50 transition-opacity"></div>
+
+                        <div class="relative bg-white dark:bg-fashion-black rounded-lg w-full max-w-lg p-6 shadow-xl">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="font-display text-2xl font-bold text-fashion-black dark:text-white" x-text="editingId ? '@editModalTitle' : '@addModalTitle'"></h3>
+                                <button x-on:click="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <form x-on:submit.prevent="saveAddress()">
+                                <div class="space-y-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name *</label>
+                                            <input type="text" x-model="form.firstName" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name *</label>
+                                            <input type="text" x-model="form.lastName" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Street Address *</label>
+                                        <input type="text" x-model="form.address1" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Apartment, Suite, etc.</label>
+                                        <input type="text" x-model="form.address2" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City *</label>
+                                            <input type="text" x-model="form.city" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State *</label>
+                                            <input type="text" x-model="form.state" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">ZIP Code *</label>
+                                            <input type="text" x-model="form.postalCode" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country *</label>
+                                            <select x-model="form.country" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                                <option value="US">United States</option>
+                                                <option value="CA">Canada</option>
+                                                <option value="UK">United Kingdom</option>
+                                                <option value="AU">Australia</option>
+                                                <option value="IN">India</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
+                                        <input type="tel" x-model="form.phone" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    </div>
+                                    <div class="flex gap-6">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" x-model="form.isDefaultShipping" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                                            <span class="text-sm text-gray-700 dark:text-gray-300">Default shipping address</span>
+                                        </label>
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" x-model="form.isDefaultBilling" class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                                            <span class="text-sm text-gray-700 dark:text-gray-300">Default billing address</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-4 mt-8">
+                                    <button type="button" x-on:click="closeModal()" class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 text-sm uppercase tracking-wider font-medium hover:bg-gray-50 dark:hover:bg-fashion-charcoal transition">
+                                        @cancelButtonText
+                                    </button>
+                                    <button type="submit" :disabled="saving" class="flex-1 bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-6 py-3 text-sm uppercase tracking-wider font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition disabled:opacity-50">
+                                        <span x-text="saving ? 'Saving...' : (editingId ? '@updateButtonText' : '@saveButtonText')"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function addressManager() {
+    return {
+        showModal: false,
+        saving: false,
+        editingId: null,
+        form: {
+            firstName: '',
+            lastName: '',
+            address1: '',
+            address2: '',
+            city: '',
+            state: '',
+            postalCode: '',
+            country: 'US',
+            phone: '',
+            isDefaultShipping: false,
+            isDefaultBilling: false
+        },
+
+        openAddModal() {
+            this.editingId = null;
+            this.resetForm();
+            this.showModal = true;
+        },
+
+        editAddress(id) {
+            this.editingId = id;
+            this.showModal = true;
+        },
+
+        closeModal() {
+            this.showModal = false;
+            this.editingId = null;
+            this.resetForm();
+        },
+
+        resetForm() {
+            this.form = {
+                firstName: '', lastName: '', address1: '', address2: '',
+                city: '', state: '', postalCode: '', country: 'US', phone: '',
+                isDefaultShipping: false, isDefaultBilling: false
+            };
+        },
+
+        async saveAddress() {
+            this.saving = true;
+            try {
+                const url = this.editingId
+                    ? `/api/ecommerce/customer/address/${this.editingId}`
+                    : '/api/ecommerce/customer/address';
+                const response = await fetch(url, {
+                    method: this.editingId ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(this.form)
+                });
+                if (response.ok) window.location.reload();
+                else alert((await response.json()).message || 'Failed to save address');
+            } catch (e) { alert('An error occurred. Please try again.'); }
+            finally { this.saving = false; }
+        },
+
+        async setDefaultShipping(id) {
+            try {
+                const response = await fetch(`/api/ecommerce/customer/address/${id}/default-shipping`, { method: 'PUT' });
+                if (response.ok) window.location.reload();
+            } catch (e) { alert('Failed to update default address'); }
+        },
+
+        async setDefaultBilling(id) {
+            try {
+                const response = await fetch(`/api/ecommerce/customer/address/${id}/default-billing`, { method: 'PUT' });
+                if (response.ok) window.location.reload();
+            } catch (e) { alert('Failed to update default address'); }
+        },
+
+        async deleteAddress(id) {
+            if (!confirm('Are you sure you want to delete this address?')) return;
+            try {
+                const response = await fetch(`/api/ecommerce/customer/address/${id}`, { method: 'DELETE' });
+                if (response.ok) window.location.reload();
+            } catch (e) { alert('Failed to delete address'); }
+        }
+    };
+}
+</script>
+}

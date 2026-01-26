@@ -1,0 +1,321 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@using Umbraco.Cms.Core.Models.PublishedContent
+@using Umbraco.Extensions
+@using UAlgora.Ecommerce.Core.Interfaces.Services
+@using UAlgora.Ecommerce.Core.Models.Domain
+@using System.Security.Claims
+@inject ICustomerService CustomerService
+@{
+    Layout = "_Layout";
+
+    // Check authentication
+    var isAuthenticated = Context.User?.Identity?.IsAuthenticated ?? false;
+    if (!isAuthenticated)
+    {
+        Context.Response.Redirect("/login?returnUrl=/account/settings");
+        return;
+    }
+
+    // Load customer data
+    Customer? customer = null;
+    var customerIdClaim = Context.User?.FindFirst("CustomerId")?.Value
+                          ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    if (Guid.TryParse(customerIdClaim, out var customerId))
+    {
+        customer = await CustomerService.GetByIdAsync(customerId);
+    }
+
+    if (customer == null)
+    {
+        Context.Response.Redirect("/login?returnUrl=/account/settings");
+        return;
+    }
+
+    // CMS Properties - Breadcrumb
+    var breadcrumbHomeText = Model.Value<string>("breadcrumbHomeText") ?? "Home";
+    var breadcrumbAccountText = Model.Value<string>("breadcrumbAccountText") ?? "My Account";
+    var breadcrumbSettingsText = Model.Value<string>("breadcrumbSettingsText") ?? "Settings";
+
+    // CMS Properties - Profile Section
+    var profileTitle = Model.Value<string>("profileTitle") ?? "Profile Information";
+    var profileSubtitle = Model.Value<string>("profileSubtitle") ?? "Update your personal details";
+    var emailDisabledNote = Model.Value<string>("emailDisabledNote") ?? "Contact support to change your email";
+    var saveProfileButtonText = Model.Value<string>("saveProfileButtonText") ?? "Save Changes";
+
+    // CMS Properties - Password Section
+    var passwordTitle = Model.Value<string>("passwordTitle") ?? "Change Password";
+    var passwordSubtitle = Model.Value<string>("passwordSubtitle") ?? "Update your password to keep your account secure";
+    var currentPasswordLabel = Model.Value<string>("currentPasswordLabel") ?? "Current Password";
+    var newPasswordLabel = Model.Value<string>("newPasswordLabel") ?? "New Password";
+    var confirmPasswordLabel = Model.Value<string>("confirmPasswordLabel") ?? "Confirm New Password";
+    var passwordRequirement = Model.Value<string>("passwordRequirement") ?? "Minimum 8 characters";
+    var updatePasswordButtonText = Model.Value<string>("updatePasswordButtonText") ?? "Update Password";
+
+    // CMS Properties - Notifications Section
+    var notificationsTitle = Model.Value<string>("notificationsTitle") ?? "Notification Preferences";
+    var notificationsSubtitle = Model.Value<string>("notificationsSubtitle") ?? "Manage how we communicate with you";
+    var marketingEmailsLabel = Model.Value<string>("marketingEmailsLabel") ?? "Marketing Emails";
+    var marketingEmailsDescription = Model.Value<string>("marketingEmailsDescription") ?? "Receive news about sales, new arrivals, and exclusive offers";
+    var smsNotificationsLabel = Model.Value<string>("smsNotificationsLabel") ?? "SMS Notifications";
+    var smsNotificationsDescription = Model.Value<string>("smsNotificationsDescription") ?? "Get order updates and delivery alerts via text message";
+    var orderUpdatesLabel = Model.Value<string>("orderUpdatesLabel") ?? "Order Updates";
+    var orderUpdatesDescription = Model.Value<string>("orderUpdatesDescription") ?? "Receive email notifications about your order status";
+
+    // CMS Properties - Danger Zone
+    var dangerZoneTitle = Model.Value<string>("dangerZoneTitle") ?? "Danger Zone";
+    var dangerZoneSubtitle = Model.Value<string>("dangerZoneSubtitle") ?? "Irreversible actions for your account";
+    var deleteAccountLabel = Model.Value<string>("deleteAccountLabel") ?? "Delete Account";
+    var deleteAccountDescription = Model.Value<string>("deleteAccountDescription") ?? "Permanently delete your account and all associated data";
+    var deleteButtonText = Model.Value<string>("deleteButtonText") ?? "Delete Account";
+
+    // SEO
+    var metaTitle = Model.Value<string>("metaTitle") ?? "Account Settings";
+    var metaDescription = Model.Value<string>("metaDescription");
+
+    ViewData["Title"] = metaTitle;
+    if (!string.IsNullOrEmpty(metaDescription))
+    {
+        ViewData["Description"] = metaDescription;
+    }
+}
+
+<div class="min-h-screen bg-gray-50 dark:bg-fashion-charcoal py-8 lg:py-12">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-sm mb-8">
+            <a href="/" class="text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition">@breadcrumbHomeText</a>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <a href="/account" class="text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition">@breadcrumbAccountText</a>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+            <span class="text-fashion-black dark:text-white font-medium">@breadcrumbSettingsText</span>
+        </nav>
+
+        <div class="grid lg:grid-cols-4 gap-8">
+            <!-- Sidebar Navigation -->
+            @await Html.PartialAsync("_AccountSidebar", "settings")
+
+            <!-- Main Content -->
+            <main class="lg:col-span-3" x-data="settingsManager()">
+                <h1 class="font-display text-3xl font-bold text-fashion-black dark:text-white mb-6">@metaTitle</h1>
+
+                <!-- Profile Information -->
+                <section class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 mb-6">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h2 class="font-display text-xl font-bold text-fashion-black dark:text-white">@profileTitle</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">@profileSubtitle</p>
+                    </div>
+
+                    <form x-on:submit.prevent="updateProfile()" class="p-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First Name</label>
+                                <input type="text" x-model="profile.firstName" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last Name</label>
+                                <input type="text" x-model="profile.lastName" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
+                                <input type="email" x-model="profile.email" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-fashion-charcoal text-gray-500 dark:text-gray-400 rounded-lg cursor-not-allowed" disabled>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">@emailDisabledNote</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                                <input type="tel" x-model="profile.phone" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date of Birth</label>
+                                <input type="date" x-model="profile.dateOfBirth" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex justify-end">
+                            <button type="submit" :disabled="savingProfile" class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-3 text-sm uppercase tracking-wider font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition rounded-lg disabled:opacity-50">
+                                <span x-text="savingProfile ? 'Saving...' : '@saveProfileButtonText'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Change Password -->
+                <section class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 mb-6">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h2 class="font-display text-xl font-bold text-fashion-black dark:text-white">@passwordTitle</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">@passwordSubtitle</p>
+                    </div>
+
+                    <form x-on:submit.prevent="changePassword()" class="p-6">
+                        <div class="space-y-4 max-w-md">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">@currentPasswordLabel</label>
+                                <input type="password" x-model="passwords.current" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">@newPasswordLabel</label>
+                                <input type="password" x-model="passwords.new" required minlength="8" class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">@passwordRequirement</p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">@confirmPasswordLabel</label>
+                                <input type="password" x-model="passwords.confirm" required class="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <button type="submit" :disabled="changingPassword" class="bg-fashion-black dark:bg-white text-white dark:text-fashion-black px-8 py-3 text-sm uppercase tracking-wider font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition rounded-lg disabled:opacity-50">
+                                <span x-text="changingPassword ? 'Updating...' : '@updatePasswordButtonText'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Notification Preferences -->
+                <section class="bg-white dark:bg-fashion-black rounded-lg border border-gray-200 dark:border-gray-800 mb-6">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h2 class="font-display text-xl font-bold text-fashion-black dark:text-white">@notificationsTitle</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">@notificationsSubtitle</p>
+                    </div>
+
+                    <div class="p-6 space-y-4">
+                        <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-fashion-charcoal rounded-lg cursor-pointer group">
+                            <div>
+                                <p class="font-medium text-fashion-black dark:text-white">@marketingEmailsLabel</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">@marketingEmailsDescription</p>
+                            </div>
+                            <input type="checkbox" x-model="notifications.marketing" x-on:change="updateNotifications()" class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-fashion-charcoal rounded-lg cursor-pointer group">
+                            <div>
+                                <p class="font-medium text-fashion-black dark:text-white">@smsNotificationsLabel</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">@smsNotificationsDescription</p>
+                            </div>
+                            <input type="checkbox" x-model="notifications.sms" x-on:change="updateNotifications()" class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+                        </label>
+
+                        <label class="flex items-center justify-between p-4 bg-gray-50 dark:bg-fashion-charcoal rounded-lg cursor-pointer group">
+                            <div>
+                                <p class="font-medium text-fashion-black dark:text-white">@orderUpdatesLabel</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">@orderUpdatesDescription</p>
+                            </div>
+                            <input type="checkbox" x-model="notifications.orders" class="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500" checked disabled>
+                            <span class="text-xs text-gray-400 ml-2">(Required)</span>
+                        </label>
+                    </div>
+                </section>
+
+                <!-- Danger Zone -->
+                <section class="bg-white dark:bg-fashion-black rounded-lg border border-red-200 dark:border-red-900">
+                    <div class="p-6 border-b border-red-100 dark:border-red-900/50">
+                        <h2 class="font-display text-xl font-bold text-red-600 dark:text-red-400">@dangerZoneTitle</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">@dangerZoneSubtitle</p>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="font-medium text-fashion-black dark:text-white">@deleteAccountLabel</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">@deleteAccountDescription</p>
+                            </div>
+                            <button x-on:click="confirmDeleteAccount()" class="px-6 py-2.5 border-2 border-red-500 text-red-500 text-sm uppercase tracking-wider font-medium hover:bg-red-500 hover:text-white transition rounded-lg">
+                                @deleteButtonText
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function settingsManager() {
+    return {
+        savingProfile: false,
+        changingPassword: false,
+        profile: {
+            firstName: '@customer.FirstName',
+            lastName: '@customer.LastName',
+            email: '@customer.Email',
+            phone: '@(customer.Phone ?? "")'
+        },
+        passwords: { current: '', new: '', confirm: '' },
+        notifications: {
+            marketing: @(customer.AcceptsMarketing ? "true" : "false"),
+            sms: false,
+            orders: true
+        },
+
+        async updateProfile() {
+            this.savingProfile = true;
+            try {
+                const response = await fetch('/api/ecommerce/customer/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        firstName: this.profile.firstName,
+                        lastName: this.profile.lastName,
+                        phone: this.profile.phone,
+                        dateOfBirth: this.profile.dateOfBirth || null
+                    })
+                });
+                if (response.ok) alert('Profile updated successfully!');
+                else alert((await response.json()).message || 'Failed to update profile');
+            } catch (e) { alert('An error occurred. Please try again.'); }
+            finally { this.savingProfile = false; }
+        },
+
+        async changePassword() {
+            if (this.passwords.new !== this.passwords.confirm) { alert('New passwords do not match'); return; }
+            if (this.passwords.new.length < 8) { alert('Password must be at least 8 characters'); return; }
+
+            this.changingPassword = true;
+            try {
+                const response = await fetch('/api/ecommerce/auth/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ currentPassword: this.passwords.current, newPassword: this.passwords.new })
+                });
+                if (response.ok) {
+                    alert('Password changed successfully!');
+                    this.passwords = { current: '', new: '', confirm: '' };
+                } else alert((await response.json()).message || 'Failed to change password');
+            } catch (e) { alert('An error occurred. Please try again.'); }
+            finally { this.changingPassword = false; }
+        },
+
+        async updateNotifications() {
+            try {
+                await fetch('/api/ecommerce/customer/notifications', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ marketingEmails: this.notifications.marketing, smsNotifications: this.notifications.sms })
+                });
+            } catch (e) { console.error('Failed to update notifications'); }
+        },
+
+        confirmDeleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                if (confirm('This is your final warning. Click OK to confirm account deletion.')) {
+                    this.deleteAccount();
+                }
+            }
+        },
+
+        async deleteAccount() {
+            try {
+                const response = await fetch('/api/ecommerce/customer/account', { method: 'DELETE' });
+                if (response.ok) window.location.href = '/?deleted=true';
+                else alert('Failed to delete account. Please contact support.');
+            } catch (e) { alert('An error occurred. Please try again.'); }
+        }
+    };
+}
+</script>
+}

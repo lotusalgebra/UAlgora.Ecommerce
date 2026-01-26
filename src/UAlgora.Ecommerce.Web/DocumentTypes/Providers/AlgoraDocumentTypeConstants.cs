@@ -133,6 +133,16 @@ public static class AlgoraDocumentTypeConstants
     /// </summary>
     public const string OrderConfirmationPageAlias = "algoraOrderConfirmationPage";
 
+    /// <summary>
+    /// Addresses Page document type alias
+    /// </summary>
+    public const string AddressesPageAlias = "algoraAddressesPage";
+
+    /// <summary>
+    /// Settings Page document type alias
+    /// </summary>
+    public const string SettingsPageAlias = "algoraSettingsPage";
+
     // ============ Enterprise E-Commerce Document Types ============
 
     /// <summary>
@@ -237,6 +247,8 @@ public static class AlgoraDocumentTypeConstants
     public const string WishlistPageIcon = "icon-hearts";
     public const string DealsPageIcon = "icon-tag";
     public const string OrderConfirmationPageIcon = "icon-check";
+    public const string AddressesPageIcon = "icon-map-location";
+    public const string SettingsPageIcon = "icon-settings";
 
     // Enterprise Icons
     public const string StoreIcon = "icon-store";
