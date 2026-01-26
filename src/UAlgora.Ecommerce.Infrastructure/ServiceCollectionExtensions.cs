@@ -100,6 +100,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<IWishlistService, WishlistService>();
 
+        // Authentication services
+        services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+        services.AddScoped<ICustomerAuthService, CustomerAuthService>();
+
         // Enterprise feature services
         services.AddScoped<IStoreService, StoreService>();
         services.AddScoped<IGiftCardService, GiftCardService>();

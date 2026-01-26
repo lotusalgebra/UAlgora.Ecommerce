@@ -74,6 +74,13 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
                 v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>())
             .HasColumnType("nvarchar(max)");
 
+        // Authentication fields
+        builder.Property(c => c.PasswordHash)
+            .HasMaxLength(500);
+
+        builder.Property(c => c.PasswordResetToken)
+            .HasMaxLength(200);
+
         // Relationships
         builder.HasMany(c => c.Addresses)
             .WithOne(a => a.Customer)

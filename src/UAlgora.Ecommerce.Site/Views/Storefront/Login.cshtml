@@ -108,12 +108,15 @@
             </div>
 
             <!-- Login Form -->
-            <form action="/api/auth/login" method="post" class="space-y-5" x-data="{ showPassword: false }">
-                <input type="hidden" name="returnUrl" value="@returnUrl" />
+            <form class="space-y-5" x-data="loginForm()" @@submit.prevent="submit">
+                <!-- Error Message -->
+                <div x-show="error" x-cloak class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
+                    <span x-text="error"></span>
+                </div>
 
                 <!-- Email -->
                 <div class="relative">
-                    <input type="email" name="email" id="email" required
+                    <input type="email" x-model="email" id="email" required
                            class="peer w-full px-4 pt-6 pb-2 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition placeholder-transparent"
                            placeholder="Email">
                     <label for="email" class="absolute left-4 top-2 text-xs text-gray-500 dark:text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary-600">
@@ -123,7 +126,7 @@
 
                 <!-- Password -->
                 <div class="relative">
-                    <input :type="showPassword ? 'text' : 'password'" name="password" id="password" required
+                    <input :type="showPassword ? 'text' : 'password'" x-model="password" id="password" required
                            class="peer w-full px-4 pt-6 pb-2 pr-12 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition placeholder-transparent"
                            placeholder="Password">
                     <label for="password" class="absolute left-4 top-2 text-xs text-gray-500 dark:text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary-600">
@@ -143,17 +146,71 @@
                 <!-- Remember & Forgot -->
                 <div class="flex items-center justify-between">
                     <label class="flex items-center gap-2 cursor-pointer group">
-                        <input type="checkbox" name="remember" class="w-4 h-4 rounded border-gray-300 text-fashion-black focus:ring-fashion-black">
+                        <input type="checkbox" x-model="rememberMe" class="w-4 h-4 rounded border-gray-300 text-fashion-black focus:ring-fashion-black">
                         <span class="text-sm text-gray-600 dark:text-gray-400 group-hover:text-fashion-black dark:group-hover:text-white transition">Remember me</span>
                     </label>
                     <a href="/forgot-password" class="text-sm text-primary-600 dark:text-primary-400 hover:underline font-medium">Forgot password?</a>
                 </div>
 
                 <!-- Submit -->
-                <button type="submit" class="w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
-                    Sign In
+                <button type="submit" :disabled="loading" class="w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span x-show="!loading">Sign In</span>
+                    <span x-show="loading" x-cloak class="flex items-center justify-center gap-2">
+                        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Signing in...
+                    </span>
                 </button>
             </form>
+
+            <script>
+                function loginForm() {
+                    return {
+                        email: '',
+                        password: '',
+                        rememberMe: false,
+                        showPassword: false,
+                        loading: false,
+                        error: null,
+                        returnUrl: '@Html.Raw(returnUrl)',
+
+                        async submit() {
+                            this.loading = true;
+                            this.error = null;
+
+                            try {
+                                const response = await fetch('/api/ecommerce/auth/login', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        email: this.email,
+                                        password: this.password,
+                                        rememberMe: this.rememberMe
+                                    })
+                                });
+
+                                const data = await response.json();
+
+                                if (data.success) {
+                                    // Redirect to return URL or account page
+                                    window.location.href = this.returnUrl || '/account';
+                                } else {
+                                    this.error = data.message || 'Login failed. Please try again.';
+                                }
+                            } catch (err) {
+                                this.error = 'An error occurred. Please try again.';
+                                console.error('Login error:', err);
+                            } finally {
+                                this.loading = false;
+                            }
+                        }
+                    };
+                }
+            </script>
 
             <!-- Register Link -->
             <div class="mt-8 text-center">

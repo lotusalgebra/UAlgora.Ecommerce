@@ -144,11 +144,16 @@
             </div>
 
             <!-- Register Form -->
-            <form action="/api/auth/register" method="post" class="space-y-5" x-data="{ showPassword: false, password: '', confirmPassword: '' }">
+            <form class="space-y-5" x-data="registerForm()" @@submit.prevent="submit">
+                <!-- Error Message -->
+                <div x-show="error" x-cloak class="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm">
+                    <span x-text="error"></span>
+                </div>
+
                 <!-- Name Fields -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="relative">
-                        <input type="text" name="firstName" id="firstName" required
+                        <input type="text" x-model="firstName" id="firstName" required
                                class="peer w-full px-4 pt-6 pb-2 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition placeholder-transparent"
                                placeholder="First Name">
                         <label for="firstName" class="absolute left-4 top-2 text-xs text-gray-500 dark:text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary-600">
@@ -156,7 +161,7 @@
                         </label>
                     </div>
                     <div class="relative">
-                        <input type="text" name="lastName" id="lastName" required
+                        <input type="text" x-model="lastName" id="lastName" required
                                class="peer w-full px-4 pt-6 pb-2 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition placeholder-transparent"
                                placeholder="Last Name">
                         <label for="lastName" class="absolute left-4 top-2 text-xs text-gray-500 dark:text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary-600">
@@ -167,7 +172,7 @@
 
                 <!-- Email -->
                 <div class="relative">
-                    <input type="email" name="email" id="email" required
+                    <input type="email" x-model="email" id="email" required
                            class="peer w-full px-4 pt-6 pb-2 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition placeholder-transparent"
                            placeholder="Email">
                     <label for="email" class="absolute left-4 top-2 text-xs text-gray-500 dark:text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary-600">
@@ -177,8 +182,7 @@
 
                 <!-- Password -->
                 <div class="relative">
-                    <input :type="showPassword ? 'text' : 'password'" name="password" id="password" required minlength="8"
-                           x-model="password"
+                    <input :type="showPassword ? 'text' : 'password'" x-model="password" id="password" required minlength="8"
                            class="peer w-full px-4 pt-6 pb-2 pr-12 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition placeholder-transparent"
                            placeholder="Password">
                     <label for="password" class="absolute left-4 top-2 text-xs text-gray-500 dark:text-gray-400 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:text-xs peer-focus:text-primary-600">
@@ -208,8 +212,7 @@
 
                 <!-- Confirm Password -->
                 <div class="relative">
-                    <input :type="showPassword ? 'text' : 'password'" name="confirmPassword" id="confirmPassword" required
-                           x-model="confirmPassword"
+                    <input :type="showPassword ? 'text' : 'password'" x-model="confirmPassword" id="confirmPassword" required
                            class="peer w-full px-4 pt-6 pb-2 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition placeholder-transparent"
                            :class="confirmPassword.length > 0 && password !== confirmPassword ? 'border-accent-500 focus:ring-accent-500' : ''"
                            placeholder="Confirm Password">
@@ -229,14 +232,14 @@
                 <!-- Checkboxes -->
                 <div class="space-y-3 pt-2">
                     <label class="flex items-start gap-3 cursor-pointer group">
-                        <input type="checkbox" name="terms" required class="w-5 h-5 mt-0.5 rounded border-gray-300 text-fashion-black focus:ring-fashion-black">
+                        <input type="checkbox" x-model="termsAccepted" required class="w-5 h-5 mt-0.5 rounded border-gray-300 text-fashion-black focus:ring-fashion-black">
                         <span class="text-sm text-gray-600 dark:text-gray-400">
                             I agree to the <a href="/terms" class="text-primary-600 dark:text-primary-400 hover:underline">Terms of Service</a>
                             and <a href="/privacy" class="text-primary-600 dark:text-primary-400 hover:underline">Privacy Policy</a>
                         </span>
                     </label>
                     <label class="flex items-center gap-3 cursor-pointer group">
-                        <input type="checkbox" name="newsletter" class="w-5 h-5 rounded border-gray-300 text-fashion-black focus:ring-fashion-black" checked>
+                        <input type="checkbox" x-model="acceptsMarketing" class="w-5 h-5 rounded border-gray-300 text-fashion-black focus:ring-fashion-black" checked>
                         <span class="text-sm text-gray-600 dark:text-gray-400 group-hover:text-fashion-black dark:group-hover:text-white transition">
                             Send me exclusive offers and new arrivals
                         </span>
@@ -244,10 +247,87 @@
                 </div>
 
                 <!-- Submit -->
-                <button type="submit" class="w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors">
-                    Create Account
+                <button type="submit" :disabled="loading || password !== confirmPassword" class="w-full bg-fashion-black dark:bg-white text-white dark:text-fashion-black py-4 text-sm uppercase tracking-widest font-medium hover:bg-primary-600 dark:hover:bg-primary-400 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span x-show="!loading">Create Account</span>
+                    <span x-show="loading" x-cloak class="flex items-center justify-center gap-2">
+                        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Creating account...
+                    </span>
                 </button>
             </form>
+
+            <script>
+                function registerForm() {
+                    return {
+                        firstName: '',
+                        lastName: '',
+                        email: '',
+                        password: '',
+                        confirmPassword: '',
+                        termsAccepted: false,
+                        acceptsMarketing: true,
+                        showPassword: false,
+                        loading: false,
+                        error: null,
+
+                        async submit() {
+                            // Validate passwords match
+                            if (this.password !== this.confirmPassword) {
+                                this.error = 'Passwords do not match.';
+                                return;
+                            }
+
+                            // Validate password length
+                            if (this.password.length < 8) {
+                                this.error = 'Password must be at least 8 characters.';
+                                return;
+                            }
+
+                            // Validate terms accepted
+                            if (!this.termsAccepted) {
+                                this.error = 'You must accept the Terms of Service.';
+                                return;
+                            }
+
+                            this.loading = true;
+                            this.error = null;
+
+                            try {
+                                const response = await fetch('/api/ecommerce/auth/register', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        firstName: this.firstName,
+                                        lastName: this.lastName,
+                                        email: this.email,
+                                        password: this.password,
+                                        acceptsMarketing: this.acceptsMarketing
+                                    })
+                                });
+
+                                const data = await response.json();
+
+                                if (data.success) {
+                                    // Redirect to account page
+                                    window.location.href = '/account';
+                                } else {
+                                    this.error = data.message || 'Registration failed. Please try again.';
+                                }
+                            } catch (err) {
+                                this.error = 'An error occurred. Please try again.';
+                                console.error('Registration error:', err);
+                            } finally {
+                                this.loading = false;
+                            }
+                        }
+                    };
+                }
+            </script>
 
             <!-- Login Link -->
             <div class="mt-8 text-center">

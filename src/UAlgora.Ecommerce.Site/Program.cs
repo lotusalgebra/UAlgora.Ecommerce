@@ -25,6 +25,21 @@ builder.Services.AddScoped<DemoDataSeeder>();
 // Add MVC for storefront controllers
 builder.Services.AddControllersWithViews();
 
+// Add customer authentication (standalone, separate from Umbraco)
+builder.Services.AddAuthentication()
+    .AddCookie("EcommerceCustomer", options =>
+    {
+        options.Cookie.Name = ".UAlgora.Customer";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);
+        options.SlidingExpiration = true;
+        options.LoginPath = "/login";
+        options.LogoutPath = "/logout";
+        options.AccessDeniedPath = "/login";
+    });
+
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
     .AddWebsite()
@@ -59,6 +74,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 await app.BootUmbracoAsync();
+
+// Use authentication for customer portal (before routing)
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Use routing for MVC controllers
 app.UseRouting();

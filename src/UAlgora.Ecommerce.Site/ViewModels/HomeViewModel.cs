@@ -136,21 +136,22 @@ public class OrderConfirmationViewModel
 
 public class AccountViewModel
 {
-    public Customer? Customer { get; set; }
+    public Guid CustomerId { get; set; }
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? Phone { get; set; }
+    public DateTime MemberSince { get; set; }
+    public int TotalOrders { get; set; }
+    public int LoyaltyPoints { get; set; }
+    public decimal StoreCreditBalance { get; set; }
     public List<Order> RecentOrders { get; set; } = [];
     public List<Address> Addresses { get; set; } = [];
-    public List<Wishlist> Wishlists { get; set; } = [];
+    public string FullName => $"{FirstName} {LastName}";
 }
 
 public class WishlistViewModel
 {
     public Wishlist? Wishlist { get; set; }
-    public List<WishlistItemViewModel> Items { get; set; } = [];
-}
-
-public class WishlistItemViewModel
-{
-    public Guid Id { get; set; }
-    public Product Product { get; set; } = null!;
-    public DateTime AddedAt { get; set; }
+    public List<WishlistItem> Items { get; set; } = [];
 }

@@ -183,6 +183,35 @@ public class Customer : SoftDeleteEntity
 
     #endregion
 
+    #region Authentication
+
+    /// <summary>
+    /// BCrypt hashed password for standalone authentication.
+    /// </summary>
+    public string? PasswordHash { get; set; }
+
+    /// <summary>
+    /// Token for password reset functionality.
+    /// </summary>
+    public string? PasswordResetToken { get; set; }
+
+    /// <summary>
+    /// Expiration time for password reset token.
+    /// </summary>
+    public DateTime? PasswordResetTokenExpiry { get; set; }
+
+    /// <summary>
+    /// Number of consecutive failed login attempts.
+    /// </summary>
+    public int FailedLoginAttempts { get; set; }
+
+    /// <summary>
+    /// When the account was locked due to failed attempts.
+    /// </summary>
+    public DateTime? LockedUntil { get; set; }
+
+    #endregion
+
     #region Computed Properties
 
     /// <summary>
