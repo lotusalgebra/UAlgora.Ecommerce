@@ -79,13 +79,13 @@
 
             <!-- Quick Category Pills -->
             <div class="hidden lg:flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                <a href="/products"
+                <a href="@updateCategoryUrl(null)"
                    class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition @(Model.CategoryId == null ? "bg-fashion-black dark:bg-white text-white dark:text-fashion-black" : "bg-gray-100 dark:bg-fashion-slate text-fashion-black dark:text-white hover:bg-gray-200 dark:hover:bg-fashion-black")">
                     All
                 </a>
                 @foreach (var category in Model.Categories.Where(c => c.ParentId == null).Take(6))
                 {
-                    <a href="/products?category=@category.Id"
+                    <a href="@updateCategoryUrl(category.Id)"
                        class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition @(Model.CategoryId == category.Id ? "bg-fashion-black dark:bg-white text-white dark:text-fashion-black" : "bg-gray-100 dark:bg-fashion-slate text-fashion-black dark:text-white hover:bg-gray-200 dark:hover:bg-fashion-black")">
                         @category.Name
                     </a>
@@ -150,6 +150,17 @@
                 {
                     <input type="hidden" name="search" value="@Model.SearchTerm" />
                 }
+                @* Hidden category input for desktop (where dropdown is hidden) *@
+                <div class="hidden lg:block">
+                    @if (Model.CategoryId.HasValue)
+                    {
+                        <input type="hidden" name="category" value="@Model.CategoryId" />
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(Model.SortBy))
+                {
+                    <input type="hidden" name="sort" value="@Model.SortBy" />
+                }
 
                 <!-- Category Filter (Mobile) -->
                 <div class="col-span-2 md:col-span-1 lg:hidden">
@@ -189,32 +200,42 @@
                 </div>
 
                 <!-- Size Filter (Fashion-specific) -->
-                <div>
+                <div x-data="{ selectedSizes: [] }">
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Size</label>
                     <div class="flex flex-wrap gap-1.5">
                         @foreach (var size in new[] { "XS", "S", "M", "L", "XL" })
                         {
                             <button type="button"
-                                    class="w-9 h-9 rounded-full border border-gray-200 dark:border-fashion-slate text-xs font-medium text-fashion-black dark:text-white hover:border-fashion-black dark:hover:border-white transition">
+                                    @@click="selectedSizes.includes('@size') ? selectedSizes = selectedSizes.filter(s => s !== '@size') : selectedSizes.push('@size')"
+                                    :class="selectedSizes.includes('@size') ? 'border-fashion-black dark:border-white bg-fashion-black dark:bg-white text-white dark:text-fashion-black' : 'border-gray-200 dark:border-fashion-slate text-fashion-black dark:text-white'"
+                                    class="w-9 h-9 rounded-full border text-xs font-medium hover:border-fashion-black dark:hover:border-white transition">
                                 @size
                             </button>
                         }
                     </div>
+                    <template x-for="size in selectedSizes" :key="size">
+                        <input type="hidden" name="size" :value="size" />
+                    </template>
                 </div>
 
                 <!-- Color Filter -->
-                <div>
+                <div x-data="{ selectedColors: [] }">
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Color</label>
                     <div class="flex flex-wrap gap-1.5">
                         @foreach (var (color, hex) in new[] { ("Black", "#000"), ("White", "#fff"), ("Red", "#ef4444"), ("Blue", "#3b82f6"), ("Pink", "#ec4899") })
                         {
                             <button type="button"
+                                    @@click="selectedColors.includes('@color') ? selectedColors = selectedColors.filter(c => c !== '@color') : selectedColors.push('@color')"
+                                    :class="selectedColors.includes('@color') ? 'ring-2 ring-offset-2 ring-primary-500' : ''"
                                     class="w-7 h-7 rounded-full border-2 border-gray-200 dark:border-fashion-slate hover:border-fashion-black dark:hover:border-white transition"
                                     style="background-color: @hex"
                                     title="@color">
                             </button>
                         }
                     </div>
+                    <template x-for="color in selectedColors" :key="color">
+                        <input type="hidden" name="color" :value="color" />
+                    </template>
                 </div>
 
                 <!-- Toggle Filters -->
@@ -222,13 +243,29 @@
                     <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Options</label>
                     <div class="space-y-2">
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="inStock" value="true" @(Model.InStock == true ? "checked" : "")
-                                   class="w-4 h-4 rounded border-gray-300 dark:border-fashion-slate text-primary-500 focus:ring-primary-500">
+                            @if (Model.InStock == true)
+                            {
+                                <input type="checkbox" name="inStock" value="true" checked
+                                       class="w-4 h-4 rounded border-gray-300 dark:border-fashion-slate text-primary-500 focus:ring-primary-500">
+                            }
+                            else
+                            {
+                                <input type="checkbox" name="inStock" value="true"
+                                       class="w-4 h-4 rounded border-gray-300 dark:border-fashion-slate text-primary-500 focus:ring-primary-500">
+                            }
                             <span class="text-sm text-fashion-black dark:text-white">In Stock</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" name="sale" value="true" @(Model.OnSale == true ? "checked" : "")
-                                   class="w-4 h-4 rounded border-gray-300 dark:border-fashion-slate text-accent-500 focus:ring-accent-500">
+                            @if (Model.OnSale == true)
+                            {
+                                <input type="checkbox" name="sale" value="true" checked
+                                       class="w-4 h-4 rounded border-gray-300 dark:border-fashion-slate text-accent-500 focus:ring-accent-500">
+                            }
+                            else
+                            {
+                                <input type="checkbox" name="sale" value="true"
+                                       class="w-4 h-4 rounded border-gray-300 dark:border-fashion-slate text-accent-500 focus:ring-accent-500">
+                            }
                             <span class="text-sm text-fashion-black dark:text-white">On Sale</span>
                         </label>
                     </div>
@@ -394,6 +431,19 @@
         if (Model.CategoryId.HasValue) query.Add($"category={Model.CategoryId}");
         if (!string.IsNullOrEmpty(Model.SearchTerm)) query.Add($"search={Model.SearchTerm}");
         if (!string.IsNullOrEmpty(sort)) query.Add($"sort={sort}");
+        if (Model.MinPrice.HasValue) query.Add($"minPrice={Model.MinPrice}");
+        if (Model.MaxPrice.HasValue) query.Add($"maxPrice={Model.MaxPrice}");
+        if (Model.OnSale == true) query.Add("sale=true");
+        if (Model.InStock == true) query.Add("inStock=true");
+        return "/products" + (query.Any() ? "?" + string.Join("&", query) : "");
+    }
+
+    string updateCategoryUrl(Guid? categoryId)
+    {
+        var query = new List<string>();
+        if (categoryId.HasValue) query.Add($"category={categoryId}");
+        if (!string.IsNullOrEmpty(Model.SearchTerm)) query.Add($"search={Model.SearchTerm}");
+        if (!string.IsNullOrEmpty(Model.SortBy)) query.Add($"sort={Model.SortBy}");
         if (Model.MinPrice.HasValue) query.Add($"minPrice={Model.MinPrice}");
         if (Model.MaxPrice.HasValue) query.Add($"maxPrice={Model.MaxPrice}");
         if (Model.OnSale == true) query.Add("sale=true");
