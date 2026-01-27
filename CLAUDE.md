@@ -72,6 +72,10 @@ Each collection view (`product-collection.js`, `order-collection.js`, etc.) is a
 - Editor panel with tabbed forms
 - Direct API calls to Management API
 
+**Important:** App_Plugins exists in both `Web` and `Site` projects. When modifying backoffice UI, update both locations to keep them in sync:
+- `src/UAlgora.Ecommerce.Web/wwwroot/App_Plugins/Ecommerce/`
+- `src/UAlgora.Ecommerce.Site/wwwroot/App_Plugins/Ecommerce/`
+
 ### Management API Pattern
 
 Controllers extend `EcommerceManagementApiControllerBase` and use:
@@ -138,9 +142,17 @@ In `Program.cs`:
 ```csharp
 builder.Services.AddEcommerceInfrastructure(connectionString); // Repos + Services
 builder.Services.AddEcommerceWeb();  // Web layer + Content sync
+builder.Services.AddAlgoraLicensing(); // Optional: License validation
 ```
 
 Services are registered via extension methods in each layer's `ServiceCollectionExtensions.cs`.
+
+### Umbraco Composers
+
+Composers auto-register services when the plugin loads:
+- `EcommerceComposer` - Main DI registration and notification handlers
+- `EcommerceSectionPermissionComposer` - Backoffice section permissions
+- `AlgoraDocumentTypeComposer` - Document type provider registration
 
 ## Database
 
@@ -151,11 +163,21 @@ Services are registered via extension methods in each layer's `ServiceCollection
 
 ## Testing
 
-- **Unit tests:** `tests/UAlgora.Ecommerce.*.Tests/`
-- **UI tests:** `tests/UAlgora.Ecommerce.Tests.UI/` - Selenium-based E2E tests
-- **Test settings:** `tests/.../appsettings.json`
+```
+tests/
+├── UAlgora.Ecommerce.Core.Tests/           # Domain model unit tests
+├── UAlgora.Ecommerce.Infrastructure.Tests/ # Repository/service tests
+├── UAlgora.Ecommerce.Web.Tests/            # API controller tests
+└── UAlgora.Ecommerce.Tests.UI/             # Selenium E2E tests
+```
 
 ```bash
+# Run all tests
+dotnet test
+
+# Run specific test project
+dotnet test tests/UAlgora.Ecommerce.Core.Tests
+
 # Run single test by name
 dotnet test --filter "FullyQualifiedName~TestMethodName"
 
@@ -167,3 +189,9 @@ dotnet test --filter "FullyQualifiedName~ClassName"
 
 - `ecommerce-features.claude.md` - Comprehensive e-commerce domain reference (product, cart, checkout, payments, etc.)
 - `umbraco-ecommerce-plugin.claude.md` - Umbraco 15+ integration patterns and code examples
+- `docs/` - Product documentation (docsify-based)
+
+## Platform Notes
+
+- **Windows development:** Uses LocalDB for SQL Server (connection string pattern: `Server=(localdb)\MSSQLLocalDB`)
+- **Umbraco cache:** Delete `umbraco/Data/TEMP` and `umbraco/Data/NuCache` if backoffice shows stale data after model changes

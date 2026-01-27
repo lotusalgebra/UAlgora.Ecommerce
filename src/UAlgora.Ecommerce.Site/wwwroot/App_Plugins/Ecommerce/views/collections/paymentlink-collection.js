@@ -149,7 +149,8 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
     _saving: { state: true },
     _payments: { state: true },
     _loadingPayments: { state: true },
-    _statistics: { state: true }
+    _statistics: { state: true },
+    _currencies: { state: true }
   };
 
   constructor() {
@@ -166,6 +167,7 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
     this._payments = [];
     this._loadingPayments = false;
     this._statistics = null;
+    this._currencies = [];
 
     this._types = [
       { value: 0, label: 'Fixed Amount', icon: 'icon-coins-dollar-alt', desc: 'Charge a specific amount' },
@@ -218,6 +220,17 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     this._loadPaymentLinks();
+    this._loadCurrencies();
+  }
+
+  async _loadCurrencies() {
+    try {
+      const res = await fetch('/umbraco/management/api/v1/ecommerce/currency', { credentials: 'include', headers: { 'Accept': 'application/json' } });
+      if (res.ok) {
+        const data = await res.json();
+        this._currencies = data.items || data || [];
+      }
+    } catch (e) { console.error('Error loading currencies:', e); }
   }
 
   async _loadPaymentLinks() {
@@ -807,11 +820,8 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
               @change=${(e) => this._handleInputChange('currencyCode', e.target.value)}
               ?disabled=${!isEditing}
             >
-              <option value="USD">USD - US Dollar</option>
-              <option value="EUR">EUR - Euro</option>
-              <option value="GBP">GBP - British Pound</option>
-              <option value="CAD">CAD - Canadian Dollar</option>
-              <option value="AUD">AUD - Australian Dollar</option>
+              ${this._currencies.length === 0 ? html`<option value="USD">USD - US Dollar (Loading...)</option>` : ''}
+              ${this._currencies.map(c => html`<option value="${c.code}" ?selected=${this._formData.currencyCode === c.code}>${c.code} - ${c.name}</option>`)}
             </select>
           </div>
         </div>

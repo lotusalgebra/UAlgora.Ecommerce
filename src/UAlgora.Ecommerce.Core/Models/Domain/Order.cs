@@ -208,6 +208,11 @@ public class Order : SoftDeleteEntity
     public string? Carrier { get; set; }
 
     /// <summary>
+    /// Tracking URL for the shipment.
+    /// </summary>
+    public string? TrackingUrl { get; set; }
+
+    /// <summary>
     /// Shipment records.
     /// </summary>
     public List<Shipment> Shipments { get; set; } = [];

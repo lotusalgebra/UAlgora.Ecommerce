@@ -22,8 +22,8 @@ public sealed class CheckoutStepDocumentTypeProvider : IDocumentTypeDefinitionPr
             Description = "Algora Commerce Checkout Step - A step in the checkout process",
             Icon = "icon-directions-alt",
             IconColor = BrandColor,
-            AllowedAsRoot = false,
-            IsElement = true,
+            AllowedAsRoot = true,
+            IsElement = false,
             PropertyGroups = GetPropertyGroups()
         };
     }

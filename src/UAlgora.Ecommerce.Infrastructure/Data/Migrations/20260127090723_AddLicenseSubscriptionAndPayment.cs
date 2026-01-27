@@ -51,7 +51,7 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         column: x => x.LicenseId,
                         principalTable: "Licenses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -99,13 +99,13 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         column: x => x.SubscriptionId,
                         principalTable: "LicenseSubscriptions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_LicensePayments_Licenses_LicenseId",
                         column: x => x.LicenseId,
                         principalTable: "Licenses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(

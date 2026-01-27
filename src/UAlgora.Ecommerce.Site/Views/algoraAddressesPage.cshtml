@@ -201,11 +201,11 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Street Address *</label>
-                                        <input type="text" x-model="form.address1" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        <input type="text" x-model="form.addressLine1" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Apartment, Suite, etc.</label>
-                                        <input type="text" x-model="form.address2" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        <input type="text" x-model="form.addressLine2" class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div>
@@ -214,7 +214,7 @@
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">State *</label>
-                                            <input type="text" x-model="form.state" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                            <input type="text" x-model="form.stateProvince" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-2 gap-4">
@@ -224,7 +224,7 @@
                                         </div>
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Country *</label>
-                                            <select x-model="form.country" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                            <select x-model="form.countryCode" x-on:change="updateCountry($event.target.value)" required class="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-700 bg-transparent text-fashion-black dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                                                 <option value="US">United States</option>
                                                 <option value="CA">Canada</option>
                                                 <option value="UK">United Kingdom</option>
@@ -273,15 +273,17 @@ function addressManager() {
         showModal: false,
         saving: false,
         editingId: null,
+        addresses: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(addresses)),
         form: {
             firstName: '',
             lastName: '',
-            address1: '',
-            address2: '',
+            addressLine1: '',
+            addressLine2: '',
             city: '',
-            state: '',
+            stateProvince: '',
             postalCode: '',
-            country: 'US',
+            country: 'United States',
+            countryCode: 'US',
             phone: '',
             isDefaultShipping: false,
             isDefaultBilling: false
@@ -295,6 +297,24 @@ function addressManager() {
 
         editAddress(id) {
             this.editingId = id;
+            // Load the address data from cached addresses
+            const address = this.addresses.find(a => a.id === id);
+            if (address) {
+                this.form = {
+                    firstName: address.firstName || '',
+                    lastName: address.lastName || '',
+                    addressLine1: address.addressLine1 || '',
+                    addressLine2: address.addressLine2 || '',
+                    city: address.city || '',
+                    stateProvince: address.stateProvince || '',
+                    postalCode: address.postalCode || '',
+                    country: address.country || 'United States',
+                    countryCode: address.countryCode || 'US',
+                    phone: address.phone || '',
+                    isDefaultShipping: address.isDefaultShipping || false,
+                    isDefaultBilling: address.isDefaultBilling || false
+                };
+            }
             this.showModal = true;
         },
 
@@ -306,18 +326,39 @@ function addressManager() {
 
         resetForm() {
             this.form = {
-                firstName: '', lastName: '', address1: '', address2: '',
-                city: '', state: '', postalCode: '', country: 'US', phone: '',
-                isDefaultShipping: false, isDefaultBilling: false
+                firstName: '',
+                lastName: '',
+                addressLine1: '',
+                addressLine2: '',
+                city: '',
+                stateProvince: '',
+                postalCode: '',
+                country: 'United States',
+                countryCode: 'US',
+                phone: '',
+                isDefaultShipping: false,
+                isDefaultBilling: false
             };
+        },
+
+        updateCountry(code) {
+            const countries = {
+                'US': 'United States',
+                'CA': 'Canada',
+                'UK': 'United Kingdom',
+                'AU': 'Australia',
+                'IN': 'India'
+            };
+            this.form.countryCode = code;
+            this.form.country = countries[code] || code;
         },
 
         async saveAddress() {
             this.saving = true;
             try {
                 const url = this.editingId
-                    ? `/api/ecommerce/customer/address/${this.editingId}`
-                    : '/api/ecommerce/customer/address';
+                    ? `/api/ecommerce/customers/me/addresses/${this.editingId}`
+                    : '/api/ecommerce/customers/me/addresses';
                 const response = await fetch(url, {
                     method: this.editingId ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -325,29 +366,35 @@ function addressManager() {
                 });
                 if (response.ok) window.location.reload();
                 else alert((await response.json()).message || 'Failed to save address');
-            } catch (e) { alert('An error occurred. Please try again.'); }
+            } catch (e) {
+                console.error('Address save error:', e);
+                alert('An error occurred. Please try again.');
+            }
             finally { this.saving = false; }
         },
 
         async setDefaultShipping(id) {
             try {
-                const response = await fetch(`/api/ecommerce/customer/address/${id}/default-shipping`, { method: 'PUT' });
+                const response = await fetch(`/api/ecommerce/customers/me/addresses/${id}/default-shipping`, { method: 'PUT' });
                 if (response.ok) window.location.reload();
+                else alert('Failed to update default address');
             } catch (e) { alert('Failed to update default address'); }
         },
 
         async setDefaultBilling(id) {
             try {
-                const response = await fetch(`/api/ecommerce/customer/address/${id}/default-billing`, { method: 'PUT' });
+                const response = await fetch(`/api/ecommerce/customers/me/addresses/${id}/default-billing`, { method: 'PUT' });
                 if (response.ok) window.location.reload();
+                else alert('Failed to update default address');
             } catch (e) { alert('Failed to update default address'); }
         },
 
         async deleteAddress(id) {
             if (!confirm('Are you sure you want to delete this address?')) return;
             try {
-                const response = await fetch(`/api/ecommerce/customer/address/${id}`, { method: 'DELETE' });
+                const response = await fetch(`/api/ecommerce/customers/me/addresses/${id}`, { method: 'DELETE' });
                 if (response.ok) window.location.reload();
+                else alert('Failed to delete address');
             } catch (e) { alert('Failed to delete address'); }
         }
     };

@@ -133,7 +133,9 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
     _activeTab: { state: true },
     _saving: { state: true },
     _newStatus: { state: true },
-    _statusNote: { state: true }
+    _statusNote: { state: true },
+    _shippingForm: { state: true },
+    _savingShipping: { state: true }
   };
 
   constructor() {
@@ -151,6 +153,8 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
     this._saving = false;
     this._newStatus = '';
     this._statusNote = '';
+    this._shippingForm = { carrier: '', trackingNumber: '', trackingUrl: '' };
+    this._savingShipping = false;
   }
 
   connectedCallback() {
@@ -196,6 +200,12 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
         console.log('Order loaded:', this._selectedOrder);
         console.log('Order lines:', this._selectedOrder.lines);
         this._newStatus = this._selectedOrder.status;
+        // Initialize shipping form
+        this._shippingForm = {
+          carrier: this._selectedOrder.shippingCarrier || '',
+          trackingNumber: this._selectedOrder.trackingNumber || '',
+          trackingUrl: this._selectedOrder.trackingUrl || ''
+        };
       }
     } catch (e) { console.error('Error loading order:', e); }
     finally { this._loadingOrder = false; }
@@ -238,6 +248,44 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
       this._statusNote = '';
     } catch (e) { alert('Failed to update: ' + e.message); }
     finally { this._saving = false; }
+  }
+
+  async _updateShipping() {
+    this._savingShipping = true;
+    try {
+      const res = await fetch(`/umbraco/management/api/v1/ecommerce/order/${this._selectedOrder.id}/shipping`, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          carrier: this._shippingForm.carrier || null,
+          trackingNumber: this._shippingForm.trackingNumber || null,
+          trackingUrl: this._shippingForm.trackingUrl || null
+        })
+      });
+      if (!res.ok) throw new Error('Failed to update shipping');
+      const updated = await res.json();
+      this._selectedOrder = updated;
+      this._shippingForm = {
+        carrier: updated.shippingCarrier || '',
+        trackingNumber: updated.trackingNumber || '',
+        trackingUrl: updated.trackingUrl || ''
+      };
+      alert('Shipping details updated successfully');
+    } catch (e) { alert('Failed to update shipping: ' + e.message); }
+    finally { this._savingShipping = false; }
+  }
+
+  _printInvoice() {
+    if (!this._selectedOrder) return;
+    const url = `/umbraco/management/api/v1/ecommerce/invoice/order/${this._selectedOrder.id}/html`;
+    window.open(url, '_blank', 'width=800,height=600');
+  }
+
+  _printPackingSlip() {
+    if (!this._selectedOrder) return;
+    const url = `/umbraco/management/api/v1/ecommerce/invoice/order/${this._selectedOrder.id}/packing-slip`;
+    window.open(url, '_blank', 'width=800,height=600');
   }
 
   _formatCurrency(amount, code = 'USD') {
@@ -334,8 +382,11 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
           <span class="status-badge ${this._getStatusClass(o.status)}">${o.status}</span>
         </div>
         <div class="editor-actions">
-          <uui-button look="secondary" @click=${() => window.print()}>
-            <uui-icon name="icon-print"></uui-icon> Print
+          <uui-button look="secondary" @click=${() => this._printInvoice()}>
+            <uui-icon name="icon-document"></uui-icon> Invoice
+          </uui-button>
+          <uui-button look="secondary" @click=${() => this._printPackingSlip()}>
+            <uui-icon name="icon-box"></uui-icon> Packing Slip
           </uui-button>
         </div>
       </div>
@@ -561,15 +612,38 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
             <div class="detail-label">Shipping Cost</div>
             <div class="detail-value">${this._formatCurrency(o.shippingTotal, o.currencyCode)}</div>
           </div>
-          <div class="detail-item">
-            <div class="detail-label">Tracking Number</div>
-            <div class="detail-value">${o.trackingNumber || '-'}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Update Shipping Details</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carrier / Provider</label>
+            <select .value=${this._shippingForm.carrier} @change=${e => this._shippingForm = { ...this._shippingForm, carrier: e.target.value }}>
+              <option value="">Select carrier...</option>
+              <option value="FedEx" ?selected=${this._shippingForm.carrier === 'FedEx'}>FedEx</option>
+              <option value="UPS" ?selected=${this._shippingForm.carrier === 'UPS'}>UPS</option>
+              <option value="USPS" ?selected=${this._shippingForm.carrier === 'USPS'}>USPS</option>
+              <option value="DHL" ?selected=${this._shippingForm.carrier === 'DHL'}>DHL</option>
+              <option value="Royal Mail" ?selected=${this._shippingForm.carrier === 'Royal Mail'}>Royal Mail</option>
+              <option value="Canada Post" ?selected=${this._shippingForm.carrier === 'Canada Post'}>Canada Post</option>
+              <option value="Australia Post" ?selected=${this._shippingForm.carrier === 'Australia Post'}>Australia Post</option>
+              <option value="Other" ?selected=${this._shippingForm.carrier === 'Other'}>Other</option>
+            </select>
           </div>
-          <div class="detail-item">
-            <div class="detail-label">Carrier</div>
-            <div class="detail-value">${o.shippingCarrier || '-'}</div>
+          <div class="form-group">
+            <label>Tracking Number</label>
+            <input type="text" .value=${this._shippingForm.trackingNumber} @input=${e => this._shippingForm = { ...this._shippingForm, trackingNumber: e.target.value }} placeholder="Enter tracking number" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;" />
           </div>
         </div>
+        <div class="form-group">
+          <label>Tracking URL</label>
+          <input type="url" .value=${this._shippingForm.trackingUrl} @input=${e => this._shippingForm = { ...this._shippingForm, trackingUrl: e.target.value }} placeholder="https://..." style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:4px;font-size:14px;box-sizing:border-box;" />
+        </div>
+        <uui-button look="primary" @click=${this._updateShipping} ?disabled=${this._savingShipping}>
+          ${this._savingShipping ? 'Saving...' : 'Save Shipping Details'}
+        </uui-button>
       </div>
 
       ${o.shippingAddress ? html`
@@ -577,8 +651,8 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
           <div class="section-title">Delivery Address</div>
           <div class="address-card">
             <div class="address-line"><strong>${o.shippingAddress.firstName} ${o.shippingAddress.lastName}</strong></div>
-            <div class="address-line">${o.shippingAddress.address1}</div>
-            ${o.shippingAddress.address2 ? html`<div class="address-line">${o.shippingAddress.address2}</div>` : ''}
+            <div class="address-line">${o.shippingAddress.addressLine1 || o.shippingAddress.address1}</div>
+            ${(o.shippingAddress.addressLine2 || o.shippingAddress.address2) ? html`<div class="address-line">${o.shippingAddress.addressLine2 || o.shippingAddress.address2}</div>` : ''}
             <div class="address-line">${o.shippingAddress.city}, ${o.shippingAddress.stateProvince} ${o.shippingAddress.postalCode}</div>
             <div class="address-line">${o.shippingAddress.country}</div>
             ${o.shippingAddress.phone ? html`<div class="address-line" style="margin-top:8px;">Phone: ${o.shippingAddress.phone}</div>` : ''}
@@ -586,13 +660,19 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
         </div>
       ` : ''}
 
-      ${o.trackingNumber ? html`
+      ${(this._shippingForm.trackingNumber || this._shippingForm.trackingUrl) ? html`
         <div class="section">
           <div class="section-title">Tracking</div>
           <div class="quick-actions">
-            <button class="quick-action primary" @click=${() => window.open(`https://track.aftership.com/${o.trackingNumber}`, '_blank')}>
-              <uui-icon name="icon-truck"></uui-icon> Track Package
-            </button>
+            ${this._shippingForm.trackingUrl ? html`
+              <button class="quick-action primary" @click=${() => window.open(this._shippingForm.trackingUrl, '_blank')}>
+                <uui-icon name="icon-truck"></uui-icon> Track Package
+              </button>
+            ` : this._shippingForm.trackingNumber ? html`
+              <button class="quick-action primary" @click=${() => window.open(`https://track.aftership.com/${this._shippingForm.trackingNumber}`, '_blank')}>
+                <uui-icon name="icon-truck"></uui-icon> Track Package
+              </button>
+            ` : ''}
           </div>
         </div>
       ` : ''}

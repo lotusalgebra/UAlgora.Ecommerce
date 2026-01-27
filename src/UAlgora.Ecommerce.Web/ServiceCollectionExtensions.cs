@@ -39,6 +39,7 @@ public static class ServiceCollectionExtensions
 
         // Register catalog content seeder for demo/testing
         services.AddScoped<CatalogContentSeeder>();
+        services.AddScoped<EnterpriseContentSeeder>();
 
         // Register license context (singleton to hold current license state)
         services.AddSingleton<LicenseContext>();

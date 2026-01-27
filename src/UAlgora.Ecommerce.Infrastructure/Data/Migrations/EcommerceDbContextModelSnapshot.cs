@@ -6289,7 +6289,7 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.License", "License")
                         .WithMany()
                         .HasForeignKey("LicenseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("License");

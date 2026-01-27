@@ -12,8 +12,8 @@ using UAlgora.Ecommerce.Infrastructure.Data;
 namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(EcommerceDbContext))]
-    [Migration("20260127090723_AddLicenseSubscriptionAndPayment")]
-    partial class AddLicenseSubscriptionAndPayment
+    [Migration("20260126170933_AddInvoiceTables")]
+    partial class AddInvoiceTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1498,12 +1498,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<string>("BillingAddressJson")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("CgstAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CgstRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("CompanyAddress1")
                         .HasColumnType("nvarchar(max)");
 
@@ -1517,9 +1511,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CompanyGstin")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyName")
@@ -1548,9 +1539,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<string>("CustomerEmail")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CustomerGstin")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1570,24 +1558,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<decimal>("GrandTotal")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("GstBreakdownJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("IgstAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("IgstRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsGstApplicable")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsInterState")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("IssuedAt")
                         .HasColumnType("datetime2");
@@ -1612,15 +1585,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
 
                     b.Property<string>("PaymentInstructions")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PlaceOfSupply")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("SgstAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("SgstRate")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ShippingAddressJson")
                         .HasColumnType("nvarchar(max)");
@@ -1953,311 +1917,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Licenses");
-                });
-
-            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.LicensePayment", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<string>("CardBrand")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("CardCountry")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
-
-                    b.Property<string>("CardLast4")
-                        .HasMaxLength(4)
-                        .HasColumnType("nvarchar(4)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)")
-                        .HasDefaultValue("USD");
-
-                    b.Property<string>("CustomerEmail")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("CustomerName")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("FailureCode")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("FailureReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("InvoiceUrl")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<Guid?>("LicenseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("LicenseType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("MetadataJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PaymentProvider")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PaymentType")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)")
-                        .HasDefaultValue("subscription");
-
-                    b.Property<DateTime?>("PeriodEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("PeriodStart")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ProviderChargeId")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ProviderCustomerId")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ProviderInvoiceId")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ProviderPaymentId")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("RawResponseJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReceiptUrl")
-                        .HasMaxLength(2000)
-                        .HasColumnType("nvarchar(2000)");
-
-                    b.Property<string>("RefundReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<decimal?>("RefundedAmount")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<DateTime?>("RefundedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<Guid?>("SubscriptionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("CustomerEmail");
-
-                    b.HasIndex("LicenseId");
-
-                    b.HasIndex("LicenseType");
-
-                    b.HasIndex("PaidAt");
-
-                    b.HasIndex("PaymentProvider");
-
-                    b.HasIndex("ProviderChargeId");
-
-                    b.HasIndex("ProviderCustomerId");
-
-                    b.HasIndex("ProviderInvoiceId");
-
-                    b.HasIndex("ProviderPaymentId")
-                        .IsUnique();
-
-                    b.HasIndex("Status");
-
-                    b.HasIndex("SubscriptionId");
-
-                    b.HasIndex("PaymentProvider", "Status");
-
-                    b.HasIndex("Status", "CreatedAt");
-
-                    b.ToTable("LicensePayments", (string)null);
-                });
-
-            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.LicenseSubscription", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Amount")
-                        .HasPrecision(18, 4)
-                        .HasColumnType("decimal(18,4)");
-
-                    b.Property<bool>("AutoRenew")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("BillingInterval")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasDefaultValue("year");
-
-                    b.Property<DateTime?>("CancelAtPeriodEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("CancelledAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Currency")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)")
-                        .HasDefaultValue("USD");
-
-                    b.Property<DateTime>("CurrentPeriodEnd")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("CurrentPeriodStart")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CustomerEmail")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("CustomerName")
-                        .IsRequired()
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<int>("FailureCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LastFailureReason")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<DateTime?>("LastPaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("LicenseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("LicenseType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("LicensedDomain")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("MetadataJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("NextPaymentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("PaymentCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("PaymentProvider")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ProviderCustomerId")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ProviderPriceId")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("ProviderSubscriptionId")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedAt");
-
-                    b.HasIndex("CurrentPeriodEnd");
-
-                    b.HasIndex("CustomerEmail");
-
-                    b.HasIndex("LicenseId")
-                        .IsUnique();
-
-                    b.HasIndex("LicenseType");
-
-                    b.HasIndex("NextPaymentDate");
-
-                    b.HasIndex("PaymentProvider");
-
-                    b.HasIndex("ProviderCustomerId");
-
-                    b.HasIndex("ProviderSubscriptionId")
-                        .IsUnique();
-
-                    b.HasIndex("Status");
-
-                    b.HasIndex("PaymentProvider", "Status");
-
-                    b.HasIndex("Status", "AutoRenew");
-
-                    b.ToTable("LicenseSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Order", b =>
@@ -5286,9 +4945,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("CgstRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -5308,15 +4964,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("GstType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("HsnCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("IgstRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -5326,9 +4973,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsGst")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsTaxExempt")
                         .HasColumnType("bit");
 
@@ -5336,12 +4980,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("SacCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("SgstRate")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
@@ -6270,34 +5908,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Navigation("Order");
                 });
 
-            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.LicensePayment", b =>
-                {
-                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.License", "License")
-                        .WithMany()
-                        .HasForeignKey("LicenseId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.LicenseSubscription", "Subscription")
-                        .WithMany("Payments")
-                        .HasForeignKey("SubscriptionId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("License");
-
-                    b.Navigation("Subscription");
-                });
-
-            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.LicenseSubscription", b =>
-                {
-                    b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.License", "License")
-                        .WithMany()
-                        .HasForeignKey("LicenseId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("License");
-                });
-
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Order", b =>
                 {
                     b.HasOne("UAlgora.Ecommerce.Core.Models.Domain.Address", "BillingAddress")
@@ -6841,11 +6451,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.GiftCard", b =>
                 {
                     b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.LicenseSubscription", b =>
-                {
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("UAlgora.Ecommerce.Core.Models.Domain.Order", b =>

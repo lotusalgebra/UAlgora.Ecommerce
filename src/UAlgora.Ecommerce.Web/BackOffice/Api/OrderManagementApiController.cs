@@ -199,6 +199,34 @@ public class OrderManagementApiController : EcommerceManagementApiControllerBase
     }
 
     /// <summary>
+    /// Updates shipping details for an order (carrier, tracking number, tracking URL).
+    /// </summary>
+    [HttpPut("{id:guid}/shipping")]
+    [ProducesResponseType<OrderDetailModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateShippingDetails(Guid id, [FromBody] UpdateShippingDetailsRequest request)
+    {
+        var order = await _orderService.GetByIdAsync(id);
+        if (order == null)
+        {
+            return NotFound();
+        }
+
+        // Update shipping fields
+        if (request.Carrier != null)
+            order.Carrier = request.Carrier;
+        if (request.TrackingNumber != null)
+            order.TrackingNumber = request.TrackingNumber;
+        if (request.TrackingUrl != null)
+            order.TrackingUrl = request.TrackingUrl;
+        if (request.EstimatedDeliveryDate.HasValue)
+            order.EstimatedDeliveryDate = request.EstimatedDeliveryDate;
+
+        var updated = await _orderService.UpdateAsync(order);
+        return Ok(MapToOrderDetail(updated));
+    }
+
+    /// <summary>
     /// Marks an order as delivered.
     /// </summary>
     [HttpPost("{id:guid}/deliver")]
@@ -837,7 +865,13 @@ public class OrderManagementApiController : EcommerceManagementApiControllerBase
             ShippingAddress = MapAddress(order.ShippingAddress),
             Lines = order.Lines.Select(MapOrderLine).ToList(),
             CreatedAt = order.CreatedAt,
-            UpdatedAt = order.UpdatedAt
+            UpdatedAt = order.UpdatedAt,
+            // Shipping details
+            ShippingMethod = order.ShippingMethodName,
+            ShippingCarrier = order.Carrier,
+            TrackingNumber = order.TrackingNumber,
+            TrackingUrl = order.TrackingUrl,
+            EstimatedDeliveryDate = order.EstimatedDeliveryDate
         };
     }
 
@@ -936,6 +970,13 @@ public class OrderDetailModel : OrderItemModel
     public AddressModel? BillingAddress { get; set; }
     public AddressModel? ShippingAddress { get; set; }
     public List<OrderLineModel> Lines { get; set; } = [];
+
+    // Shipping details
+    public string? ShippingMethod { get; set; }
+    public string? ShippingCarrier { get; set; }
+    public string? TrackingNumber { get; set; }
+    public string? TrackingUrl { get; set; }
+    public DateTime? EstimatedDeliveryDate { get; set; }
 }
 
 public class AddressModel
@@ -1077,6 +1118,14 @@ public class ShipOrderRequest
 {
     public string? TrackingNumber { get; set; }
     public string? Carrier { get; set; }
+}
+
+public class UpdateShippingDetailsRequest
+{
+    public string? Carrier { get; set; }
+    public string? TrackingNumber { get; set; }
+    public string? TrackingUrl { get; set; }
+    public DateTime? EstimatedDeliveryDate { get; set; }
 }
 
 public class CancelOrderRequest

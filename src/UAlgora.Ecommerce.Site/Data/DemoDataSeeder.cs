@@ -29,6 +29,24 @@ public class DemoDataSeeder
         await _context.SaveChangesAsync();
     }
 
+    public async Task<(int Categories, int Products)> ForceSeedAsync()
+    {
+        // Clear existing products and categories
+        _context.Products.RemoveRange(_context.Products);
+        _context.Categories.RemoveRange(_context.Categories);
+        await _context.SaveChangesAsync();
+
+        // Seed currencies if not present
+        await SeedCurrenciesAsync();
+
+        // Reseed categories and products
+        var categories = await SeedCategoriesAsync();
+        await SeedProductsAsync(categories);
+        await _context.SaveChangesAsync();
+
+        return (categories.Count, _context.Products.Count());
+    }
+
     private async Task SeedCurrenciesAsync()
     {
         if (_context.Currencies.Any())

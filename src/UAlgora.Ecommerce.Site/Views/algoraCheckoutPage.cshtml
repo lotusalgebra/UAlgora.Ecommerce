@@ -3,18 +3,22 @@
 @using Umbraco.Extensions
 @using UAlgora.Ecommerce.Core.Interfaces.Services
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication
 @inject ICustomerService CustomerService
 @{
     Layout = null; // Checkout has its own minimal layout
 
-    // Check if user is authenticated and load customer data
+    // Check if user is authenticated against the EcommerceCustomer scheme
     UAlgora.Ecommerce.Core.Models.Domain.Customer? currentCustomer = null;
-    var isAuthenticated = Context.User?.Identity?.IsAuthenticated ?? false;
+    var isAuthenticated = false;
 
-    if (isAuthenticated)
+    // Try to authenticate against the EcommerceCustomer scheme specifically
+    var authResult = await Context.AuthenticateAsync("EcommerceCustomer");
+    if (authResult.Succeeded && authResult.Principal?.Identity?.IsAuthenticated == true)
     {
-        var customerIdClaim = Context.User?.FindFirst("CustomerId")?.Value
-                              ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        isAuthenticated = true;
+        var customerIdClaim = authResult.Principal.FindFirst("CustomerId")?.Value
+                              ?? authResult.Principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (Guid.TryParse(customerIdClaim, out var customerId))
         {
             currentCustomer = await CustomerService.GetByIdAsync(customerId);
@@ -1070,17 +1074,56 @@ function checkoutPage() {
 
             this.processing = true;
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2500));
+            try {
+                // Build cart items for API
+                const items = this.cart.items.map(item => ({
+                    productId: item.id,
+                    quantity: item.quantity
+                }));
 
-            // Generate order number
-            const orderNumber = 'ALG-' + Date.now().toString(36).toUpperCase();
+                // Call the place-order API
+                const response = await fetch('/api/ecommerce/checkout/place-order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: this.info.email,
+                        firstName: this.info.firstName,
+                        lastName: this.info.lastName,
+                        phone: this.info.phone,
+                        shippingAddress1: this.shipping.address1,
+                        shippingAddress2: this.shipping.address2,
+                        shippingCity: this.shipping.city,
+                        shippingState: this.shipping.state,
+                        shippingPostalCode: this.shipping.postalCode,
+                        shippingCountry: this.shipping.country,
+                        shippingMethod: this.selectedShipping,
+                        shippingCost: this.shippingCost,
+                        paymentMethod: this.paymentMethod,
+                        items: items
+                    })
+                });
 
-            // Clear cart
-            localStorage.removeItem('cart');
+                const result = await response.json();
 
-            // Redirect to confirmation
-            window.location.href = `/order-confirmation/${orderNumber}`;
+                if (result.success || result.data?.orderNumber) {
+                    const orderNumber = result.data?.orderNumber || result.orderNumber;
+
+                    // Clear cart
+                    localStorage.removeItem('cart');
+
+                    // Redirect to confirmation
+                    window.location.href = `/order-confirmation/${orderNumber}`;
+                } else {
+                    alert(result.message || 'Failed to place order. Please try again.');
+                    this.processing = false;
+                }
+            } catch (error) {
+                console.error('Order error:', error);
+                alert('Failed to place order. Please try again.');
+                this.processing = false;
+            }
         }
     };
 }

@@ -16,17 +16,20 @@ namespace UAlgora.Ecommerce.Web.Controllers.Api;
 public class CatalogSeederController : UmbracoApiController
 {
     private readonly CatalogContentSeeder _seeder;
+    private readonly EnterpriseContentSeeder _enterpriseSeeder;
     private readonly IDocumentTypeInstaller _documentTypeInstaller;
     private readonly IContentTypeService _contentTypeService;
     private readonly IContentService _contentService;
 
     public CatalogSeederController(
         CatalogContentSeeder seeder,
+        EnterpriseContentSeeder enterpriseSeeder,
         IDocumentTypeInstaller documentTypeInstaller,
         IContentTypeService contentTypeService,
         IContentService contentService)
     {
         _seeder = seeder;
+        _enterpriseSeeder = enterpriseSeeder;
         _documentTypeInstaller = documentTypeInstaller;
         _contentTypeService = contentTypeService;
         _contentService = contentService;
@@ -56,6 +59,42 @@ public class CatalogSeederController : UmbracoApiController
             success = false,
             errors = result.Errors
         });
+    }
+
+    /// <summary>
+    /// Seeds complete enterprise content structure with all categories, products, and CMS pages.
+    /// Creates 300+ products across 30+ categories with proper hierarchy.
+    /// GET /api/algora/catalogseeder/seed-enterprise
+    /// </summary>
+    [HttpGet("seed-enterprise")]
+    public IActionResult SeedEnterpriseContent([FromQuery] bool clearExisting = false)
+    {
+        try
+        {
+            var result = _enterpriseSeeder.SeedEnterpriseContent(clearExisting);
+
+            if (result.Success)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    created = result.Created,
+                    messages = result.Messages,
+                    summary = $"Created {result.Created} content items including categories, products, and CMS pages."
+                });
+            }
+
+            return BadRequest(new
+            {
+                success = false,
+                errors = result.Errors,
+                messages = result.Messages
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, error = ex.Message, stackTrace = ex.StackTrace });
+        }
     }
 
     /// <summary>

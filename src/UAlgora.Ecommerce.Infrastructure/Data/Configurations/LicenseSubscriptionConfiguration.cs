@@ -67,11 +67,11 @@ public class LicenseSubscriptionConfiguration : IEntityTypeConfiguration<License
         builder.Property(s => s.MetadataJson)
             .HasColumnType("nvarchar(max)");
 
-        // Relationship to License
+        // Relationship to License (Restrict to avoid multiple cascade paths)
         builder.HasOne(s => s.License)
             .WithMany()
             .HasForeignKey(s => s.LicenseId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Indexes
         builder.HasIndex(s => s.LicenseId).IsUnique();
@@ -178,17 +178,17 @@ public class LicensePaymentConfiguration : IEntityTypeConfiguration<LicensePayme
         builder.Property(p => p.MetadataJson)
             .HasColumnType("nvarchar(max)");
 
-        // Relationship to Subscription
+        // Relationship to Subscription (Restrict to avoid multiple cascade paths)
         builder.HasOne(p => p.Subscription)
             .WithMany(s => s.Payments)
             .HasForeignKey(p => p.SubscriptionId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict);
 
-        // Relationship to License (for one-time purchases)
+        // Relationship to License (for one-time purchases, Restrict to avoid multiple cascade paths)
         builder.HasOne(p => p.License)
             .WithMany()
             .HasForeignKey(p => p.LicenseId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Indexes
         builder.HasIndex(p => p.SubscriptionId);
