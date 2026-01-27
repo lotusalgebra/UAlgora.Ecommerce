@@ -4,123 +4,166 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-UAlgora.Ecommerce is a full-featured e-commerce plugin for Umbraco 15+ CMS. It provides complete e-commerce functionality including product management, cart, checkout, payments, orders, shipping, and backoffice administration via tree views.
+Algora Commerce (UAlgora.Ecommerce) is an enterprise e-commerce plugin for Umbraco 15+ CMS. It provides complete e-commerce functionality with both a custom storefront and deep CMS integration through document types and content synchronization.
 
 ## Tech Stack
 
 - **Runtime:** .NET 9 / C# 13
-- **CMS:** Umbraco 15+
-- **Database:** MS SQL Server (Entity Framework Core 9)
-- **Backoffice UI:** Lit + Web Components
-- **Frontend:** Angular / Razor / Blazor
+- **CMS:** Umbraco 15+ (15.4.4+)
+- **Database:** MS SQL Server with Entity Framework Core 9
+- **Backoffice UI:** Vanilla JS with Umbraco UI components (no build step)
+- **Storefront:** Razor views with Tailwind CSS and Alpine.js
 
 ## Architecture
 
-This project follows **Clean Architecture** with loosely coupled, fully object-oriented code:
+Clean Architecture with four layers:
 
 ```
 src/
-├── UAlgora.Ecommerce.Core/           # Domain models, interfaces, events
-│   ├── Models/Domain/                # Product, Cart, Order, Customer, etc.
-│   ├── Interfaces/                   # Repository & service contracts
-│   └── Events/                       # Domain events
-├── UAlgora.Ecommerce.Infrastructure/ # Data access, external services
-│   ├── Data/                         # EF Core DbContext, configurations
-│   ├── Repositories/                 # Repository implementations
-│   ├── Services/                     # Business logic implementations
-│   └── Providers/                    # Payment, Shipping, Tax providers
-├── UAlgora.Ecommerce.Web/            # Umbraco integration layer
-│   ├── Composers/                    # DI registration
-│   ├── Controllers/Api/              # REST API endpoints
-│   ├── Controllers/Backoffice/       # Admin tree controllers
-│   ├── NotificationHandlers/         # Umbraco event handlers
-│   └── wwwroot/App_Plugins/          # Backoffice UI components
-└── tests/                            # Unit and integration tests
+├── UAlgora.Ecommerce.Core/           # Domain models, interfaces (no dependencies)
+├── UAlgora.Ecommerce.Infrastructure/ # EF Core, repositories, services
+├── UAlgora.Ecommerce.Web/            # Umbraco integration, APIs, backoffice UI
+├── UAlgora.Ecommerce.Site/           # Demo site with storefront
+└── UAlgora.Ecommerce.LicensePortal/  # Standalone license purchasing portal
 ```
+
+### Key Patterns
+
+- **Repository Pattern:** All data access through `I*Repository` interfaces
+- **Service Layer:** Business logic in `I*Service` implementations
+- **Document Types:** CMS content types defined via `IDocumentTypeDefinitionProvider`
+- **Content Sync:** Bidirectional sync between database entities and Umbraco content nodes
 
 ## Development Commands
 
 ```bash
-# Build solution
+# Build
 dotnet build
 
-# Run the Umbraco site
+# Run the site (applies migrations and seeds demo data on startup)
 dotnet run --project src/UAlgora.Ecommerce.Site
 
 # Run tests
 dotnet test
 
-# Create EF Core migration
-dotnet ef migrations add <MigrationName> -p src/UAlgora.Ecommerce.Infrastructure -s src/UAlgora.Ecommerce.Site
+# Run specific test project
+dotnet test tests/UAlgora.Ecommerce.Tests.UI
 
-# Apply migrations
+# Create migration
+dotnet ef migrations add <Name> -p src/UAlgora.Ecommerce.Infrastructure -s src/UAlgora.Ecommerce.Site
+
+# Apply migrations manually
 dotnet ef database update -p src/UAlgora.Ecommerce.Infrastructure -s src/UAlgora.Ecommerce.Site
 
-# Build NuGet package
-dotnet pack -c Release
+# Run License Portal (separate app on different port)
+dotnet run --project src/UAlgora.Ecommerce.LicensePortal
 ```
 
-## Key Umbraco Integration Points
+## Backoffice UI Architecture
 
-### Composers
-Register all services in `EcommerceComposer.cs` using `IUmbracoBuilder`:
-- DbContext, repositories, services via `builder.Services`
-- Notification handlers via `builder.AddNotificationHandler<T, THandler>()`
-- Configuration via `builder.Services.Configure<T>(builder.Config.GetSection("..."))`
+The backoffice uses Umbraco's extension system with vanilla JavaScript (no framework):
 
-### Backoffice Extensions
-- **Sections:** Custom navigation area (Commerce section)
-- **Trees:** Hierarchical navigation (Products, Orders, Customers)
-- **Dashboards:** Overview widgets for the Commerce section
-- **Content Apps:** Contextual panels on product content nodes
+- **Package manifest:** `wwwroot/App_Plugins/Ecommerce/umbraco-package.json`
+- **Collection views:** `views/collections/*-collection.js` - Inline editors with split-pane layout
+- **Entry point:** `index.js` - Registers all components
 
-### Package Manifest
-Define backoffice UI extensions in `wwwroot/App_Plugins/UAlgora.Ecommerce/umbraco-package.json`
+Each collection view (`product-collection.js`, `order-collection.js`, etc.) is a self-contained web component with:
+- List panel with search/filter
+- Editor panel with tabbed forms
+- Direct API calls to Management API
 
-## Core Domain Models
+### Management API Pattern
 
-- **Product/ProductVariant:** SKU, pricing, inventory, variants with options
-- **Cart/CartItem:** Session-based or customer-linked shopping cart
-- **Order/OrderLine:** Order lifecycle, payment status, fulfillment status
-- **Customer:** Account, addresses, order history
-- **Discount:** Coupon codes, automatic discounts, rules
+Controllers extend `EcommerceManagementApiControllerBase` and use:
+- Route: `/umbraco/management/api/v1/ecommerce/{entity}`
+- Attributes: `[VersionedApiBackOfficeRoute]`, `[ApiExplorerSettings(GroupName = "Ecommerce")]`
 
-## API Endpoints
+## API Layers
 
-Base path: `/api/ecommerce/`
+### Storefront API (`/api/ecommerce/`)
+Public endpoints for cart, checkout, products. Controllers in `Web/Controllers/Api/`.
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /cart` | Get current cart |
-| `POST /cart/items` | Add item to cart |
-| `PUT /cart/items/{id}` | Update item quantity |
-| `DELETE /cart/items/{id}` | Remove item |
-| `POST /cart/coupon` | Apply coupon code |
-| `POST /checkout/initialize` | Start checkout session |
-| `POST /checkout/{id}/complete` | Complete order |
-| `GET /products` | List products (paginated) |
-| `GET /orders/{id}` | Get order details |
+### Management API (`/umbraco/management/api/v1/ecommerce/`)
+Backoffice CRUD endpoints. Controllers in `Web/BackOffice/Api/`.
+
+### Customer Auth (`/api/ecommerce/auth/`)
+Standalone authentication (separate from Umbraco Members):
+- Cookie scheme: `EcommerceCustomer`
+- Password hashing: BCrypt
+- Account lockout after 5 failed attempts
+
+## Document Types & Content Sync
+
+Document type providers in `Web/DocumentTypes/Providers/` define CMS content types that can be managed in the Umbraco content tree. The system supports bidirectional sync:
+
+1. **DB → Content:** `ProductContentSyncService`, `CategoryContentSyncService`
+2. **Content → DB:** `ContentToProductSyncHandler`, `ContentToCategorySyncHandler`
+
+Storefront pages can be either:
+- **Hardcoded views:** `Site/Views/Storefront/*.cshtml`
+- **CMS-driven:** `Site/Views/algora*.cshtml` (templates for document types)
+
+The `StorefrontController` checks for CMS pages first, falls back to hardcoded views.
+
+## Enterprise Features (License-Gated)
+
+Multi-store, gift cards, returns, email templates, webhooks, audit logging, payment links, GST/tax support, invoicing.
+
+### License Tiers
+- **Trial:** 14 days, limited features
+- **Standard ($1,500/yr):** Single store, all features
+- **Enterprise ($3,000/yr):** Multi-store, priority support
+
+License validation in `Web/Licensing/` with `LicenseContext` singleton.
 
 ## Configuration
 
-Settings in `appsettings.json` under `"Ecommerce"` section:
-- `Store`: Name, currency, tax settings
-- `Stripe`: Payment gateway credentials
-- `Shipping`: Rates and free shipping threshold
-- `Tax`: Default rate and regional rates
-- `Inventory`: Stock thresholds, backorder settings
+```json
+{
+  "ConnectionStrings": {
+    "umbracoDbDSN": "Server=.;Database=...;Trusted_Connection=True;TrustServerCertificate=True"
+  },
+  "Algora": {
+    "License": {
+      "LicenseKey": "ALG-XXX-...",
+      "ValidationIntervalHours": 24
+    }
+  }
+}
+```
 
-## Design Principles
+## Service Registration
 
-1. **Extensibility:** All services use interfaces; users can swap implementations
-2. **Tree View Management:** Products, categories, orders managed via Umbraco backoffice trees
-3. **NuGet Distribution:** Packaged for easy installation
-4. **Licensing:** 14-day trial with encrypted license key validation
+In `Program.cs`:
+```csharp
+builder.Services.AddEcommerceInfrastructure(connectionString); // Repos + Services
+builder.Services.AddEcommerceWeb();  // Web layer + Content sync
+```
 
-## Database Tables
+Services are registered via extension methods in each layer's `ServiceCollectionExtensions.cs`.
 
-All tables prefixed with `Ecommerce`:
-- `EcommerceProducts`, `EcommerceProductVariants`
-- `EcommerceCarts`, `EcommerceCartItems`
-- `EcommerceOrders`, `EcommerceOrderLines`
-- `EcommerceCustomers`, `EcommerceDiscounts`
+## Database
+
+- All tables prefixed with `Ecommerce*`
+- Soft delete via `IsDeleted` flag
+- Audit fields: `CreatedAt`, `UpdatedAt`, `CreatedBy`, `UpdatedBy`
+- Multi-store foreign keys where applicable
+
+## Testing
+
+- **Unit tests:** `tests/UAlgora.Ecommerce.*.Tests/`
+- **UI tests:** `tests/UAlgora.Ecommerce.Tests.UI/` - Selenium-based E2E tests
+- **Test settings:** `tests/.../appsettings.json`
+
+```bash
+# Run single test by name
+dotnet test --filter "FullyQualifiedName~TestMethodName"
+
+# Run tests in specific class
+dotnet test --filter "FullyQualifiedName~ClassName"
+```
+
+## Supplementary Documentation
+
+- `ecommerce-features.claude.md` - Comprehensive e-commerce domain reference (product, cart, checkout, payments, etc.)
+- `umbraco-ecommerce-plugin.claude.md` - Umbraco 15+ integration patterns and code examples
