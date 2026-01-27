@@ -1,9 +1,11 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using UAlgora.Ecommerce.Core.Constants;
 using UAlgora.Ecommerce.Core.Interfaces.Repositories;
 using UAlgora.Ecommerce.Core.Interfaces.Services;
 using UAlgora.Ecommerce.Core.Models.Domain;
+using UAlgora.Ecommerce.Web.Services;
 using Umbraco.Cms.Api.Management.Routing;
 
 namespace UAlgora.Ecommerce.Web.BackOffice.Api;
@@ -16,11 +18,16 @@ public class InvoiceManagementApiController : EcommerceManagementApiControllerBa
 {
     private readonly IInvoiceRepository _invoiceRepository;
     private readonly IOrderService _orderService;
+    private readonly IInvoicePdfService _invoicePdfService;
 
-    public InvoiceManagementApiController(IInvoiceRepository invoiceRepository, IOrderService orderService)
+    public InvoiceManagementApiController(
+        IInvoiceRepository invoiceRepository,
+        IOrderService orderService,
+        IInvoicePdfService invoicePdfService)
     {
         _invoiceRepository = invoiceRepository;
         _orderService = orderService;
+        _invoicePdfService = invoicePdfService;
     }
 
     #region Invoices
@@ -234,6 +241,229 @@ public class InvoiceManagementApiController : EcommerceManagementApiControllerBa
 
         var html = GeneratePackingSlipHtml(order, template);
         return Content(html, "text/html");
+    }
+
+    #endregion
+
+    #region PDF Generation
+
+    /// <summary>
+    /// Downloads invoice as PDF.
+    /// </summary>
+    [HttpGet("{id:guid}/pdf")]
+    [Produces("application/pdf")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadInvoicePdf(Guid id, CancellationToken ct = default)
+    {
+        var invoice = await _invoiceRepository.GetByIdAsync(id, ct);
+        if (invoice == null)
+            return NotFound();
+
+        var template = invoice.TemplateId.HasValue
+            ? await _invoiceRepository.GetTemplateByIdAsync(invoice.TemplateId.Value, ct)
+            : await _invoiceRepository.GetDefaultTemplateAsync(InvoiceTemplateType.Invoice, ct);
+
+        // Set amount in words if not already set
+        if (string.IsNullOrEmpty(invoice.AmountInWords))
+        {
+            invoice.AmountInWords = InvoicePdfService.ConvertToWords(invoice.GrandTotal, invoice.CurrencyCode);
+        }
+
+        var pdfBytes = _invoicePdfService.GenerateInvoicePdf(invoice, template);
+        return File(pdfBytes, "application/pdf", $"Invoice-{invoice.InvoiceNumber}.pdf");
+    }
+
+    /// <summary>
+    /// Generates invoice PDF directly from an order.
+    /// </summary>
+    [HttpGet("order/{orderId:guid}/pdf")]
+    [Produces("application/pdf")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GenerateOrderInvoicePdf(Guid orderId, [FromQuery] Guid? templateId = null, [FromQuery] string? taxSystem = null, CancellationToken ct = default)
+    {
+        var order = await _orderService.GetByIdAsync(orderId, ct);
+        if (order == null)
+            return NotFound(new { message = "Order not found" });
+
+        var template = templateId.HasValue
+            ? await _invoiceRepository.GetTemplateByIdAsync(templateId.Value, ct)
+            : await _invoiceRepository.GetDefaultTemplateAsync(InvoiceTemplateType.Invoice, ct);
+
+        // Create a temporary invoice object for PDF generation
+        var invoice = CreateInvoiceFromOrder(order, template, taxSystem);
+
+        var pdfBytes = _invoicePdfService.GenerateInvoicePdf(invoice, template);
+        return File(pdfBytes, "application/pdf", $"Invoice-{order.OrderNumber}.pdf");
+    }
+
+    /// <summary>
+    /// Downloads packing slip as PDF for an order.
+    /// </summary>
+    [HttpGet("order/{orderId:guid}/packing-slip/pdf")]
+    [Produces("application/pdf")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadPackingSlipPdf(Guid orderId, [FromQuery] Guid? templateId = null, CancellationToken ct = default)
+    {
+        var order = await _orderService.GetByIdAsync(orderId, ct);
+        if (order == null)
+            return NotFound(new { message = "Order not found" });
+
+        var template = templateId.HasValue
+            ? await _invoiceRepository.GetTemplateByIdAsync(templateId.Value, ct)
+            : await _invoiceRepository.GetDefaultTemplateAsync(InvoiceTemplateType.PackagingSlip, ct);
+
+        // Create a temporary invoice object for packing slip generation
+        var invoice = CreateInvoiceFromOrder(order, template, null);
+
+        var pdfBytes = _invoicePdfService.GeneratePackingSlipPdf(invoice, template);
+        return File(pdfBytes, "application/pdf", $"PackingSlip-{order.OrderNumber}.pdf");
+    }
+
+    /// <summary>
+    /// Creates an Invoice object from an Order for PDF generation.
+    /// </summary>
+    private Invoice CreateInvoiceFromOrder(Order order, InvoiceTemplate? template, string? taxSystemOverride)
+    {
+        // Determine tax system
+        var taxSystem = TaxSystemType.None;
+        if (!string.IsNullOrEmpty(taxSystemOverride))
+        {
+            Enum.TryParse<TaxSystemType>(taxSystemOverride, true, out taxSystem);
+        }
+        else if (order.CurrencyCode == "INR")
+        {
+            taxSystem = TaxSystemType.GST;
+        }
+        else if (order.CurrencyCode == "EUR" || order.CurrencyCode == "GBP")
+        {
+            taxSystem = TaxSystemType.VAT;
+        }
+        else if (order.CurrencyCode == "USD")
+        {
+            taxSystem = TaxSystemType.SalesTax;
+        }
+
+        var invoice = new Invoice
+        {
+            OrderId = order.Id,
+            Order = order,
+            StoreId = order.StoreId,
+            InvoiceNumber = order.OrderNumber,
+            Status = InvoiceStatus.Draft,
+            IssuedAt = order.CreatedAt,
+            TemplateId = template?.Id,
+
+            // Tax system
+            TaxSystem = taxSystem,
+            TaxLabel = taxSystem switch
+            {
+                TaxSystemType.GST => "GST",
+                TaxSystemType.VAT => "VAT",
+                TaxSystemType.SalesTax => "Sales Tax",
+                _ => "Tax"
+            },
+
+            // Company info from template
+            CompanyName = template?.CompanyName ?? "Your Company Name",
+            CompanyAddress1 = template?.CompanyAddress,
+            CompanyPhone = template?.CompanyPhone,
+            CompanyEmail = template?.CompanyEmail,
+            CompanyWebsite = template?.CompanyWebsite,
+            TaxId = template?.TaxId,
+            LogoUrl = template?.LogoUrl,
+
+            // GST fields from template
+            CompanyGstin = template?.CompanyGstin,
+            PlaceOfSupply = template?.DefaultPlaceOfSupply,
+            SupplyTypeCode = template?.SupplyTypeCode,
+            DocumentTypeCode = template?.DocumentTypeCode,
+
+            // Customer info from order
+            CustomerName = order.CustomerName ?? $"{order.BillingAddress?.FirstName} {order.BillingAddress?.LastName}".Trim(),
+            CustomerEmail = order.CustomerEmail,
+            CustomerPhone = order.CustomerPhone,
+            BillingAddressJson = order.BillingAddress != null ? JsonSerializer.Serialize(new
+            {
+                FirstName = order.BillingAddress.FirstName,
+                LastName = order.BillingAddress.LastName,
+                Company = order.BillingAddress.Company,
+                Address1 = order.BillingAddress.AddressLine1,
+                Address2 = order.BillingAddress.AddressLine2,
+                City = order.BillingAddress.City,
+                StateProvince = order.BillingAddress.StateProvince,
+                PostalCode = order.BillingAddress.PostalCode,
+                Country = order.BillingAddress.Country,
+                Phone = order.BillingAddress.Phone
+            }) : null,
+            ShippingAddressJson = order.ShippingAddress != null ? JsonSerializer.Serialize(new
+            {
+                FirstName = order.ShippingAddress.FirstName,
+                LastName = order.ShippingAddress.LastName,
+                Company = order.ShippingAddress.Company,
+                Address1 = order.ShippingAddress.AddressLine1,
+                Address2 = order.ShippingAddress.AddressLine2,
+                City = order.ShippingAddress.City,
+                StateProvince = order.ShippingAddress.StateProvince,
+                PostalCode = order.ShippingAddress.PostalCode,
+                Country = order.ShippingAddress.Country,
+                Phone = order.ShippingAddress.Phone
+            }) : null,
+
+            // Amounts
+            CurrencyCode = order.CurrencyCode,
+            Subtotal = order.Subtotal,
+            DiscountTotal = order.DiscountTotal,
+            ShippingTotal = order.ShippingTotal,
+            TaxTotal = order.TaxTotal,
+            GrandTotal = order.GrandTotal,
+            PaidAmount = order.PaidAmount,
+
+            // Line items
+            LineItemsJson = JsonSerializer.Serialize(order.Lines.Select(l => new
+            {
+                ProductId = l.ProductId,
+                ProductName = l.ProductName,
+                VariantName = l.VariantName,
+                Sku = l.Sku,
+                HsnCode = (string?)null, // Would come from product if available
+                Quantity = l.Quantity,
+                UnitPrice = l.UnitPrice,
+                TaxRate = order.TaxTotal > 0 && order.Subtotal > 0 ? Math.Round(order.TaxTotal / order.Subtotal * 100, 2) : 0,
+                TaxAmount = l.TaxAmount,
+                LineTotal = l.LineTotal
+            }).ToList()),
+
+            // Text from template
+            Notes = template?.DefaultNotes,
+            Terms = template?.DefaultTerms,
+            Footer = template?.DefaultFooter,
+            PaymentInstructions = template?.DefaultPaymentInstructions
+        };
+
+        // Set GST/VAT amounts based on tax system
+        if (taxSystem == TaxSystemType.GST)
+        {
+            invoice.IsGstApplicable = true;
+            // Assume intra-state by default (CGST + SGST)
+            var taxRate = order.TaxTotal > 0 && order.Subtotal > 0 ? Math.Round(order.TaxTotal / order.Subtotal * 100, 2) : 18;
+            invoice.CgstRate = taxRate / 2;
+            invoice.SgstRate = taxRate / 2;
+            invoice.CgstAmount = Math.Round(order.TaxTotal / 2, 2);
+            invoice.SgstAmount = order.TaxTotal - invoice.CgstAmount;
+        }
+        else if (taxSystem == TaxSystemType.VAT)
+        {
+            invoice.VatRate = order.TaxTotal > 0 && order.Subtotal > 0 ? Math.Round(order.TaxTotal / order.Subtotal * 100, 2) : 20;
+            invoice.VatAmount = order.TaxTotal;
+        }
+
+        // Set amount in words
+        invoice.AmountInWords = InvoicePdfService.ConvertToWords(invoice.GrandTotal, invoice.CurrencyCode);
+
+        return invoice;
     }
 
     /// <summary>

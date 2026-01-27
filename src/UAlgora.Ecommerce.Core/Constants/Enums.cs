@@ -163,3 +163,48 @@ public enum OrderSortBy
     TotalLowToHigh = 3,
     Status = 4
 }
+
+/// <summary>
+/// Tax system types for invoicing.
+/// </summary>
+public enum TaxSystemType
+{
+    /// <summary>
+    /// No tax applied.
+    /// </summary>
+    None = 0,
+
+    /// <summary>
+    /// Goods and Services Tax (India, Australia, Canada, etc.).
+    /// </summary>
+    GST = 1,
+
+    /// <summary>
+    /// Value Added Tax (EU, UK, etc.).
+    /// </summary>
+    VAT = 2,
+
+    /// <summary>
+    /// Sales Tax (USA).
+    /// </summary>
+    SalesTax = 3,
+
+    /// <summary>
+    /// Custom tax system.
+    /// </summary>
+    Custom = 4
+}
+
+/// <summary>
+/// Customer sorting options.
+/// </summary>
+public enum CustomerSortBy
+{
+    Newest = 0,
+    Oldest = 1,
+    NameAscending = 2,
+    NameDescending = 3,
+    TotalSpentHighToLow = 4,
+    TotalSpentLowToHigh = 5,
+    OrderCountHighToLow = 6
+}

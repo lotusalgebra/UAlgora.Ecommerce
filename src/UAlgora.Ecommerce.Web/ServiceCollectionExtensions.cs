@@ -41,6 +41,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CatalogContentSeeder>();
         services.AddScoped<EnterpriseContentSeeder>();
 
+        // Register PDF generation service
+        services.AddScoped<IInvoicePdfService, InvoicePdfService>();
+
         // Register license context (singleton to hold current license state)
         services.AddSingleton<LicenseContext>();
 

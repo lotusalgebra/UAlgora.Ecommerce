@@ -184,12 +184,51 @@ public class Invoice : BaseEntity
 
     #endregion
 
-    #region GST Breakdown (India)
+    #region Tax Configuration
 
     /// <summary>
-    /// Whether GST is applicable to this invoice.
+    /// Tax system type (GST, VAT, SalesTax, None).
+    /// </summary>
+    public TaxSystemType TaxSystem { get; set; } = TaxSystemType.None;
+
+    /// <summary>
+    /// Tax label to display (e.g., "GST", "VAT", "Tax", "Sales Tax").
+    /// </summary>
+    public string TaxLabel { get; set; } = "Tax";
+
+    /// <summary>
+    /// Whether GST is applicable to this invoice (India).
     /// </summary>
     public bool IsGstApplicable { get; set; }
+
+    /// <summary>
+    /// VAT number of the company (EU/UK).
+    /// </summary>
+    public string? CompanyVatNumber { get; set; }
+
+    /// <summary>
+    /// VAT number of the customer (B2B).
+    /// </summary>
+    public string? CustomerVatNumber { get; set; }
+
+    /// <summary>
+    /// VAT rate percentage.
+    /// </summary>
+    public decimal VatRate { get; set; }
+
+    /// <summary>
+    /// VAT amount.
+    /// </summary>
+    public decimal VatAmount { get; set; }
+
+    /// <summary>
+    /// Whether this is a reverse charge invoice (B2B cross-border EU).
+    /// </summary>
+    public bool IsReverseCharge { get; set; }
+
+    #endregion
+
+    #region GST Breakdown (India)
 
     /// <summary>
     /// Central GST amount.
@@ -246,6 +285,80 @@ public class Invoice : BaseEntity
     /// Contains HSN/SAC codes and tax amounts per item.
     /// </summary>
     public string? GstBreakdownJson { get; set; }
+
+    /// <summary>
+    /// Invoice Reference Number (IRN) for e-invoicing compliance.
+    /// </summary>
+    public string? Irn { get; set; }
+
+    /// <summary>
+    /// Supply type code (e.g., B2B, B2C, SEZWP, SEZWOP).
+    /// </summary>
+    public string? SupplyTypeCode { get; set; }
+
+    /// <summary>
+    /// Document type code (e.g., INV, CRN, DBN).
+    /// </summary>
+    public string? DocumentTypeCode { get; set; }
+
+    /// <summary>
+    /// QR code data for e-invoice verification.
+    /// </summary>
+    public string? QrCodeData { get; set; }
+
+    /// <summary>
+    /// Acknowledgement number from GST portal.
+    /// </summary>
+    public string? AcknowledgementNumber { get; set; }
+
+    /// <summary>
+    /// Acknowledgement date from GST portal.
+    /// </summary>
+    public DateTime? AcknowledgementDate { get; set; }
+
+    #endregion
+
+    #region Custom Fields
+
+    /// <summary>
+    /// Custom field 1 label.
+    /// </summary>
+    public string? CustomField1Label { get; set; }
+
+    /// <summary>
+    /// Custom field 1 value.
+    /// </summary>
+    public string? CustomField1Value { get; set; }
+
+    /// <summary>
+    /// Custom field 2 label.
+    /// </summary>
+    public string? CustomField2Label { get; set; }
+
+    /// <summary>
+    /// Custom field 2 value.
+    /// </summary>
+    public string? CustomField2Value { get; set; }
+
+    /// <summary>
+    /// Custom field 3 label.
+    /// </summary>
+    public string? CustomField3Label { get; set; }
+
+    /// <summary>
+    /// Custom field 3 value.
+    /// </summary>
+    public string? CustomField3Value { get; set; }
+
+    /// <summary>
+    /// Signature image URL.
+    /// </summary>
+    public string? SignatureImageUrl { get; set; }
+
+    /// <summary>
+    /// Amount in words.
+    /// </summary>
+    public string? AmountInWords { get; set; }
 
     #endregion
 

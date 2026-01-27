@@ -82,19 +82,29 @@ public class InvoiceTemplate : BaseEntity
     #region Styling
 
     /// <summary>
-    /// Primary color (hex).
+    /// Primary color (hex) - used for header bar.
     /// </summary>
-    public string PrimaryColor { get; set; } = "#1976d2";
+    public string PrimaryColor { get; set; } = "#1e3a5f";
 
     /// <summary>
-    /// Secondary color (hex).
+    /// Secondary color (hex) - used for text and borders.
     /// </summary>
     public string SecondaryColor { get; set; } = "#424242";
 
     /// <summary>
-    /// Accent color (hex).
+    /// Accent color (hex) - used for highlights.
     /// </summary>
-    public string AccentColor { get; set; } = "#ff5722";
+    public string AccentColor { get; set; } = "#2563eb";
+
+    /// <summary>
+    /// Header background color (hex).
+    /// </summary>
+    public string HeaderColor { get; set; } = "#1e3a5f";
+
+    /// <summary>
+    /// Header text color (hex).
+    /// </summary>
+    public string HeaderTextColor { get; set; } = "#ffffff";
 
     /// <summary>
     /// Font family.
@@ -105,6 +115,94 @@ public class InvoiceTemplate : BaseEntity
     /// Custom CSS.
     /// </summary>
     public string? CustomCss { get; set; }
+
+    #endregion
+
+    #region GST Compliance (India)
+
+    /// <summary>
+    /// Company GSTIN (GST Identification Number).
+    /// </summary>
+    public string? CompanyGstin { get; set; }
+
+    /// <summary>
+    /// Default place of supply.
+    /// </summary>
+    public string? DefaultPlaceOfSupply { get; set; }
+
+    /// <summary>
+    /// Supply type code (e.g., B2B, B2C, SEZWP, SEZWOP).
+    /// </summary>
+    public string? SupplyTypeCode { get; set; }
+
+    /// <summary>
+    /// Document type code (e.g., INV, CRN, DBN).
+    /// </summary>
+    public string? DocumentTypeCode { get; set; }
+
+    /// <summary>
+    /// Whether to generate IRN (Invoice Reference Number) for e-invoicing.
+    /// </summary>
+    public bool GenerateIrn { get; set; }
+
+    /// <summary>
+    /// Whether to show amount in words.
+    /// </summary>
+    public bool ShowAmountInWords { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show HSN/SAC codes.
+    /// </summary>
+    public bool ShowHsnSacCodes { get; set; } = true;
+
+    #endregion
+
+    #region Signature & Custom Fields
+
+    /// <summary>
+    /// Signature image URL.
+    /// </summary>
+    public string? SignatureImageUrl { get; set; }
+
+    /// <summary>
+    /// Signature label text.
+    /// </summary>
+    public string SignatureLabel { get; set; } = "Authorized Signatory";
+
+    /// <summary>
+    /// Custom field 1 label.
+    /// </summary>
+    public string? CustomField1Label { get; set; }
+
+    /// <summary>
+    /// Custom field 1 default value.
+    /// </summary>
+    public string? CustomField1Value { get; set; }
+
+    /// <summary>
+    /// Custom field 2 label.
+    /// </summary>
+    public string? CustomField2Label { get; set; }
+
+    /// <summary>
+    /// Custom field 2 default value.
+    /// </summary>
+    public string? CustomField2Value { get; set; }
+
+    /// <summary>
+    /// Custom field 3 label.
+    /// </summary>
+    public string? CustomField3Label { get; set; }
+
+    /// <summary>
+    /// Custom field 3 default value.
+    /// </summary>
+    public string? CustomField3Value { get; set; }
+
+    /// <summary>
+    /// Thank you message.
+    /// </summary>
+    public string ThankYouMessage { get; set; } = "Thank you for your business!";
 
     #endregion
 

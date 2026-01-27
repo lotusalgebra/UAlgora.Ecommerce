@@ -24,5 +24,7 @@ import './views/collections/manufacturer-collection.js';
 import './views/collections/paymentlink-collection.js';
 import './views/collections/license-collection.js';
 import './views/collections/checkoutstep-collection.js';
+import './views/collections/invoicetemplate-collection.js';
+import './views/collections/tax-collection.js';
 
-console.log('Algora Commerce extension loaded v2.8.6');
+console.log('Algora Commerce extension loaded v2.8.9');

@@ -3,6 +3,7 @@ using UAlgora.Ecommerce.Core.Constants;
 using UAlgora.Ecommerce.Core.Interfaces.Repositories;
 using UAlgora.Ecommerce.Core.Models.Domain;
 using UAlgora.Ecommerce.Infrastructure.Data;
+using RepoSortBy = UAlgora.Ecommerce.Core.Interfaces.Repositories.CustomerSortBy;
 
 namespace UAlgora.Ecommerce.Infrastructure.Repositories;
 
@@ -102,13 +103,13 @@ public class CustomerRepository : SoftDeleteRepository<Customer>, ICustomerRepos
         // Apply sorting
         query = parameters.SortBy switch
         {
-            CustomerSortBy.Newest => query.OrderByDescending(c => c.CreatedAt),
-            CustomerSortBy.Oldest => query.OrderBy(c => c.CreatedAt),
-            CustomerSortBy.NameAscending => query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName),
-            CustomerSortBy.NameDescending => query.OrderByDescending(c => c.LastName).ThenByDescending(c => c.FirstName),
-            CustomerSortBy.TotalSpentHighToLow => query.OrderByDescending(c => c.TotalSpent),
-            CustomerSortBy.TotalSpentLowToHigh => query.OrderBy(c => c.TotalSpent),
-            CustomerSortBy.OrderCountHighToLow => query.OrderByDescending(c => c.TotalOrders),
+            RepoSortBy.Newest => query.OrderByDescending(c => c.CreatedAt),
+            RepoSortBy.Oldest => query.OrderBy(c => c.CreatedAt),
+            RepoSortBy.NameAscending => query.OrderBy(c => c.LastName).ThenBy(c => c.FirstName),
+            RepoSortBy.NameDescending => query.OrderByDescending(c => c.LastName).ThenByDescending(c => c.FirstName),
+            RepoSortBy.TotalSpentHighToLow => query.OrderByDescending(c => c.TotalSpent),
+            RepoSortBy.TotalSpentLowToHigh => query.OrderBy(c => c.TotalSpent),
+            RepoSortBy.OrderCountHighToLow => query.OrderByDescending(c => c.TotalOrders),
             _ => query.OrderByDescending(c => c.CreatedAt)
         };
 
