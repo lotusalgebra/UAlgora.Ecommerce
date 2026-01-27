@@ -9,6 +9,11 @@ namespace UAlgora.Ecommerce.Core.Interfaces.Repositories;
 public interface IOrderRepository : ISoftDeleteRepository<Order>
 {
     /// <summary>
+    /// Gets all orders with their line items included.
+    /// </summary>
+    Task<IReadOnlyList<Order>> GetAllWithLinesAsync(CancellationToken ct = default);
+
+    /// <summary>
     /// Gets an order by order number.
     /// </summary>
     Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default);

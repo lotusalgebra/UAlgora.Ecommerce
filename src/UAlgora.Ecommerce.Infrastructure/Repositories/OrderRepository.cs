@@ -15,6 +15,16 @@ public class OrderRepository : SoftDeleteRepository<Order>, IOrderRepository
     {
     }
 
+    /// <summary>
+    /// Gets all orders with their line items included.
+    /// </summary>
+    public async Task<IReadOnlyList<Order>> GetAllWithLinesAsync(CancellationToken ct = default)
+    {
+        return await DbSet
+            .Include(o => o.Lines)
+            .ToListAsync(ct);
+    }
+
     public async Task<Order?> GetByOrderNumberAsync(string orderNumber, CancellationToken ct = default)
     {
         return await DbSet
@@ -162,6 +172,7 @@ public class OrderRepository : SoftDeleteRepository<Order>, IOrderRepository
     public async Task<IReadOnlyList<Order>> GetByStatusAsync(OrderStatus status, CancellationToken ct = default)
     {
         return await DbSet
+            .Include(o => o.Lines)
             .Where(o => o.Status == status)
             .OrderByDescending(o => o.CreatedAt)
             .ToListAsync(ct);
@@ -197,6 +208,7 @@ public class OrderRepository : SoftDeleteRepository<Order>, IOrderRepository
     public async Task<IReadOnlyList<Order>> GetRecentAsync(int count = 10, CancellationToken ct = default)
     {
         return await DbSet
+            .Include(o => o.Lines)
             .OrderByDescending(o => o.CreatedAt)
             .Take(count)
             .ToListAsync(ct);
