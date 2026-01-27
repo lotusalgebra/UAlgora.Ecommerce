@@ -288,6 +288,50 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
     window.open(url, '_blank', 'width=800,height=600');
   }
 
+  async _downloadInvoice() {
+    if (!this._selectedOrder) return;
+    try {
+      const res = await fetch(`/umbraco/management/api/v1/ecommerce/invoice/order/${this._selectedOrder.id}/pdf`, {
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Failed to generate invoice');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Invoice-${this._selectedOrder.orderNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (e) {
+      console.error('Error downloading invoice:', e);
+      alert('Failed to download invoice: ' + e.message);
+    }
+  }
+
+  async _downloadPackingSlip() {
+    if (!this._selectedOrder) return;
+    try {
+      const res = await fetch(`/umbraco/management/api/v1/ecommerce/invoice/order/${this._selectedOrder.id}/packing-slip/pdf`, {
+        credentials: 'include'
+      });
+      if (!res.ok) throw new Error('Failed to generate packing slip');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PackingSlip-${this._selectedOrder.orderNumber}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+    } catch (e) {
+      console.error('Error downloading packing slip:', e);
+      alert('Failed to download packing slip: ' + e.message);
+    }
+  }
+
   _formatCurrency(amount, code = 'USD') {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: code }).format(amount || 0);
   }
@@ -382,11 +426,14 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
           <span class="status-badge ${this._getStatusClass(o.status)}">${o.status}</span>
         </div>
         <div class="editor-actions">
-          <uui-button look="secondary" @click=${() => this._printInvoice()}>
-            <uui-icon name="icon-document"></uui-icon> Invoice
+          <uui-button look="primary" @click=${() => this._downloadInvoice()}>
+            <uui-icon name="icon-download-alt"></uui-icon> Download Invoice
           </uui-button>
-          <uui-button look="secondary" @click=${() => this._printPackingSlip()}>
+          <uui-button look="secondary" @click=${() => this._downloadPackingSlip()}>
             <uui-icon name="icon-box"></uui-icon> Packing Slip
+          </uui-button>
+          <uui-button look="secondary" @click=${() => this._printInvoice()}>
+            <uui-icon name="icon-print"></uui-icon> Print
           </uui-button>
         </div>
       </div>
