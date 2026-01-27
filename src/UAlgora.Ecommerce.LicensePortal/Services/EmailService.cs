@@ -368,8 +368,17 @@ public class EmailService : IEmailService
         if (!_isConfigured || _client == null)
         {
             _logger.LogWarning("Email not sent (SendGrid not configured). To: {Email}, Subject: {Subject}", toEmail, subject);
-            // In development, log the content for debugging
-            _logger.LogDebug("Email content for {Email}:\n{Content}", toEmail, htmlContent);
+            // In development, log the HTML content at Info level for easy debugging
+            // Extract login code from subject if this is a login code email
+            if (subject.Contains("Login Code"))
+            {
+                // Extract code from HTML content - it's in a div with class 'code'
+                var codeMatch = System.Text.RegularExpressions.Regex.Match(htmlContent, @"<div class='code'>(\d{6})</div>");
+                if (codeMatch.Success)
+                {
+                    _logger.LogInformation("*** DEV MODE: Login code for {Email}: {Code} ***", toEmail, codeMatch.Groups[1].Value);
+                }
+            }
             await Task.CompletedTask;
             return;
         }
