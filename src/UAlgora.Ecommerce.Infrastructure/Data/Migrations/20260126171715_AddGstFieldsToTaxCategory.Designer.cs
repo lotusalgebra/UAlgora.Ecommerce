@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using UAlgora.Ecommerce.Infrastructure.Data;
 
@@ -11,9 +12,11 @@ using UAlgora.Ecommerce.Infrastructure.Data;
 namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(EcommerceDbContext))]
-    partial class EcommerceDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260126171715_AddGstFieldsToTaxCategory")]
+    partial class AddGstFieldsToTaxCategory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1495,12 +1498,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<string>("BillingAddressJson")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("CgstAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("CgstRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("CompanyAddress1")
                         .HasColumnType("nvarchar(max)");
 
@@ -1514,9 +1511,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyEmail")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CompanyGstin")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CompanyName")
@@ -1545,9 +1539,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<string>("CustomerEmail")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CustomerGstin")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("CustomerName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1567,24 +1558,9 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
                     b.Property<decimal>("GrandTotal")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("GstBreakdownJson")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("IgstAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("IgstRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<string>("InvoiceNumber")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsGstApplicable")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsInterState")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("IssuedAt")
                         .HasColumnType("datetime2");
@@ -1609,15 +1585,6 @@ namespace UAlgora.Ecommerce.Infrastructure.Data.Migrations
 
                     b.Property<string>("PaymentInstructions")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PlaceOfSupply")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal>("SgstAmount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("SgstRate")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("ShippingAddressJson")
                         .HasColumnType("nvarchar(max)");

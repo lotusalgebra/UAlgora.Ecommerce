@@ -59,7 +59,15 @@ public class TaxManagementApiController : EcommerceManagementApiControllerBase
             IsDefault = request.IsDefault,
             IsTaxExempt = request.IsTaxExempt,
             ExternalTaxCode = request.ExternalTaxCode,
-            SortOrder = request.SortOrder
+            SortOrder = request.SortOrder,
+            // GST fields
+            IsGst = request.IsGst,
+            GstType = request.GstType,
+            CgstRate = request.CgstRate,
+            SgstRate = request.SgstRate,
+            IgstRate = request.IgstRate,
+            HsnCode = request.HsnCode,
+            SacCode = request.SacCode
         };
 
         var validation = await _taxService.ValidateCategoryAsync(category, ct);
@@ -92,6 +100,14 @@ public class TaxManagementApiController : EcommerceManagementApiControllerBase
         category.IsTaxExempt = request.IsTaxExempt;
         category.ExternalTaxCode = request.ExternalTaxCode;
         category.SortOrder = request.SortOrder;
+        // GST fields
+        category.IsGst = request.IsGst;
+        category.GstType = request.GstType;
+        category.CgstRate = request.CgstRate;
+        category.SgstRate = request.SgstRate;
+        category.IgstRate = request.IgstRate;
+        category.HsnCode = request.HsnCode;
+        category.SacCode = request.SacCode;
 
         var validation = await _taxService.ValidateCategoryAsync(category, ct);
         if (!validation.IsValid)
@@ -166,7 +182,15 @@ public class TaxManagementApiController : EcommerceManagementApiControllerBase
             IsDefault = false, // Don't copy default status
             IsTaxExempt = category.IsTaxExempt,
             ExternalTaxCode = category.ExternalTaxCode,
-            SortOrder = category.SortOrder + 1
+            SortOrder = category.SortOrder + 1,
+            // Copy GST fields
+            IsGst = category.IsGst,
+            GstType = category.GstType,
+            CgstRate = category.CgstRate,
+            SgstRate = category.SgstRate,
+            IgstRate = category.IgstRate,
+            HsnCode = category.HsnCode,
+            SacCode = category.SacCode
         };
 
         var created = await _taxService.CreateCategoryAsync(duplicate, ct);
@@ -629,6 +653,15 @@ public class CreateTaxCategoryRequest
     public bool IsTaxExempt { get; set; }
     public string? ExternalTaxCode { get; set; }
     public int SortOrder { get; set; }
+
+    // GST fields
+    public bool IsGst { get; set; }
+    public string? GstType { get; set; }
+    public decimal CgstRate { get; set; }
+    public decimal SgstRate { get; set; }
+    public decimal IgstRate { get; set; }
+    public string? HsnCode { get; set; }
+    public string? SacCode { get; set; }
 }
 
 public class UpdateTaxCategoryRequest : CreateTaxCategoryRequest { }

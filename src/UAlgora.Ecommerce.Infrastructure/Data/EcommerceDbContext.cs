@@ -117,6 +117,14 @@ public class EcommerceDbContext : DbContext
     // Checkout Steps
     public DbSet<CheckoutStepConfiguration> CheckoutSteps => Set<CheckoutStepConfiguration>();
 
+    // Geography
+    public DbSet<Country> Countries => Set<Country>();
+    public DbSet<StateProvince> StateProvinces => Set<StateProvince>();
+
+    // Invoices
+    public DbSet<Invoice> Invoices => Set<Invoice>();
+    public DbSet<InvoiceTemplate> InvoiceTemplates => Set<InvoiceTemplate>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

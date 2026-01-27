@@ -46,6 +46,46 @@ public class TaxCategory : SoftDeleteEntity
     /// </summary>
     public string? ExternalTaxCode { get; set; }
 
+    #region GST (Goods and Services Tax) Configuration
+
+    /// <summary>
+    /// Whether this category uses GST (Indian tax system).
+    /// </summary>
+    public bool IsGst { get; set; }
+
+    /// <summary>
+    /// GST calculation type: "CGST+SGST" (intra-state), "IGST" (inter-state), or "AUTO" (auto-detect).
+    /// </summary>
+    public string? GstType { get; set; }
+
+    /// <summary>
+    /// Central GST rate percentage (for intra-state transactions).
+    /// </summary>
+    public decimal CgstRate { get; set; }
+
+    /// <summary>
+    /// State GST rate percentage (for intra-state transactions).
+    /// </summary>
+    public decimal SgstRate { get; set; }
+
+    /// <summary>
+    /// Integrated GST rate percentage (for inter-state transactions).
+    /// Typically equals CGST + SGST.
+    /// </summary>
+    public decimal IgstRate { get; set; }
+
+    /// <summary>
+    /// HSN (Harmonized System of Nomenclature) code for goods classification.
+    /// </summary>
+    public string? HsnCode { get; set; }
+
+    /// <summary>
+    /// SAC (Services Accounting Code) for services classification.
+    /// </summary>
+    public string? SacCode { get; set; }
+
+    #endregion
+
     /// <summary>
     /// Tax rates configured for this category.
     /// </summary>
