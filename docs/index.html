@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Algora Commerce Documentation</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="Enterprise E-Commerce Plugin for Umbraco 15+">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <style>
+    :root {
+      --theme-color: #6366f1;
+    }
+    .sidebar-nav > ul > li > a {
+      font-weight: 600;
+    }
+    .markdown-section h1 {
+      color: var(--theme-color);
+    }
+    .markdown-section table {
+      display: table;
+      width: 100%;
+    }
+    .markdown-section code {
+      background-color: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .app-nav {
+      position: fixed;
+      right: 20px;
+      top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">Loading...</div>
+  <script>
+    window.$docsify = {
+      name: 'Algora Commerce',
+      repo: 'https://github.com/lotusalgebra/UAlgora.Ecommerce',
+      loadSidebar: true,
+      subMaxLevel: 3,
+      search: {
+        placeholder: 'Search documentation',
+        noData: 'No results found',
+        depth: 3
+      },
+      auto2top: true,
+      coverpage: false,
+      themeColor: '#6366f1',
+      notFoundPage: true
+    }
+  </script>
+  <!-- Docsify -->
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <!-- Search plugin -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <!-- Copy code plugin -->
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
+  <!-- Syntax highlighting -->
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-csharp.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+</body>
+</html>
