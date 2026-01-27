@@ -1,0 +1,185 @@
+@model UAlgora.Ecommerce.LicensePortal.Models.PricingViewModel
+@{
+    ViewData["Title"] = "Pricing";
+}
+
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">Simple, Transparent Pricing</h1>
+        <p class="hero-subtitle">
+            Choose the perfect plan for your e-commerce needs. All plans include free updates and support.
+        </p>
+
+        <div class="row justify-content-center g-4 mt-4">
+            <!-- Trial -->
+            <div class="col-md-4">
+                <div class="card pricing-card h-100">
+                    <div class="card-body p-4 text-center">
+                        <h3 class="mb-2">@Model.Trial.Name</h3>
+                        <p class="text-muted mb-4">@Model.Trial.Description</p>
+                        <div class="mb-4">
+                            <span class="price">@Model.Trial.PriceDisplay</span>
+                            <span class="price-period">/ @Model.Trial.BillingPeriod</span>
+                        </div>
+                        <ul class="feature-list text-start mb-4">
+                            @foreach (var feature in Model.Trial.Features)
+                            {
+                                <li><i class="bi bi-check-circle-fill"></i> @feature</li>
+                            }
+                        </ul>
+                        <a href="@Model.Trial.CtaUrl" class="btn btn-outline-primary w-100">
+                            @Model.Trial.CtaText
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Standard -->
+            <div class="col-md-4">
+                <div class="card pricing-card popular h-100">
+                    <span class="popular-badge">Most Popular</span>
+                    <div class="card-body p-4 text-center">
+                        <h3 class="mb-2">@Model.Standard.Name</h3>
+                        <p class="text-muted mb-4">@Model.Standard.Description</p>
+                        <div class="mb-4">
+                            <span class="price">@Model.Standard.PriceDisplay</span>
+                            <span class="price-period">/ @Model.Standard.BillingPeriod</span>
+                        </div>
+                        <ul class="feature-list text-start mb-4">
+                            @foreach (var feature in Model.Standard.Features)
+                            {
+                                <li><i class="bi bi-check-circle-fill"></i> @feature</li>
+                            }
+                        </ul>
+                        <a href="@Model.Standard.CtaUrl" class="btn btn-primary w-100">
+                            @Model.Standard.CtaText
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enterprise -->
+            <div class="col-md-4">
+                <div class="card pricing-card h-100">
+                    <div class="card-body p-4 text-center">
+                        <h3 class="mb-2">@Model.Enterprise.Name</h3>
+                        <p class="text-muted mb-4">@Model.Enterprise.Description</p>
+                        <div class="mb-4">
+                            <span class="price">@Model.Enterprise.PriceDisplay</span>
+                            <span class="price-period">/ @Model.Enterprise.BillingPeriod</span>
+                        </div>
+                        <ul class="feature-list text-start mb-4">
+                            @foreach (var feature in Model.Enterprise.Features)
+                            {
+                                <li><i class="bi bi-check-circle-fill"></i> @feature</li>
+                            }
+                        </ul>
+                        <a href="@Model.Enterprise.CtaUrl" class="btn btn-outline-primary w-100">
+                            @Model.Enterprise.CtaText
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="trust-badges">
+            <div class="trust-badge">
+                <i class="bi bi-shield-check"></i>
+                <span>Secure Payment</span>
+            </div>
+            <div class="trust-badge">
+                <i class="bi bi-credit-card"></i>
+                <span>Visa, Mastercard, UPI</span>
+            </div>
+            <div class="trust-badge">
+                <i class="bi bi-arrow-repeat"></i>
+                <span>Auto-renewal</span>
+            </div>
+            <div class="trust-badge">
+                <i class="bi bi-headset"></i>
+                <span>24/7 Support</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Frequently Asked Questions</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                What payment methods do you accept?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We accept Visa, Mastercard, American Express via Stripe for international payments.
+                                For customers in India, we support UPI, NetBanking, and all major cards via Razorpay.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                How does the license activation work?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                After successful payment, you'll receive your license key via email immediately.
+                                Simply copy the key and enter it in your Umbraco backoffice under
+                                Settings &rarr; Algora Commerce &rarr; License.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                What happens when my license expires?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Your license auto-renews annually. We'll send you a reminder 30 days before expiration.
+                                If payment fails, you have a 14-day grace period to update your payment method.
+                                After that, your store will operate in trial mode with limited features.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                Can I upgrade or downgrade my plan?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! You can upgrade at any time. When upgrading, you'll be charged the prorated
+                                difference for the remaining period. Downgrades take effect at the next renewal date.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                Do you offer refunds?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                We offer a 14-day trial so you can evaluate the product before purchasing.
+                                If you're not satisfied with your paid license, contact us within 14 days
+                                of purchase for a full refund.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

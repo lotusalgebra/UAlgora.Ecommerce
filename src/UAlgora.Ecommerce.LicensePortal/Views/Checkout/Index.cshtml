@@ -1,0 +1,403 @@
+@model UAlgora.Ecommerce.LicensePortal.Models.CheckoutViewModel
+@{
+    ViewData["Title"] = $"Checkout - {Model.TierName}";
+}
+
+@section Styles {
+    <style>
+        .checkout-container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+
+        .order-summary {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .payment-methods {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .payment-tab {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .payment-tab button {
+            flex: 1;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .payment-tab button:hover {
+            border-color: var(--algora-primary);
+        }
+
+        .payment-tab button.active {
+            border-color: var(--algora-primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .payment-tab button img {
+            height: 24px;
+        }
+
+        .form-control:focus {
+            border-color: var(--algora-primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .price-breakdown {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .price-breakdown .total {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--algora-dark);
+        }
+
+        #stripe-payment, #razorpay-payment {
+            display: none;
+        }
+
+        #stripe-payment.active, #razorpay-payment.active {
+            display: block;
+        }
+
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #64748b;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+
+        .secure-badge i {
+            color: var(--algora-success);
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .btn-primary.loading .loading-spinner {
+            display: inline-block;
+        }
+
+        .btn-primary.loading .btn-text {
+            display: none;
+        }
+    </style>
+}
+
+<div class="container checkout-container">
+    <div class="row g-4">
+        <!-- Checkout Form -->
+        <div class="col-lg-7">
+            <div class="payment-methods">
+                <h3 class="mb-4">Complete Your Purchase</h3>
+
+                <!-- Customer Information -->
+                <div class="mb-4">
+                    <h5 class="mb-3">Customer Information</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="customerName" required placeholder="John Doe">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="customerEmail" required placeholder="john@example.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="companyName" placeholder="Acme Inc.">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Domain (where Algora will be used)</label>
+                            <input type="text" class="form-control" id="domain" placeholder="shop.example.com">
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Payment Method Selection -->
+                <h5 class="mb-3">Payment Method</h5>
+                <div class="payment-tab">
+                    <button type="button" id="stripe-tab" class="active" onclick="selectPaymentMethod('stripe')">
+                        <i class="bi bi-credit-card"></i>
+                        <span>Card (Visa/MC)</span>
+                    </button>
+                    <button type="button" id="razorpay-tab" onclick="selectPaymentMethod('razorpay')">
+                        <img src="https://razorpay.com/assets/razorpay-logo.svg" alt="Razorpay">
+                        <span>UPI / India</span>
+                    </button>
+                </div>
+
+                <!-- Stripe Payment -->
+                <div id="stripe-payment" class="active">
+                    <p class="text-muted mb-3">
+                        You'll be redirected to Stripe's secure checkout page to complete payment.
+                    </p>
+                    <button type="button" class="btn btn-primary btn-lg w-100" onclick="initiateStripeCheckout()">
+                        <span class="loading-spinner spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span class="btn-text">
+                            <i class="bi bi-lock-fill me-2"></i>Pay with Stripe - $@Model.Price.ToString("N0")/@Model.Currency
+                        </span>
+                    </button>
+                </div>
+
+                <!-- Razorpay Payment -->
+                <div id="razorpay-payment">
+                    <p class="text-muted mb-3">
+                        Pay securely using UPI, NetBanking, or any Indian card via Razorpay.
+                    </p>
+                    <button type="button" class="btn btn-primary btn-lg w-100" onclick="initiateRazorpayCheckout()">
+                        <span class="loading-spinner spinner-border spinner-border-sm me-2" role="status"></span>
+                        <span class="btn-text">
+                            <i class="bi bi-lock-fill me-2"></i>Pay with Razorpay
+                        </span>
+                    </button>
+                </div>
+
+                <div class="secure-badge">
+                    <i class="bi bi-shield-check"></i>
+                    <span>Your payment is secured with 256-bit SSL encryption</span>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <small class="text-muted">
+                        By completing this purchase, you agree to our
+                        <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="col-lg-5">
+            <div class="order-summary">
+                <h4 class="mb-4">Order Summary</h4>
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h5 class="mb-1">Algora Commerce @Model.TierName</h5>
+                        <small class="text-muted">Annual License</small>
+                    </div>
+                    <span class="h5 mb-0">$@Model.Price.ToString("N0")</span>
+                </div>
+
+                <ul class="feature-list small">
+                    @foreach (var feature in Model.Features)
+                    {
+                        <li><i class="bi bi-check-circle-fill"></i> @feature</li>
+                    }
+                </ul>
+
+                <div class="price-breakdown">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <span>$@Model.Price.ToString("N0")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Tax</span>
+                        <span>$0</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span class="total">Total</span>
+                        <span class="total">$@Model.Price.ToString("N0") @Model.Currency</span>
+                    </div>
+                    <small class="text-muted d-block mt-2">Billed annually. Auto-renews each year.</small>
+                </div>
+
+                <div class="mt-4 p-3 bg-light rounded-3">
+                    <h6 class="mb-2"><i class="bi bi-gift text-primary me-2"></i>What's Included</h6>
+                    <ul class="small mb-0 ps-3">
+                        <li>1 year of updates and support</li>
+                        <li>License key delivered instantly via email</li>
+                        <li>30-day money-back guarantee</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        const tier = '@Model.SelectedTier';
+        const price = @Model.Price;
+        const razorpayKeyId = '@Model.RazorpayKeyId';
+
+        function selectPaymentMethod(method) {
+            document.querySelectorAll('.payment-tab button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(method + '-tab').classList.add('active');
+
+            document.querySelectorAll('#stripe-payment, #razorpay-payment').forEach(el => el.classList.remove('active'));
+            document.getElementById(method + '-payment').classList.add('active');
+        }
+
+        function getCustomerData() {
+            const name = document.getElementById('customerName').value.trim();
+            const email = document.getElementById('customerEmail').value.trim();
+            const company = document.getElementById('companyName').value.trim();
+            const domain = document.getElementById('domain').value.trim();
+
+            if (!name || !email) {
+                alert('Please enter your name and email address.');
+                return null;
+            }
+
+            if (!email.match(/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/)) {
+                alert('Please enter a valid email address.');
+                return null;
+            }
+
+            return { name, email, company, domain };
+        }
+
+        async function initiateStripeCheckout() {
+            const customer = getCustomerData();
+            if (!customer) return;
+
+            const btn = document.querySelector('#stripe-payment .btn-primary');
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/checkout/stripe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tier: tier,
+                        customerEmail: customer.email,
+                        customerName: customer.name,
+                        companyName: customer.company,
+                        domain: customer.domain
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    throw new Error(data.error || 'Failed to create checkout session');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        async function initiateRazorpayCheckout() {
+            const customer = getCustomerData();
+            if (!customer) return;
+
+            const btn = document.querySelector('#razorpay-payment .btn-primary');
+            btn.classList.add('loading');
+            btn.disabled = true;
+
+            try {
+                // Create order
+                const orderResponse = await fetch('/checkout/razorpay/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tier: tier,
+                        customerEmail: customer.email,
+                        customerName: customer.name,
+                        companyName: customer.company,
+                        domain: customer.domain
+                    })
+                });
+
+                const orderData = await orderResponse.json();
+
+                if (!orderData.orderId) {
+                    throw new Error(orderData.error || 'Failed to create order');
+                }
+
+                // Open Razorpay checkout
+                const options = {
+                    key: razorpayKeyId,
+                    amount: orderData.amount,
+                    currency: orderData.currency,
+                    name: 'Algora Commerce',
+                    description: `${tier} License - Annual`,
+                    order_id: orderData.orderId,
+                    prefill: {
+                        name: customer.name,
+                        email: customer.email
+                    },
+                    theme: {
+                        color: '#6366f1'
+                    },
+                    handler: async function(response) {
+                        // Verify payment
+                        const verifyResponse = await fetch('/checkout/razorpay/verify', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                orderId: response.razorpay_order_id,
+                                paymentId: response.razorpay_payment_id,
+                                signature: response.razorpay_signature,
+                                tier: tier,
+                                customerEmail: customer.email,
+                                customerName: customer.name,
+                                companyName: customer.company,
+                                domain: customer.domain
+                            })
+                        });
+
+                        const verifyData = await verifyResponse.json();
+
+                        if (verifyData.success) {
+                            window.location.href = verifyData.redirectUrl;
+                        } else {
+                            alert('Payment verification failed: ' + (verifyData.error || 'Unknown error'));
+                        }
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            btn.classList.remove('loading');
+                            btn.disabled = false;
+                        }
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+
+            } catch (error) {
+                alert('Error: ' + error.message);
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+    </script>
+}

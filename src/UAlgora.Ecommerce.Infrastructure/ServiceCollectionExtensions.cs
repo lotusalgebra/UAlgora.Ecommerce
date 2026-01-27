@@ -69,9 +69,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<ILicenseRepository, LicenseRepository>();
+        services.AddScoped<ILicenseSubscriptionRepository, LicenseSubscriptionRepository>();
+        services.AddScoped<ILicensePaymentRepository, LicensePaymentRepository>();
         services.AddScoped<IWebhookRepository, WebhookRepository>();
         services.AddScoped<IPaymentLinkRepository, PaymentLinkRepository>();
         services.AddScoped<ICheckoutStepRepository, CheckoutStepRepository>();
+        services.AddScoped<ICountryRepository, CountryRepository>();
+        services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 
         return services;
     }

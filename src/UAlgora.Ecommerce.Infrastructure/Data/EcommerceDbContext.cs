@@ -105,6 +105,8 @@ public class EcommerceDbContext : DbContext
 
     // Licensing
     public DbSet<License> Licenses => Set<License>();
+    public DbSet<LicenseSubscription> LicenseSubscriptions => Set<LicenseSubscription>();
+    public DbSet<LicensePayment> LicensePayments => Set<LicensePayment>();
 
     // Webhooks
     public DbSet<Webhook> Webhooks => Set<Webhook>();
