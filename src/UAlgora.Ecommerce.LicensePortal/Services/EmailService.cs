@@ -13,7 +13,8 @@ public class EmailService : IEmailService
 {
     private readonly LicensePortalOptions _options;
     private readonly ILogger<EmailService> _logger;
-    private readonly SendGridClient _client;
+    private readonly SendGridClient? _client;
+    private readonly bool _isConfigured;
 
     public EmailService(
         IOptions<LicensePortalOptions> options,
@@ -21,7 +22,19 @@ public class EmailService : IEmailService
     {
         _options = options.Value;
         _logger = logger;
-        _client = new SendGridClient(_options.Email.SendGridApiKey);
+
+        // Check if SendGrid is configured
+        var apiKey = _options.Email?.SendGridApiKey;
+        if (!string.IsNullOrWhiteSpace(apiKey))
+        {
+            _client = new SendGridClient(apiKey);
+            _isConfigured = true;
+        }
+        else
+        {
+            _logger.LogWarning("SendGrid API key is not configured. Emails will be logged but not sent.");
+            _isConfigured = false;
+        }
     }
 
     public async Task SendLicensePurchasedEmailAsync(License license)
@@ -351,7 +364,19 @@ public class EmailService : IEmailService
 
     private async Task SendEmailAsync(string toEmail, string toName, string subject, string htmlContent)
     {
-        var from = new EmailAddress(_options.Email.FromEmail, _options.Email.FromName);
+        // If SendGrid is not configured, just log the email details
+        if (!_isConfigured || _client == null)
+        {
+            _logger.LogWarning("Email not sent (SendGrid not configured). To: {Email}, Subject: {Subject}", toEmail, subject);
+            // In development, log the content for debugging
+            _logger.LogDebug("Email content for {Email}:\n{Content}", toEmail, htmlContent);
+            await Task.CompletedTask;
+            return;
+        }
+
+        var fromEmail = _options.Email?.FromEmail ?? "noreply@algoracommerce.com";
+        var fromName = _options.Email?.FromName ?? "Algora Commerce";
+        var from = new EmailAddress(fromEmail, fromName);
         var to = new EmailAddress(toEmail, toName);
         var msg = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
 
