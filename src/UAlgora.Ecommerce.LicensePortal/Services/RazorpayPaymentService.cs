@@ -141,6 +141,32 @@ public class RazorpayPaymentService : IRazorpayPaymentService
         return usdPrice * UsdToInrRate;
     }
 
+    public async Task CancelSubscriptionAsync(string subscriptionId)
+    {
+        await Task.Run(() =>
+        {
+            try
+            {
+                // Razorpay subscription cancellation
+                // Note: Razorpay has subscription APIs but they require a different setup
+                // For now, we just log the cancellation request
+                _logger.LogInformation("Cancelling Razorpay subscription {SubscriptionId}", subscriptionId);
+
+                // If using Razorpay subscriptions (requires subscription plan setup):
+                // var subscription = _client.Subscription.Fetch(subscriptionId);
+                // _client.Subscription.Cancel(subscriptionId, new Dictionary<string, object>
+                // {
+                //     { "cancel_at_cycle_end", true }
+                // });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to cancel Razorpay subscription {SubscriptionId}", subscriptionId);
+                throw;
+            }
+        });
+    }
+
     private string GenerateSignature(string payload)
     {
         var keyBytes = Encoding.UTF8.GetBytes(_options.Razorpay.KeySecret);

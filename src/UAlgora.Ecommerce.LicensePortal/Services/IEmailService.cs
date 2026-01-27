@@ -31,4 +31,9 @@ public interface IEmailService
     /// Sends a subscription cancelled confirmation email.
     /// </summary>
     Task SendSubscriptionCancelledEmailAsync(License license);
+
+    /// <summary>
+    /// Sends a login code for passwordless authentication.
+    /// </summary>
+    Task SendLoginCodeAsync(string email, string code);
 }

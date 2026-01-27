@@ -1,0 +1,214 @@
+@model UAlgora.Ecommerce.LicensePortal.Models.LicensesPageViewModel
+@{
+    ViewData["Title"] = "My Licenses";
+}
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index")">Account</a></li>
+                    <li class="breadcrumb-item active">Licenses</li>
+                </ol>
+            </nav>
+            <h1 class="mb-0">My Licenses</h1>
+            <p class="text-muted mb-0">@Model.TotalCount license(s) found</p>
+        </div>
+        <a href="@Url.Action("Pricing", "Home")" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>
+            Get New License
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model.Licenses.Any())
+    {
+        <div class="row g-4">
+            @foreach (var license in Model.Licenses)
+            {
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                            <div>
+                                <span class="badge bg-@GetTypeColor(license.Type) me-2">@license.TypeName</span>
+                                <span class="badge bg-@license.StatusClass">@license.StatusName</span>
+                            </div>
+                            @if (license.AutoRenew)
+                            {
+                                <span class="badge bg-success bg-opacity-10 text-success">
+                                    <i class="bi bi-arrow-repeat me-1"></i>
+                                    Auto-renew
+                                </span>
+                            }
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="small text-muted d-block mb-1">License Key</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control font-monospace bg-light" value="@license.Key" id="key-@license.Id" readonly />
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyKey('@license.Id')" title="Copy to clipboard">
+                                        <i class="bi bi-clipboard"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <div class="small text-muted">Valid From</div>
+                                    <div class="fw-semibold">@license.ValidFrom.ToString("MMM dd, yyyy")</div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="small text-muted">Valid Until</div>
+                                    <div class="fw-semibold">
+                                        @if (license.ValidUntil.HasValue)
+                                        {
+                                            @license.ValidUntil.Value.ToString("MMM dd, yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success">Lifetime</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(license.LicensedDomains))
+                            {
+                                <div class="mt-3">
+                                    <div class="small text-muted">Licensed Domain(s)</div>
+                                    <div class="fw-semibold">
+                                        <i class="bi bi-globe me-1 text-primary"></i>
+                                        @license.LicensedDomains
+                                    </div>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(license.Company))
+                            {
+                                <div class="mt-3">
+                                    <div class="small text-muted">Company</div>
+                                    <div class="fw-semibold">
+                                        <i class="bi bi-building me-1 text-primary"></i>
+                                        @license.Company
+                                    </div>
+                                </div>
+                            }
+
+                            @if (license.DaysUntilExpiration.HasValue)
+                            {
+                                <div class="mt-3">
+                                    @if (license.IsExpired)
+                                    {
+                                        <div class="alert alert-danger py-2 px-3 mb-0">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            This license has expired. Please renew to continue using Algora Commerce.
+                                        </div>
+                                    }
+                                    else if (license.IsInGracePeriod)
+                                    {
+                                        <div class="alert alert-warning py-2 px-3 mb-0">
+                                            <i class="bi bi-exclamation-circle me-1"></i>
+                                            Grace period active. Renew soon to avoid service interruption.
+                                        </div>
+                                    }
+                                    else if (license.DaysUntilExpiration <= 30)
+                                    {
+                                        <div class="alert alert-warning py-2 px-3 mb-0">
+                                            <i class="bi bi-clock me-1"></i>
+                                            @license.DaysUntilExpiration days remaining
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="progress mt-2" style="height: 6px;">
+                                            @{
+                                                var totalDays = (license.ValidUntil.Value - license.ValidFrom).Days;
+                                                var remainingPercent = totalDays > 0 ? Math.Min(100, (license.DaysUntilExpiration.Value * 100) / totalDays) : 100;
+                                            }
+                                            <div class="progress-bar bg-success" style="width: @remainingPercent%"></div>
+                                        </div>
+                                        <div class="small text-muted mt-1">@license.DaysUntilExpiration days remaining</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                        <div class="card-footer bg-white border-top-0">
+                            @if (license.EnabledFeatures.Any())
+                            {
+                                <div class="small text-muted mb-2">Enabled Features</div>
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var feature in license.EnabledFeatures.Take(5))
+                                    {
+                                        <span class="badge bg-light text-dark">@FormatFeatureName(feature)</span>
+                                    }
+                                    @if (license.EnabledFeatures.Count > 5)
+                                    {
+                                        <span class="badge bg-light text-muted">+@(license.EnabledFeatures.Count - 5) more</span>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-key text-muted" style="font-size: 64px;"></i>
+                <h3 class="mt-4">No Licenses Yet</h3>
+                <p class="text-muted mb-4">Get started with Algora Commerce by purchasing a license.</p>
+                <a href="@Url.Action("Pricing", "Home")" class="btn btn-primary btn-lg">
+                    View Pricing
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetTypeColor(UAlgora.Ecommerce.Core.Models.Domain.LicenseType type)
+    {
+        return type switch
+        {
+            UAlgora.Ecommerce.Core.Models.Domain.LicenseType.Trial => "secondary",
+            UAlgora.Ecommerce.Core.Models.Domain.LicenseType.Standard => "primary",
+            UAlgora.Ecommerce.Core.Models.Domain.LicenseType.Enterprise => "warning",
+            _ => "secondary"
+        };
+    }
+
+    string FormatFeatureName(string feature)
+    {
+        // Convert snake_case to Title Case
+        return string.Join(" ", feature.Split('_').Select(w => char.ToUpper(w[0]) + w.Substring(1)));
+    }
+}
+
+<script>
+    function copyKey(licenseId) {
+        const input = document.getElementById('key-' + licenseId);
+        input.select();
+        document.execCommand('copy');
+
+        // Show feedback
+        const btn = input.nextElementSibling;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check text-success"></i>';
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+        }, 2000);
+    }
+</script>

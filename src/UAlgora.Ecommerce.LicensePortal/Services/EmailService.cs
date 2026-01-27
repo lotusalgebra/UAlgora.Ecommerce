@@ -299,6 +299,56 @@ public class EmailService : IEmailService
         await SendEmailAsync(license.CustomerEmail, license.CustomerName, subject, html);
     }
 
+    public async Task SendLoginCodeAsync(string email, string code)
+    {
+        var subject = "Your Algora Commerce Login Code";
+
+        var html = $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <style>
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .code-box {{ background: #fff; border: 2px solid #667eea; padding: 30px; text-align: center; margin: 20px 0; border-radius: 8px; }}
+        .code {{ font-size: 36px; font-weight: bold; color: #667eea; letter-spacing: 8px; font-family: monospace; }}
+        .footer {{ text-align: center; padding: 20px; color: #888; font-size: 12px; }}
+        .warning {{ color: #666; font-size: 13px; margin-top: 15px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>🔐 Login Code</h1>
+            <p>Secure access to your account</p>
+        </div>
+        <div class='content'>
+            <p>Hi,</p>
+            <p>Use the following code to sign in to your Algora Commerce account:</p>
+
+            <div class='code-box'>
+                <div class='code'>{code}</div>
+                <p class='warning'>This code expires in 10 minutes</p>
+            </div>
+
+            <p>If you didn't request this code, you can safely ignore this email.</p>
+
+            <p>Best regards,<br>The Algora Commerce Team</p>
+        </div>
+        <div class='footer'>
+            <p>&copy; {DateTime.UtcNow.Year} Algora Commerce. All rights reserved.</p>
+            <p>This is an automated security email.</p>
+        </div>
+    </div>
+</body>
+</html>";
+
+        await SendEmailAsync(email, email, subject, html);
+    }
+
     private async Task SendEmailAsync(string toEmail, string toName, string subject, string htmlContent)
     {
         var from = new EmailAddress(_options.Email.FromEmail, _options.Email.FromName);

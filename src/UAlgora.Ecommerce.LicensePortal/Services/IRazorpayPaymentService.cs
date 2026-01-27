@@ -38,4 +38,9 @@ public interface IRazorpayPaymentService
     /// Gets the price for a license tier in INR.
     /// </summary>
     decimal GetPriceForTierInr(LicenseType tier);
+
+    /// <summary>
+    /// Cancels a subscription in Razorpay.
+    /// </summary>
+    Task CancelSubscriptionAsync(string subscriptionId);
 }

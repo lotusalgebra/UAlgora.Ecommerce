@@ -1,0 +1,301 @@
+@model UAlgora.Ecommerce.LicensePortal.Models.AccountDashboardViewModel
+@{
+    ViewData["Title"] = "My Account";
+}
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Welcome, @Model.CustomerName</h1>
+            <p class="text-muted mb-0">
+                <i class="bi bi-envelope me-1"></i>
+                @Model.CustomerEmail
+            </p>
+        </div>
+        <form method="post" asp-action="Logout" class="d-inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-outline-secondary">
+                <i class="bi bi-box-arrow-right me-1"></i>
+                Sign Out
+            </button>
+        </form>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="icon-circle bg-primary bg-opacity-10 text-primary mx-auto mb-3" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-key fs-4"></i>
+                    </div>
+                    <h3 class="mb-0">@Model.Stats.TotalLicenses</h3>
+                    <p class="text-muted mb-0">Total Licenses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="icon-circle bg-success bg-opacity-10 text-success mx-auto mb-3" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-check-circle fs-4"></i>
+                    </div>
+                    <h3 class="mb-0">@Model.Stats.ActiveLicenses</h3>
+                    <p class="text-muted mb-0">Active Licenses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="icon-circle bg-info bg-opacity-10 text-info mx-auto mb-3" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-arrow-repeat fs-4"></i>
+                    </div>
+                    <h3 class="mb-0">@Model.Stats.ActiveSubscriptions</h3>
+                    <p class="text-muted mb-0">Active Subscriptions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="icon-circle bg-warning bg-opacity-10 text-warning mx-auto mb-3" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i class="bi bi-credit-card fs-4"></i>
+                    </div>
+                    <h3 class="mb-0">@FormatCurrency(Model.Stats.TotalSpent, Model.Stats.Currency)</h3>
+                    <p class="text-muted mb-0">Total Spent</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Licenses Section -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-key me-2 text-primary"></i>
+                        My Licenses
+                    </h5>
+                    <a href="@Url.Action("Licenses")" class="btn btn-sm btn-outline-primary">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Licenses.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var license in Model.Licenses.Take(3))
+                            {
+                                <div class="list-group-item px-4 py-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="d-flex align-items-center mb-1">
+                                                <span class="badge bg-@GetTypeColor(license.Type) me-2">@license.TypeName</span>
+                                                <span class="badge bg-@license.StatusClass">@license.StatusName</span>
+                                            </div>
+                                            <code class="text-muted small">@license.MaskedKey</code>
+                                            @if (!string.IsNullOrEmpty(license.LicensedDomains))
+                                            {
+                                                <div class="small text-muted mt-1">
+                                                    <i class="bi bi-globe me-1"></i>
+                                                    @license.LicensedDomains
+                                                </div>
+                                            }
+                                        </div>
+                                        <div class="text-end">
+                                            @if (license.ValidUntil.HasValue)
+                                            {
+                                                <div class="small">
+                                                    @if (license.IsExpired)
+                                                    {
+                                                        <span class="text-danger">
+                                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                                            Expired
+                                                        </span>
+                                                    }
+                                                    else if (license.DaysUntilExpiration <= 30)
+                                                    {
+                                                        <span class="text-warning">
+                                                            <i class="bi bi-clock me-1"></i>
+                                                            @license.DaysUntilExpiration days left
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">
+                                                            Valid until @license.ValidUntil.Value.ToString("MMM dd, yyyy")
+                                                        </span>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-info">Lifetime</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="bi bi-key text-muted" style="font-size: 48px;"></i>
+                            <p class="text-muted mt-3">No licenses found</p>
+                            <a href="@Url.Action("Pricing", "Home")" class="btn btn-primary">
+                                Get a License
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscriptions & Recent Payments -->
+        <div class="col-lg-5">
+            <!-- Subscriptions -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-arrow-repeat me-2 text-info"></i>
+                        Subscriptions
+                    </h5>
+                    <a href="@Url.Action("Subscriptions")" class="btn btn-sm btn-outline-info">
+                        Manage
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.Subscriptions.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var sub in Model.Subscriptions.Take(2))
+                            {
+                                <div class="list-group-item px-4 py-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="fw-semibold">@sub.LicenseTypeName</span>
+                                            <span class="badge bg-@sub.StatusClass ms-2">@sub.StatusName</span>
+                                            <div class="small text-muted">
+                                                @sub.FormattedAmount/@sub.BillingInterval
+                                            </div>
+                                        </div>
+                                        <div class="text-end small">
+                                            @if (sub.IsCancelled)
+                                            {
+                                                <span class="text-secondary">
+                                                    Ends @sub.CurrentPeriodEnd.ToString("MMM dd")
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">
+                                                    Renews @sub.CurrentPeriodEnd.ToString("MMM dd")
+                                                </span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No active subscriptions</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Payments -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-receipt me-2 text-success"></i>
+                        Recent Payments
+                    </h5>
+                    <a href="@Url.Action("Invoices")" class="btn btn-sm btn-outline-success">
+                        View All
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.RecentPayments.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var payment in Model.RecentPayments)
+                            {
+                                <div class="list-group-item px-4 py-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="fw-semibold">@payment.FormattedAmount</span>
+                                            <span class="badge bg-@payment.StatusClass ms-2">@payment.StatusName</span>
+                                            <div class="small text-muted">
+                                                @payment.LicenseTypeName - @payment.PaymentMethod
+                                            </div>
+                                        </div>
+                                        <div class="text-end small text-muted">
+                                            @(payment.PaidAt?.ToString("MMM dd, yyyy") ?? payment.CreatedAt.ToString("MMM dd, yyyy"))
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-0">No payments yet</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string FormatCurrency(decimal amount, string currency)
+    {
+        return currency.ToUpperInvariant() switch
+        {
+            "USD" => $"${amount:N2}",
+            "EUR" => $"\u20ac{amount:N2}",
+            "GBP" => $"\u00a3{amount:N2}",
+            "INR" => $"\u20b9{amount:N2}",
+            _ => $"{currency} {amount:N2}"
+        };
+    }
+
+    string GetTypeColor(UAlgora.Ecommerce.Core.Models.Domain.LicenseType type)
+    {
+        return type switch
+        {
+            UAlgora.Ecommerce.Core.Models.Domain.LicenseType.Trial => "secondary",
+            UAlgora.Ecommerce.Core.Models.Domain.LicenseType.Standard => "primary",
+            UAlgora.Ecommerce.Core.Models.Domain.LicenseType.Enterprise => "warning",
+            _ => "secondary"
+        };
+    }
+}
