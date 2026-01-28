@@ -9,10 +9,9 @@ namespace UAlgora.Ecommerce.Web.BackOffice.Api;
 /// <summary>
 /// Base class for all e-commerce management API controllers.
 /// Provides common functionality and authorization for backoffice API endpoints.
+/// Requires authenticated Umbraco backoffice user access.
 /// </summary>
-// TODO: Re-enable authorization after implementing proper token-based auth in frontend
-// [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
-[AllowAnonymous]
+[Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
 [ApiExplorerSettings(GroupName = EcommerceConstants.ApiName)]
 public abstract class EcommerceManagementApiControllerBase : ManagementApiControllerBase
 {
