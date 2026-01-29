@@ -234,7 +234,23 @@ public class DiscountManagementApiController : EcommerceManagementApiControllerB
                 StartDate = request.StartDate,
                 EndDate = request.EndDate,
                 CanCombine = request.CanCombine,
-                Priority = request.Priority
+                Priority = request.Priority,
+                BundleProductIds = request.BundleProductIds ?? [],
+                BundleDiscountValue = request.BundleDiscountValue,
+                VolumeTiers = request.VolumeTiers ?? [],
+                SeasonLabel = request.SeasonLabel,
+                EarlyPaymentDays = request.EarlyPaymentDays,
+                StandardPaymentDays = request.StandardPaymentDays,
+                ReferralNewCustomerValue = request.ReferralNewCustomerValue,
+                ReferralTwoWay = request.ReferralTwoWay,
+                LoyaltyPointsThreshold = request.LoyaltyPointsThreshold,
+                LoyaltyTierRequired = request.LoyaltyTierRequired,
+                RequiresEmailSubscription = request.RequiresEmailSubscription,
+                IsCartAbandonmentRecovery = request.IsCartAbandonmentRecovery,
+                IsOverstockClearance = request.IsOverstockClearance,
+                TradeInCreditPerItem = request.TradeInCreditPerItem,
+                TradeInProductIds = request.TradeInProductIds ?? [],
+                TradeInTargetProductIds = request.TradeInTargetProductIds ?? []
             };
 
             var created = await _discountService.CreateAsync(discount);
@@ -301,6 +317,22 @@ public class DiscountManagementApiController : EcommerceManagementApiControllerB
             existing.EndDate = request.EndDate;
             existing.CanCombine = request.CanCombine;
             existing.Priority = request.Priority;
+            existing.BundleProductIds = request.BundleProductIds ?? existing.BundleProductIds;
+            existing.BundleDiscountValue = request.BundleDiscountValue;
+            existing.VolumeTiers = request.VolumeTiers ?? existing.VolumeTiers;
+            existing.SeasonLabel = request.SeasonLabel;
+            existing.EarlyPaymentDays = request.EarlyPaymentDays;
+            existing.StandardPaymentDays = request.StandardPaymentDays;
+            existing.ReferralNewCustomerValue = request.ReferralNewCustomerValue;
+            existing.ReferralTwoWay = request.ReferralTwoWay;
+            existing.LoyaltyPointsThreshold = request.LoyaltyPointsThreshold;
+            existing.LoyaltyTierRequired = request.LoyaltyTierRequired;
+            existing.RequiresEmailSubscription = request.RequiresEmailSubscription;
+            existing.IsCartAbandonmentRecovery = request.IsCartAbandonmentRecovery;
+            existing.IsOverstockClearance = request.IsOverstockClearance;
+            existing.TradeInCreditPerItem = request.TradeInCreditPerItem;
+            existing.TradeInProductIds = request.TradeInProductIds ?? existing.TradeInProductIds;
+            existing.TradeInTargetProductIds = request.TradeInTargetProductIds ?? existing.TradeInTargetProductIds;
 
             var updated = await _discountService.UpdateAsync(existing);
 
@@ -423,6 +455,22 @@ public class DiscountManagementApiController : EcommerceManagementApiControllerB
             BuyQuantity = existing.BuyQuantity,
             GetQuantity = existing.GetQuantity,
             GetProductIds = existing.GetProductIds.ToList(),
+            BundleProductIds = existing.BundleProductIds.ToList(),
+            BundleDiscountValue = existing.BundleDiscountValue,
+            VolumeTiers = existing.VolumeTiers.Select(t => new Core.Models.Domain.VolumeTier { MinQuantity = t.MinQuantity, DiscountPercent = t.DiscountPercent }).ToList(),
+            SeasonLabel = existing.SeasonLabel,
+            EarlyPaymentDays = existing.EarlyPaymentDays,
+            StandardPaymentDays = existing.StandardPaymentDays,
+            ReferralNewCustomerValue = existing.ReferralNewCustomerValue,
+            ReferralTwoWay = existing.ReferralTwoWay,
+            LoyaltyPointsThreshold = existing.LoyaltyPointsThreshold,
+            LoyaltyTierRequired = existing.LoyaltyTierRequired,
+            RequiresEmailSubscription = existing.RequiresEmailSubscription,
+            IsCartAbandonmentRecovery = existing.IsCartAbandonmentRecovery,
+            IsOverstockClearance = existing.IsOverstockClearance,
+            TradeInCreditPerItem = existing.TradeInCreditPerItem,
+            TradeInProductIds = existing.TradeInProductIds.ToList(),
+            TradeInTargetProductIds = existing.TradeInTargetProductIds.ToList(),
             TotalUsageLimit = existing.TotalUsageLimit,
             PerCustomerLimit = existing.PerCustomerLimit,
             UsageCount = 0, // Reset usage count for the copy
@@ -627,7 +675,23 @@ public class DiscountManagementApiController : EcommerceManagementApiControllerB
             CanCombine = discount.CanCombine,
             DisplayValue = item.DisplayValue,
             CreatedAt = item.CreatedAt,
-            UpdatedAt = discount.UpdatedAt
+            UpdatedAt = discount.UpdatedAt,
+            BundleProductIds = discount.BundleProductIds,
+            BundleDiscountValue = discount.BundleDiscountValue,
+            VolumeTiers = discount.VolumeTiers,
+            SeasonLabel = discount.SeasonLabel,
+            EarlyPaymentDays = discount.EarlyPaymentDays,
+            StandardPaymentDays = discount.StandardPaymentDays,
+            ReferralNewCustomerValue = discount.ReferralNewCustomerValue,
+            ReferralTwoWay = discount.ReferralTwoWay,
+            LoyaltyPointsThreshold = discount.LoyaltyPointsThreshold,
+            LoyaltyTierRequired = discount.LoyaltyTierRequired,
+            RequiresEmailSubscription = discount.RequiresEmailSubscription,
+            IsCartAbandonmentRecovery = discount.IsCartAbandonmentRecovery,
+            IsOverstockClearance = discount.IsOverstockClearance,
+            TradeInCreditPerItem = discount.TradeInCreditPerItem,
+            TradeInProductIds = discount.TradeInProductIds,
+            TradeInTargetProductIds = discount.TradeInTargetProductIds
         };
     }
 }
@@ -685,6 +749,31 @@ public class DiscountDetailModel : DiscountItemModel
     public List<Guid> EligibleCustomerIds { get; set; } = [];
     public bool CanCombine { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    // Bundle
+    public List<Guid> BundleProductIds { get; set; } = [];
+    public decimal? BundleDiscountValue { get; set; }
+    // Bulk/Volume
+    public List<Core.Models.Domain.VolumeTier> VolumeTiers { get; set; } = [];
+    // Seasonal
+    public string? SeasonLabel { get; set; }
+    // Early Payment
+    public int? EarlyPaymentDays { get; set; }
+    public int? StandardPaymentDays { get; set; }
+    // Referral
+    public decimal? ReferralNewCustomerValue { get; set; }
+    public bool ReferralTwoWay { get; set; }
+    // Loyalty
+    public int? LoyaltyPointsThreshold { get; set; }
+    public string? LoyaltyTierRequired { get; set; }
+    // Email Subscription
+    public bool RequiresEmailSubscription { get; set; }
+    public bool IsCartAbandonmentRecovery { get; set; }
+    // Overstock
+    public bool IsOverstockClearance { get; set; }
+    // Trade-In
+    public decimal? TradeInCreditPerItem { get; set; }
+    public List<Guid> TradeInProductIds { get; set; } = [];
+    public List<Guid> TradeInTargetProductIds { get; set; } = [];
 }
 
 public class DiscountValidationResult
@@ -749,6 +838,23 @@ public class CreateDiscountRequest
     public DateTime? EndDate { get; set; }
     public bool CanCombine { get; set; }
     public int Priority { get; set; }
+    // New discount type properties
+    public List<Guid>? BundleProductIds { get; set; }
+    public decimal? BundleDiscountValue { get; set; }
+    public List<Core.Models.Domain.VolumeTier>? VolumeTiers { get; set; }
+    public string? SeasonLabel { get; set; }
+    public int? EarlyPaymentDays { get; set; }
+    public int? StandardPaymentDays { get; set; }
+    public decimal? ReferralNewCustomerValue { get; set; }
+    public bool ReferralTwoWay { get; set; }
+    public int? LoyaltyPointsThreshold { get; set; }
+    public string? LoyaltyTierRequired { get; set; }
+    public bool RequiresEmailSubscription { get; set; }
+    public bool IsCartAbandonmentRecovery { get; set; }
+    public bool IsOverstockClearance { get; set; }
+    public decimal? TradeInCreditPerItem { get; set; }
+    public List<Guid>? TradeInProductIds { get; set; }
+    public List<Guid>? TradeInTargetProductIds { get; set; }
 }
 
 public class UpdateDiscountRequest
@@ -781,6 +887,23 @@ public class UpdateDiscountRequest
     public DateTime? EndDate { get; set; }
     public bool CanCombine { get; set; }
     public int Priority { get; set; }
+    // New discount type properties
+    public List<Guid>? BundleProductIds { get; set; }
+    public decimal? BundleDiscountValue { get; set; }
+    public List<Core.Models.Domain.VolumeTier>? VolumeTiers { get; set; }
+    public string? SeasonLabel { get; set; }
+    public int? EarlyPaymentDays { get; set; }
+    public int? StandardPaymentDays { get; set; }
+    public decimal? ReferralNewCustomerValue { get; set; }
+    public bool ReferralTwoWay { get; set; }
+    public int? LoyaltyPointsThreshold { get; set; }
+    public string? LoyaltyTierRequired { get; set; }
+    public bool RequiresEmailSubscription { get; set; }
+    public bool IsCartAbandonmentRecovery { get; set; }
+    public bool IsOverstockClearance { get; set; }
+    public decimal? TradeInCreditPerItem { get; set; }
+    public List<Guid>? TradeInProductIds { get; set; }
+    public List<Guid>? TradeInTargetProductIds { get; set; }
 }
 
 public class ExtendDiscountRequest

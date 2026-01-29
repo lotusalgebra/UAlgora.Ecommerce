@@ -82,7 +82,16 @@ public enum DiscountType
     Percentage = 0,
     FixedAmount = 1,
     FreeShipping = 2,
-    BuyXGetY = 3
+    BuyXGetY = 3,
+    EarlyPayment = 4,
+    Overstock = 5,
+    Bundle = 6,
+    BulkVolume = 7,
+    Seasonal = 8,
+    Referral = 9,
+    LoyaltyProgram = 10,
+    EmailSubscription = 11,
+    TradeInCredit = 12
 }
 
 /// <summary>

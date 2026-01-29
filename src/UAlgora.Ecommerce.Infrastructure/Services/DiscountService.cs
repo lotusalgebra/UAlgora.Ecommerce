@@ -149,6 +149,29 @@ public class DiscountService : IDiscountService
             case DiscountType.BuyXGetY:
                 totalDiscount = CalculateBuyXGetYDiscount(discount, cart, calculation);
                 break;
+
+            case DiscountType.EarlyPayment:
+            case DiscountType.Overstock:
+            case DiscountType.Seasonal:
+            case DiscountType.Referral:
+            case DiscountType.LoyaltyProgram:
+            case DiscountType.EmailSubscription:
+                // These all apply as percentage discounts with their specific eligibility
+                // checked at validation time. Calculation is the same as percentage.
+                totalDiscount = CalculatePercentageDiscount(discount, cart, calculation);
+                break;
+
+            case DiscountType.Bundle:
+                totalDiscount = CalculateBundleDiscount(discount, cart, calculation);
+                break;
+
+            case DiscountType.BulkVolume:
+                totalDiscount = CalculateBulkVolumeDiscount(discount, cart, calculation);
+                break;
+
+            case DiscountType.TradeInCredit:
+                totalDiscount = CalculateTradeInDiscount(discount, cart, calculation);
+                break;
         }
 
         // Apply maximum discount if set
@@ -290,6 +313,16 @@ public class DiscountService : IDiscountService
         if (discount.Type == DiscountType.FixedAmount && discount.Value <= 0)
         {
             errors.Add(new ValidationError { PropertyName = "Value", ErrorMessage = "Discount amount must be greater than 0." });
+        }
+
+        if (discount.Type == DiscountType.Bundle && discount.BundleProductIds.Count == 0)
+        {
+            errors.Add(new ValidationError { PropertyName = "BundleProductIds", ErrorMessage = "Bundle discount requires at least one product in the bundle." });
+        }
+
+        if (discount.Type == DiscountType.EarlyPayment && !discount.EarlyPaymentDays.HasValue)
+        {
+            errors.Add(new ValidationError { PropertyName = "EarlyPaymentDays", ErrorMessage = "Early payment discount requires payment days to be set." });
         }
 
         if (discount.StartDate.HasValue && discount.EndDate.HasValue && discount.StartDate > discount.EndDate)
@@ -447,6 +480,107 @@ public class DiscountService : IDiscountService
         }
 
         return totalDiscount;
+    }
+
+    private decimal CalculateBundleDiscount(Discount discount, Cart cart, DiscountCalculation calculation)
+    {
+        // Bundle: all bundle products must be in cart, then apply discount to bundle total
+        if (discount.BundleProductIds.Count == 0)
+            return CalculatePercentageDiscount(discount, cart, calculation);
+
+        var bundleItems = cart.Items
+            .Where(i => discount.BundleProductIds.Contains(i.ProductId))
+            .ToList();
+
+        // Check all bundle products are present
+        var presentProductIds = bundleItems.Select(i => i.ProductId).Distinct().ToHashSet();
+        if (!discount.BundleProductIds.All(id => presentProductIds.Contains(id)))
+            return 0; // Not all bundle products in cart
+
+        var bundleTotal = bundleItems.Sum(i => i.LineTotal);
+        var discountPercent = discount.BundleDiscountValue ?? discount.Value;
+        var totalDiscount = bundleTotal * (discountPercent / 100m);
+
+        foreach (var item in bundleItems)
+        {
+            calculation.LineAllocations.Add(new LineDiscountAllocation
+            {
+                CartItemId = item.Id,
+                Amount = item.LineTotal * (discountPercent / 100m)
+            });
+        }
+
+        return totalDiscount;
+    }
+
+    private decimal CalculateBulkVolumeDiscount(Discount discount, Cart cart, DiscountCalculation calculation)
+    {
+        if (discount.VolumeTiers.Count == 0)
+            return CalculatePercentageDiscount(discount, cart, calculation);
+
+        var totalQuantity = cart.Items.Sum(i => i.Quantity);
+        var applicableTier = discount.VolumeTiers
+            .Where(t => totalQuantity >= t.MinQuantity)
+            .OrderByDescending(t => t.MinQuantity)
+            .FirstOrDefault();
+
+        if (applicableTier == null) return 0;
+
+        var discountPercent = applicableTier.DiscountPercent;
+        var totalDiscount = cart.Subtotal * (discountPercent / 100m);
+
+        foreach (var item in cart.Items)
+        {
+            calculation.LineAllocations.Add(new LineDiscountAllocation
+            {
+                CartItemId = item.Id,
+                Amount = item.LineTotal * (discountPercent / 100m)
+            });
+        }
+
+        return totalDiscount;
+    }
+
+    private decimal CalculateTradeInDiscount(Discount discount, Cart cart, DiscountCalculation calculation)
+    {
+        // Trade-in: apply credit value as fixed amount off applicable target products
+        var creditAmount = discount.TradeInCreditPerItem ?? discount.Value;
+
+        if (discount.TradeInTargetProductIds.Count > 0)
+        {
+            var targetItems = cart.Items
+                .Where(i => discount.TradeInTargetProductIds.Contains(i.ProductId))
+                .ToList();
+
+            var applicableTotal = targetItems.Sum(i => i.LineTotal);
+            var totalDiscount = Math.Min(creditAmount, applicableTotal);
+
+            foreach (var item in targetItems)
+            {
+                var proportion = applicableTotal > 0 ? item.LineTotal / applicableTotal : 0;
+                calculation.LineAllocations.Add(new LineDiscountAllocation
+                {
+                    CartItemId = item.Id,
+                    Amount = totalDiscount * proportion
+                });
+            }
+
+            return totalDiscount;
+        }
+
+        // Apply to entire cart
+        var discount2 = Math.Min(creditAmount, cart.Subtotal);
+        foreach (var item in cart.Items)
+        {
+            var proportion = cart.Subtotal > 0 ? item.LineTotal / cart.Subtotal : 0;
+            calculation.LineAllocations.Add(new LineDiscountAllocation
+            {
+                CartItemId = item.Id,
+                Amount = discount2 * proportion
+            });
+        }
+
+        return discount2;
     }
 
     private static string GenerateRandomCode(int length)

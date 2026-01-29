@@ -130,6 +130,122 @@ public class Discount : SoftDeleteEntity
 
     #endregion
 
+    #region Bundle
+
+    /// <summary>
+    /// Product IDs included in the bundle.
+    /// </summary>
+    public List<Guid> BundleProductIds { get; set; } = [];
+
+    /// <summary>
+    /// Bundle discount value (percentage or fixed off the bundle total).
+    /// </summary>
+    public decimal? BundleDiscountValue { get; set; }
+
+    #endregion
+
+    #region Bulk / Volume
+
+    /// <summary>
+    /// Volume tier thresholds (JSON: [{quantity, discountPercent}]).
+    /// </summary>
+    public List<VolumeTier> VolumeTiers { get; set; } = [];
+
+    #endregion
+
+    #region Seasonal
+
+    /// <summary>
+    /// Season label (e.g., "Summer Sale", "Post-Holiday Clearance").
+    /// </summary>
+    public string? SeasonLabel { get; set; }
+
+    #endregion
+
+    #region Early Payment
+
+    /// <summary>
+    /// Number of days within which early payment qualifies for the discount.
+    /// </summary>
+    public int? EarlyPaymentDays { get; set; }
+
+    /// <summary>
+    /// Standard payment term in days (e.g., 30).
+    /// </summary>
+    public int? StandardPaymentDays { get; set; }
+
+    #endregion
+
+    #region Referral
+
+    /// <summary>
+    /// Discount value for the referred (new) customer.
+    /// </summary>
+    public decimal? ReferralNewCustomerValue { get; set; }
+
+    /// <summary>
+    /// Whether the referral gives both referrer and referee a discount.
+    /// </summary>
+    public bool ReferralTwoWay { get; set; }
+
+    #endregion
+
+    #region Loyalty Program
+
+    /// <summary>
+    /// Points threshold required to unlock this discount.
+    /// </summary>
+    public int? LoyaltyPointsThreshold { get; set; }
+
+    /// <summary>
+    /// Loyalty tier required (e.g., "Gold", "Platinum").
+    /// </summary>
+    public string? LoyaltyTierRequired { get; set; }
+
+    #endregion
+
+    #region Email Subscription
+
+    /// <summary>
+    /// Whether this discount requires a new email subscription sign-up.
+    /// </summary>
+    public bool RequiresEmailSubscription { get; set; }
+
+    /// <summary>
+    /// Whether this discount applies to cart abandonment recovery.
+    /// </summary>
+    public bool IsCartAbandonmentRecovery { get; set; }
+
+    #endregion
+
+    #region Overstock
+
+    /// <summary>
+    /// Whether this is an overstock/clearance discount.
+    /// </summary>
+    public bool IsOverstockClearance { get; set; }
+
+    #endregion
+
+    #region Trade-In Credit
+
+    /// <summary>
+    /// Trade-in credit amount per item traded in.
+    /// </summary>
+    public decimal? TradeInCreditPerItem { get; set; }
+
+    /// <summary>
+    /// Product IDs eligible for trade-in.
+    /// </summary>
+    public List<Guid> TradeInProductIds { get; set; } = [];
+
+    /// <summary>
+    /// Product IDs that can be purchased with the trade-in credit.
+    /// </summary>
+    public List<Guid> TradeInTargetProductIds { get; set; } = [];
+
+    #endregion
+
     #region Usage Limits
 
     /// <summary>
@@ -229,10 +345,35 @@ public class Discount : SoftDeleteEntity
         DiscountType.FixedAmount => $"${Value:F2}",
         DiscountType.FreeShipping => "Free Shipping",
         DiscountType.BuyXGetY => $"Buy {BuyQuantity} Get {GetQuantity}",
+        DiscountType.EarlyPayment => $"{Value}% (within {EarlyPaymentDays}d)",
+        DiscountType.Overstock => $"{Value}% Clearance",
+        DiscountType.Bundle => BundleDiscountValue.HasValue ? $"{BundleDiscountValue}% Bundle" : $"${Value:F2} Bundle",
+        DiscountType.BulkVolume => VolumeTiers.Count > 0 ? $"Up to {VolumeTiers.Max(t => t.DiscountPercent)}%" : $"{Value}%",
+        DiscountType.Seasonal => $"{Value}% {SeasonLabel ?? "Seasonal"}",
+        DiscountType.Referral => ReferralTwoWay ? $"{Value}% Two-Way Referral" : $"{Value}% Referral",
+        DiscountType.LoyaltyProgram => $"{Value}% Loyalty",
+        DiscountType.EmailSubscription => $"{Value}% Email Signup",
+        DiscountType.TradeInCredit => TradeInCreditPerItem.HasValue ? $"${TradeInCreditPerItem:F2} Trade-In" : $"${Value:F2} Trade-In",
         _ => Value.ToString("F2")
     };
 
     #endregion
+}
+
+/// <summary>
+/// Represents a volume/bulk pricing tier.
+/// </summary>
+public class VolumeTier
+{
+    /// <summary>
+    /// Minimum quantity to qualify for this tier.
+    /// </summary>
+    public int MinQuantity { get; set; }
+
+    /// <summary>
+    /// Discount percentage for this tier.
+    /// </summary>
+    public decimal DiscountPercent { get; set; }
 }
 
 /// <summary>

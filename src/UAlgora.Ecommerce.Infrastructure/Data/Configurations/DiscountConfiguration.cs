@@ -91,6 +91,45 @@ public class DiscountConfiguration : IEntityTypeConfiguration<Discount>
                 v => System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<Guid>())
             .HasColumnType("nvarchar(max)");
 
+        // JSON for Bundle product IDs
+        builder.Property(d => d.BundleProductIds)
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<Guid>())
+            .HasColumnType("nvarchar(max)");
+
+        builder.Property(d => d.BundleDiscountValue)
+            .HasPrecision(18, 4);
+
+        // JSON for Volume tiers
+        builder.Property(d => d.VolumeTiers)
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<List<VolumeTier>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<VolumeTier>())
+            .HasColumnType("nvarchar(max)");
+
+        builder.Property(d => d.SeasonLabel).HasMaxLength(200);
+        builder.Property(d => d.LoyaltyTierRequired).HasMaxLength(100);
+
+        builder.Property(d => d.ReferralNewCustomerValue)
+            .HasPrecision(18, 4);
+
+        builder.Property(d => d.TradeInCreditPerItem)
+            .HasPrecision(18, 4);
+
+        // JSON for Trade-In product IDs
+        builder.Property(d => d.TradeInProductIds)
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<Guid>())
+            .HasColumnType("nvarchar(max)");
+
+        builder.Property(d => d.TradeInTargetProductIds)
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<List<Guid>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<Guid>())
+            .HasColumnType("nvarchar(max)");
+
         // Indexes
         builder.HasIndex(d => d.Code).IsUnique().HasFilter("[Code] IS NOT NULL");
         builder.HasIndex(d => d.IsActive);

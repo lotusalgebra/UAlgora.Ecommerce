@@ -384,6 +384,170 @@ export class DiscountCollection extends UmbElementMixin(LitElement) {
     return parts.length > 0 ? parts.join(' - ') : 'No date limit';
   }
 
+  _renderTypeSpecificFields() {
+    const type = this._editingDiscount?.type || this._editingDiscount?.discountType || 'Percentage';
+
+    switch (type) {
+      case 'BuyXGetY':
+        return html`
+          <div class="section-title">Buy X Get Y Settings</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Buy Quantity</label>
+              <input type="number" min="1" .value=${this._editingDiscount?.buyQuantity || 1} @input=${(e) => this._handleInputChange('buyQuantity', parseInt(e.target.value) || 1)} />
+            </div>
+            <div class="form-group">
+              <label>Get Quantity (Free)</label>
+              <input type="number" min="1" .value=${this._editingDiscount?.getQuantity || 1} @input=${(e) => this._handleInputChange('getQuantity', parseInt(e.target.value) || 1)} />
+            </div>
+          </div>
+        `;
+
+      case 'EarlyPayment':
+        return html`
+          <div class="section-title">Early Payment Settings</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Early Payment Days *</label>
+              <input type="number" min="1" placeholder="e.g. 10" .value=${this._editingDiscount?.earlyPaymentDays || ''} @input=${(e) => this._handleInputChange('earlyPaymentDays', e.target.value ? parseInt(e.target.value) : null)} />
+              <small style="color:#666;">Days within which payment qualifies for discount</small>
+            </div>
+            <div class="form-group">
+              <label>Standard Payment Days</label>
+              <input type="number" min="1" placeholder="e.g. 30" .value=${this._editingDiscount?.standardPaymentDays || ''} @input=${(e) => this._handleInputChange('standardPaymentDays', e.target.value ? parseInt(e.target.value) : null)} />
+              <small style="color:#666;">Normal payment term (e.g. Net 30)</small>
+            </div>
+          </div>
+        `;
+
+      case 'Overstock':
+        return html`
+          <div class="section-title">Overstock / Clearance Settings</div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="isOverstockClearance" .checked=${this._editingDiscount?.isOverstockClearance !== false} @change=${(e) => this._handleInputChange('isOverstockClearance', e.target.checked)} />
+            <label for="isOverstockClearance">Mark as clearance sale</label>
+          </div>
+          <small style="color:#666;">Apply to specific products or categories using the Conditions section below. Great for moving excess inventory.</small>
+        `;
+
+      case 'Bundle':
+        return html`
+          <div class="section-title">Bundle Settings</div>
+          <div class="form-group">
+            <label>Bundle Discount Percentage</label>
+            <input type="number" step="0.01" min="0" max="100" .value=${this._editingDiscount?.bundleDiscountValue || ''} @input=${(e) => this._handleInputChange('bundleDiscountValue', e.target.value ? parseFloat(e.target.value) : null)} />
+            <small style="color:#666;">Percentage off when all bundle products are in the cart. Specify bundle products in the Conditions section.</small>
+          </div>
+        `;
+
+      case 'BulkVolume':
+        return html`
+          <div class="section-title">Volume Tier Settings</div>
+          <small style="color:#666;">Define quantity-based discount tiers. Higher quantities get bigger discounts.</small>
+          ${(this._editingDiscount?.volumeTiers || []).map((tier, i) => html`
+            <div class="form-row" style="margin-top:8px;">
+              <div class="form-group">
+                <label>Min Quantity</label>
+                <input type="number" min="1" .value=${tier.minQuantity || ''} @input=${(e) => this._updateVolumeTier(i, 'minQuantity', parseInt(e.target.value) || 0)} />
+              </div>
+              <div class="form-group">
+                <label>Discount %</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input type="number" step="0.01" min="0" max="100" .value=${tier.discountPercent || ''} @input=${(e) => this._updateVolumeTier(i, 'discountPercent', parseFloat(e.target.value) || 0)} />
+                  <uui-button look="secondary" compact label="Remove" @click=${() => this._removeVolumeTier(i)}>&times;</uui-button>
+                </div>
+              </div>
+            </div>
+          `)}
+          <uui-button look="secondary" style="margin-top:8px;" label="Add Tier" @click=${this._addVolumeTier}>+ Add Tier</uui-button>
+        `;
+
+      case 'Seasonal':
+        return html`
+          <div class="section-title">Seasonal Settings</div>
+          <div class="form-group">
+            <label>Season Label</label>
+            <input type="text" placeholder="e.g. Summer Sale, Post-Holiday Clearance" .value=${this._editingDiscount?.seasonLabel || ''} @input=${(e) => this._handleInputChange('seasonLabel', e.target.value)} />
+          </div>
+        `;
+
+      case 'Referral':
+        return html`
+          <div class="section-title">Referral Settings</div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="referralTwoWay" .checked=${this._editingDiscount?.referralTwoWay === true} @change=${(e) => this._handleInputChange('referralTwoWay', e.target.checked)} />
+            <label for="referralTwoWay">Two-way referral (both referrer and new customer get discount)</label>
+          </div>
+          ${this._editingDiscount?.referralTwoWay ? html`
+            <div class="form-group">
+              <label>New Customer Discount Value</label>
+              <input type="number" step="0.01" .value=${this._editingDiscount?.referralNewCustomerValue || ''} @input=${(e) => this._handleInputChange('referralNewCustomerValue', e.target.value ? parseFloat(e.target.value) : null)} />
+              <small style="color:#666;">The "Value" field above applies to the referrer.</small>
+            </div>
+          ` : ''}
+        `;
+
+      case 'LoyaltyProgram':
+        return html`
+          <div class="section-title">Loyalty Program Settings</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Points Threshold</label>
+              <input type="number" min="0" .value=${this._editingDiscount?.loyaltyPointsThreshold || ''} @input=${(e) => this._handleInputChange('loyaltyPointsThreshold', e.target.value ? parseInt(e.target.value) : null)} />
+              <small style="color:#666;">Points needed to unlock this discount</small>
+            </div>
+            <div class="form-group">
+              <label>Required Tier</label>
+              <input type="text" placeholder="e.g. Gold, Platinum" .value=${this._editingDiscount?.loyaltyTierRequired || ''} @input=${(e) => this._handleInputChange('loyaltyTierRequired', e.target.value)} />
+            </div>
+          </div>
+        `;
+
+      case 'EmailSubscription':
+        return html`
+          <div class="section-title">Email Subscription Settings</div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="requiresEmailSubscription" .checked=${this._editingDiscount?.requiresEmailSubscription !== false} @change=${(e) => this._handleInputChange('requiresEmailSubscription', e.target.checked)} />
+            <label for="requiresEmailSubscription">Requires new email subscription sign-up</label>
+          </div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="isCartAbandonmentRecovery" .checked=${this._editingDiscount?.isCartAbandonmentRecovery === true} @change=${(e) => this._handleInputChange('isCartAbandonmentRecovery', e.target.checked)} />
+            <label for="isCartAbandonmentRecovery">Cart abandonment recovery discount</label>
+          </div>
+        `;
+
+      case 'TradeInCredit':
+        return html`
+          <div class="section-title">Trade-In Credit Settings</div>
+          <div class="form-group">
+            <label>Credit Per Item Traded In</label>
+            <input type="number" step="0.01" min="0" .value=${this._editingDiscount?.tradeInCreditPerItem || ''} @input=${(e) => this._handleInputChange('tradeInCreditPerItem', e.target.value ? parseFloat(e.target.value) : null)} />
+            <small style="color:#666;">Credit amount given per traded-in item. Use the Conditions section to specify eligible trade-in and target products.</small>
+          </div>
+        `;
+
+      default:
+        return '';
+    }
+  }
+
+  _addVolumeTier() {
+    const tiers = [...(this._editingDiscount?.volumeTiers || []), { minQuantity: 0, discountPercent: 0 }];
+    this._editingDiscount = { ...this._editingDiscount, volumeTiers: tiers };
+  }
+
+  _removeVolumeTier(index) {
+    const tiers = [...(this._editingDiscount?.volumeTiers || [])];
+    tiers.splice(index, 1);
+    this._editingDiscount = { ...this._editingDiscount, volumeTiers: tiers };
+  }
+
+  _updateVolumeTier(index, field, value) {
+    const tiers = [...(this._editingDiscount?.volumeTiers || [])];
+    tiers[index] = { ...tiers[index], [field]: value };
+    this._editingDiscount = { ...this._editingDiscount, volumeTiers: tiers };
+  }
+
   render() {
     const statuses = ['Active', 'Scheduled', 'Expired'];
 
@@ -487,10 +651,20 @@ export class DiscountCollection extends UmbElementMixin(LitElement) {
               </div>
               <div class="form-group">
                 <label>Discount Type</label>
-                <select .value=${this._editingDiscount?.discountType || 'Percentage'} @change=${(e) => this._handleInputChange('discountType', e.target.value)}>
+                <select .value=${this._editingDiscount?.type || this._editingDiscount?.discountType || 'Percentage'} @change=${(e) => this._handleInputChange('type', e.target.value)}>
                   <option value="Percentage">Percentage</option>
                   <option value="FixedAmount">Fixed Amount</option>
                   <option value="FreeShipping">Free Shipping</option>
+                  <option value="BuyXGetY">Buy X Get Y (BOGO)</option>
+                  <option value="EarlyPayment">Early Payment</option>
+                  <option value="Overstock">Overstock / Clearance</option>
+                  <option value="Bundle">Price Bundle</option>
+                  <option value="BulkVolume">Bulk / Volume</option>
+                  <option value="Seasonal">Seasonal</option>
+                  <option value="Referral">Referral</option>
+                  <option value="LoyaltyProgram">Loyalty Program</option>
+                  <option value="EmailSubscription">Email Subscription</option>
+                  <option value="TradeInCredit">Trade-In Credit</option>
                 </select>
               </div>
             </div>
@@ -508,6 +682,8 @@ export class DiscountCollection extends UmbElementMixin(LitElement) {
               <label>Description</label>
               <textarea .value=${this._editingDiscount?.description || ''} @input=${(e) => this._handleInputChange('description', e.target.value)}></textarea>
             </div>
+
+            ${this._renderTypeSpecificFields()}
 
             <div class="section-title">Conditions</div>
             <div class="form-row">
