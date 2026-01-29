@@ -1,11 +1,37 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * E-commerce Dashboard Element
  * Comprehensive analytics dashboard with Umbraco Commerce-style widgets.
  */
 export class EcommerceDashboard extends UmbElementMixin(LitElement) {
+  #authContext;
+  #authReady;
+  #authResolve;
+
+  // Auth context setup is in the main constructor below
+
+  async _getAuthHeaders() {
+    await this.#authReady;
+    const token = await this.#authContext?.getLatestToken();
+    console.log('[Dashboard] Token obtained:', token ? 'yes' : 'no');
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    const response = await fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+    console.log(`[Dashboard] ${url} => ${response.status}`);
+    return response;
+  }
   static styles = css`
     :host {
       display: block;
@@ -645,6 +671,13 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
     this._refundStats = null;
     this._selectedPeriod = 'month';
     this._error = null;
+    // Auth context setup
+    this.#authReady = new Promise((resolve) => { this.#authResolve = resolve; });
+    this.consumeContext(UMB_AUTH_CONTEXT, (ctx) => {
+      this.#authContext = ctx;
+      console.log('[Dashboard] Auth context received');
+      this.#authResolve();
+    });
   }
 
   async connectedCallback() {
@@ -674,13 +707,9 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
 
   async _loadDashboardData() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/dashboard/overview', {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (response.ok) {
-        this._overview = await response.json();
-      }
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/dashboard/overview');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      this._overview = await response.json();
     } catch (error) {
       console.error('Error loading overview:', error);
       // Use mock data for demo
@@ -712,13 +741,9 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
 
   async _loadTopProducts() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/dashboard/top-products?limit=5', {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (response.ok) {
-        this._topProducts = await response.json();
-      }
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/dashboard/top-products?limit=5');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      this._topProducts = await response.json();
     } catch (error) {
       console.error('Error loading top products:', error);
       this._topProducts = [
@@ -733,13 +758,9 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
 
   async _loadLowStock() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/dashboard/low-stock?threshold=10', {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (response.ok) {
-        this._lowStock = await response.json();
-      }
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/dashboard/low-stock?threshold=10');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      this._lowStock = await response.json();
     } catch (error) {
       console.error('Error loading low stock:', error);
       this._lowStock = [
@@ -752,13 +773,9 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
 
   async _loadTopBuyers() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/dashboard/top-buyers?limit=5', {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (response.ok) {
-        this._topBuyers = await response.json();
-      }
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/dashboard/top-buyers?limit=5');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      this._topBuyers = await response.json();
     } catch (error) {
       console.error('Error loading top buyers:', error);
       this._topBuyers = [
@@ -773,13 +790,9 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
 
   async _loadRecentActivity() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/dashboard/recent-activity?limit=10', {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (response.ok) {
-        this._recentActivity = await response.json();
-      }
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/dashboard/recent-activity?limit=10');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      this._recentActivity = await response.json();
     } catch (error) {
       console.error('Error loading recent activity:', error);
       this._recentActivity = [
@@ -794,13 +807,9 @@ export class EcommerceDashboard extends UmbElementMixin(LitElement) {
 
   async _loadRefundStats() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/dashboard/refund-stats', {
-        headers: { 'Accept': 'application/json' },
-        credentials: 'include'
-      });
-      if (response.ok) {
-        this._refundStats = await response.json();
-      }
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/dashboard/refund-stats');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      this._refundStats = await response.json();
     } catch (error) {
       console.error('Error loading refund stats:', error);
       this._refundStats = {

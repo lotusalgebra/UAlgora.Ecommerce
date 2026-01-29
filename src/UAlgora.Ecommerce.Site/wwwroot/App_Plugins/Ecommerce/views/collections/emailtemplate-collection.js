@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * Email Template Collection with Inline Editor
  * Umbraco Commerce-style email template management with rich editing.
  */
 export class EmailTemplateCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: flex;
@@ -687,10 +709,7 @@ export class EmailTemplateCollection extends UmbElementMixin(LitElement) {
   async _loadTemplates() {
     try {
       this._loading = true;
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/emailtemplates', {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/emailtemplates');
       if (response.ok) {
         this._templates = await response.json();
       }
@@ -711,10 +730,7 @@ export class EmailTemplateCollection extends UmbElementMixin(LitElement) {
 
   async _loadEventTypes() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/emailtemplates/event-types', {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/emailtemplates/event-types');
       if (response.ok) {
         this._eventTypes = await response.json();
       }
@@ -726,10 +742,7 @@ export class EmailTemplateCollection extends UmbElementMixin(LitElement) {
   async _loadTemplateDetails(templateId) {
     try {
       this._loadingTemplate = true;
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/emailtemplates/${templateId}`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/emailtemplates/${templateId}`);
       if (response.ok) {
         this._selectedTemplate = await response.json();
         this._formData = { ...this._selectedTemplate };
@@ -778,10 +791,8 @@ export class EmailTemplateCollection extends UmbElementMixin(LitElement) {
         ? '/umbraco/management/api/v1/ecommerce/emailtemplates'
         : `/umbraco/management/api/v1/ecommerce/emailtemplates/${this._selectedTemplate.id}`;
 
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method: isNew ? 'POST' : 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._formData)
       });
 
@@ -809,10 +820,8 @@ export class EmailTemplateCollection extends UmbElementMixin(LitElement) {
 
     this._sendingTest = true;
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/emailtemplates/${this._selectedTemplate.id}/send-test`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/emailtemplates/${this._selectedTemplate.id}/send-test`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toEmail: this._testEmail })
       });
 

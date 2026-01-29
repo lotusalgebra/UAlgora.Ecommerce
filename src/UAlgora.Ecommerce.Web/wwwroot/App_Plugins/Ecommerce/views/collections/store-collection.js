@@ -1,7 +1,29 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 export class StoreCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host { display: block; height: 100%; }
     .container { display: flex; height: 100%; }
@@ -110,7 +132,7 @@ export class StoreCollection extends UmbElementMixin(LitElement) {
   async _loadStores() {
     try {
       this._loading = true;
-      const res = await fetch('/umbraco/management/api/v1/ecommerce/stores', { credentials: 'include', headers: { 'Accept': 'application/json' } });
+      const res = await this._authFetch('/umbraco/management/api/v1/ecommerce/stores');
       if (res.ok) {
         const data = await res.json();
         this._stores = data.items || data || [];
@@ -121,7 +143,7 @@ export class StoreCollection extends UmbElementMixin(LitElement) {
 
   async _loadCurrencies() {
     try {
-      const res = await fetch('/umbraco/management/api/v1/ecommerce/currency', { credentials: 'include', headers: { 'Accept': 'application/json' } });
+      const res = await this._authFetch('/umbraco/management/api/v1/ecommerce/currency');
       if (res.ok) {
         const data = await res.json();
         this._currencies = data.items || data || [];
@@ -184,7 +206,9 @@ export class StoreCollection extends UmbElementMixin(LitElement) {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch('/umbraco/management/api/v1/ecommerce/media/upload', { method: 'POST', credentials: 'include', body: formData });
+      const headers = await this._getAuthHeaders();
+      delete headers['Content-Type'];
+      const res = await fetch('/umbraco/management/api/v1/ecommerce/media/upload', { method: 'POST', headers, body: formData });
       if (res.ok) {
         const data = await res.json();
         this._handleInput(field, data.url || data.path);
@@ -198,7 +222,7 @@ export class StoreCollection extends UmbElementMixin(LitElement) {
     try {
       const isNew = !this._editingStore.id;
       const url = isNew ? '/umbraco/management/api/v1/ecommerce/stores' : `/umbraco/management/api/v1/ecommerce/stores/${this._editingStore.id}`;
-      const res = await fetch(url, { method: isNew ? 'POST' : 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this._editingStore) });
+      const res = await this._authFetch(url, { method: isNew ? 'POST' : 'PUT', body: JSON.stringify(this._editingStore) });
       if (!res.ok) throw new Error('Save failed');
       await this._loadStores();
       if (isNew) {
@@ -213,7 +237,7 @@ export class StoreCollection extends UmbElementMixin(LitElement) {
   async _delete() {
     if (!confirm(`Delete store "${this._editingStore?.name}"? This action cannot be undone.`)) return;
     try {
-      await fetch(`/umbraco/management/api/v1/ecommerce/stores/${this._editingStore.id}`, { method: 'DELETE', credentials: 'include' });
+      await this._authFetch(`/umbraco/management/api/v1/ecommerce/stores/${this._editingStore.id}`, { method: 'DELETE' });
       this._loadStores();
       this._backToList();
     } catch (e) { alert('Delete failed'); }

@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * Return Collection with Inline Editor
  * Umbraco Commerce-style returns and refunds management.
  */
 export class ReturnCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: flex;
@@ -650,10 +672,7 @@ export class ReturnCollection extends UmbElementMixin(LitElement) {
       const endpoint = this._statusFilter === 'all'
         ? '/umbraco/management/api/v1/ecommerce/returns'
         : `/umbraco/management/api/v1/ecommerce/returns/by-status/${this._statusFilter}`;
-      const response = await fetch(endpoint, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(endpoint);
       if (response.ok) {
         this._returns = await response.json();
       }
@@ -673,10 +692,7 @@ export class ReturnCollection extends UmbElementMixin(LitElement) {
   async _loadReturnDetails(returnId) {
     try {
       this._loadingReturn = true;
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/returns/${returnId}`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/returns/${returnId}`);
       if (response.ok) {
         this._selectedReturn = await response.json();
       }
@@ -711,10 +727,8 @@ export class ReturnCollection extends UmbElementMixin(LitElement) {
 
     this._processing = true;
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/returns/${this._selectedReturn.id}/approve`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/returns/${this._selectedReturn.id}/approve`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ approvedAmount: this._selectedReturn.requestedAmount })
       });
       if (!response.ok) throw new Error('Failed to approve');
@@ -744,10 +758,8 @@ export class ReturnCollection extends UmbElementMixin(LitElement) {
 
     this._processing = true;
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/returns/${this._selectedReturn.id}/reject`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/returns/${this._selectedReturn.id}/reject`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: this._rejectReason })
       });
       if (!response.ok) throw new Error('Failed to reject');
@@ -766,10 +778,8 @@ export class ReturnCollection extends UmbElementMixin(LitElement) {
 
     this._processing = true;
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/returns/${this._selectedReturn.id}/receive`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/returns/${this._selectedReturn.id}/receive`, {
+        method: 'POST'
       });
       if (!response.ok) throw new Error('Failed to update');
       this._loadReturnDetails(this._selectedReturn.id);
@@ -798,10 +808,8 @@ export class ReturnCollection extends UmbElementMixin(LitElement) {
 
     this._processing = true;
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/returns/${this._selectedReturn.id}/process-refund`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/returns/${this._selectedReturn.id}/process-refund`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: this._refundAmount })
       });
       if (!response.ok) throw new Error('Failed to process refund');

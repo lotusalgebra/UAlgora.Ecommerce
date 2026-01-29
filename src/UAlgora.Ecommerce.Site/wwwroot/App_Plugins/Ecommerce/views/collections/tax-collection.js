@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * Tax Collection View - Inline Split-Pane Editor
  * Manages tax categories, zones, and rates with GST support
  */
 export class TaxCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: block;
@@ -348,8 +370,8 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
     try {
       this._loading = true;
       const [categoriesResponse, zonesResponse] = await Promise.all([
-        fetch('/umbraco/management/api/v1/ecommerce/tax/category?includeInactive=true'),
-        fetch('/umbraco/management/api/v1/ecommerce/tax/zone?includeInactive=true')
+        this._authFetch('/umbraco/management/api/v1/ecommerce/tax/category?includeInactive=true'),
+        this._authFetch('/umbraco/management/api/v1/ecommerce/tax/zone?includeInactive=true')
       ]);
 
       if (categoriesResponse.ok) {
@@ -442,9 +464,8 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         ? '/umbraco/management/api/v1/ecommerce/tax/category'
         : `/umbraco/management/api/v1/ecommerce/tax/category/${this._selectedCategory.id}`;
 
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._selectedCategory)
       });
 
@@ -476,9 +497,8 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         ? '/umbraco/management/api/v1/ecommerce/tax/zone'
         : `/umbraco/management/api/v1/ecommerce/tax/zone/${this._selectedZone.id}`;
 
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._selectedZone)
       });
 
@@ -506,7 +526,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
     if (!confirm('Are you sure you want to delete this category?')) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/tax/category/${this._selectedCategory.id}`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/tax/category/${this._selectedCategory.id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -523,7 +543,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
     if (!confirm('Are you sure you want to delete this zone?')) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/tax/zone/${this._selectedZone.id}`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/tax/zone/${this._selectedZone.id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -741,14 +761,14 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
           <label>Name *</label>
           <uui-input style="width: 100%;"
                      .value=${category.name || ''}
-                     @input=${e => this._selectedCategory = {...category, name: e.target.value}}>
+                     @input=${e => this._selectedCategory = {...this._selectedCategory, name: e.target.value}}>
           </uui-input>
         </div>
         <div class="form-group">
           <label>Code *</label>
           <uui-input style="width: 100%;"
                      .value=${category.code || ''}
-                     @input=${e => this._selectedCategory = {...category, code: e.target.value}}>
+                     @input=${e => this._selectedCategory = {...this._selectedCategory, code: e.target.value}}>
           </uui-input>
           <small>Unique identifier for this category</small>
         </div>
@@ -758,7 +778,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         <label>Description</label>
         <uui-textarea style="width: 100%;"
                       .value=${category.description || ''}
-                      @input=${e => this._selectedCategory = {...category, description: e.target.value}}>
+                      @input=${e => this._selectedCategory = {...this._selectedCategory, description: e.target.value}}>
         </uui-textarea>
       </div>
 
@@ -766,7 +786,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         <label>External Tax Code</label>
         <uui-input style="width: 100%;"
                    .value=${category.externalTaxCode || ''}
-                   @input=${e => this._selectedCategory = {...category, externalTaxCode: e.target.value}}>
+                   @input=${e => this._selectedCategory = {...this._selectedCategory, externalTaxCode: e.target.value}}>
         </uui-input>
         <small>For integration with external tax providers (Avalara, TaxJar, etc.)</small>
       </div>
@@ -775,7 +795,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         <label>Sort Order</label>
         <uui-input type="number" style="width: 120px;"
                    .value=${category.sortOrder || 0}
-                   @input=${e => this._selectedCategory = {...category, sortOrder: parseInt(e.target.value) || 0}}>
+                   @input=${e => this._selectedCategory = {...this._selectedCategory, sortOrder: parseInt(e.target.value) || 0}}>
         </uui-input>
       </div>
 
@@ -783,19 +803,19 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         <label>Options</label>
         <div class="checkbox-row">
           <uui-toggle .checked=${category.isActive}
-                      @change=${e => this._selectedCategory = {...category, isActive: e.target.checked}}>
+                      @change=${e => this._selectedCategory = {...this._selectedCategory, isActive: e.target.checked}}>
           </uui-toggle>
           <label>Active</label>
         </div>
         <div class="checkbox-row">
           <uui-toggle .checked=${category.isDefault}
-                      @change=${e => this._selectedCategory = {...category, isDefault: e.target.checked}}>
+                      @change=${e => this._selectedCategory = {...this._selectedCategory, isDefault: e.target.checked}}>
           </uui-toggle>
           <label>Default Category</label>
         </div>
         <div class="checkbox-row">
           <uui-toggle .checked=${category.isTaxExempt}
-                      @change=${e => this._selectedCategory = {...category, isTaxExempt: e.target.checked}}>
+                      @change=${e => this._selectedCategory = {...this._selectedCategory, isTaxExempt: e.target.checked}}>
           </uui-toggle>
           <label>Tax Exempt</label>
         </div>
@@ -814,7 +834,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
 
         <div class="checkbox-row" style="background: white;">
           <uui-toggle .checked=${category.isGst || false}
-                      @change=${e => this._selectedCategory = {...category, isGst: e.target.checked}}>
+                      @change=${e => this._selectedCategory = {...this._selectedCategory, isGst: e.target.checked}}>
           </uui-toggle>
           <label>Enable GST for this category</label>
         </div>
@@ -825,7 +845,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
           <label>GST Type</label>
           <uui-select style="width: 100%;"
                       .value=${category.gstType || 'CGST+SGST'}
-                      @change=${e => this._selectedCategory = {...category, gstType: e.target.value}}>
+                      @change=${e => this._selectedCategory = {...this._selectedCategory, gstType: e.target.value}}>
             <uui-select-option value="CGST+SGST">CGST + SGST (Intra-state)</uui-select-option>
             <uui-select-option value="IGST">IGST (Inter-state)</uui-select-option>
             <uui-select-option value="AUTO">Auto-detect based on address</uui-select-option>
@@ -838,14 +858,14 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
             <label>CGST Rate (%)</label>
             <uui-input type="number" step="0.01" style="width: 100%;"
                        .value=${category.cgstRate || 0}
-                       @input=${e => this._selectedCategory = {...category, cgstRate: parseFloat(e.target.value) || 0}}>
+                       @input=${e => this._selectedCategory = {...this._selectedCategory, cgstRate: parseFloat(e.target.value) || 0}}>
             </uui-input>
           </div>
           <div class="form-group">
             <label>SGST Rate (%)</label>
             <uui-input type="number" step="0.01" style="width: 100%;"
                        .value=${category.sgstRate || 0}
-                       @input=${e => this._selectedCategory = {...category, sgstRate: parseFloat(e.target.value) || 0}}>
+                       @input=${e => this._selectedCategory = {...this._selectedCategory, sgstRate: parseFloat(e.target.value) || 0}}>
             </uui-input>
           </div>
         </div>
@@ -854,7 +874,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
           <label>IGST Rate (%)</label>
           <uui-input type="number" step="0.01" style="width: 200px;"
                      .value=${category.igstRate || 0}
-                     @input=${e => this._selectedCategory = {...category, igstRate: parseFloat(e.target.value) || 0}}>
+                     @input=${e => this._selectedCategory = {...this._selectedCategory, igstRate: parseFloat(e.target.value) || 0}}>
           </uui-input>
           <small>IGST rate for inter-state transactions (typically CGST + SGST)</small>
         </div>
@@ -864,7 +884,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
             <label>HSN Code</label>
             <uui-input style="width: 100%;" placeholder="e.g., 6109"
                        .value=${category.hsnCode || ''}
-                       @input=${e => this._selectedCategory = {...category, hsnCode: e.target.value}}>
+                       @input=${e => this._selectedCategory = {...this._selectedCategory, hsnCode: e.target.value}}>
             </uui-input>
             <small>Harmonized System of Nomenclature code for goods</small>
           </div>
@@ -872,7 +892,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
             <label>SAC Code</label>
             <uui-input style="width: 100%;" placeholder="e.g., 998311"
                        .value=${category.sacCode || ''}
-                       @input=${e => this._selectedCategory = {...category, sacCode: e.target.value}}>
+                       @input=${e => this._selectedCategory = {...this._selectedCategory, sacCode: e.target.value}}>
             </uui-input>
             <small>Services Accounting Code for services</small>
           </div>
@@ -941,14 +961,14 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
           <label>Name *</label>
           <uui-input style="width: 100%;"
                      .value=${zone.name || ''}
-                     @input=${e => this._selectedZone = {...zone, name: e.target.value}}>
+                     @input=${e => this._selectedZone = {...this._selectedZone, name: e.target.value}}>
           </uui-input>
         </div>
         <div class="form-group">
           <label>Code *</label>
           <uui-input style="width: 100%;"
                      .value=${zone.code || ''}
-                     @input=${e => this._selectedZone = {...zone, code: e.target.value}}>
+                     @input=${e => this._selectedZone = {...this._selectedZone, code: e.target.value}}>
           </uui-input>
         </div>
       </div>
@@ -957,7 +977,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         <label>Description</label>
         <uui-textarea style="width: 100%;"
                       .value=${zone.description || ''}
-                      @input=${e => this._selectedZone = {...zone, description: e.target.value}}>
+                      @input=${e => this._selectedZone = {...this._selectedZone, description: e.target.value}}>
         </uui-textarea>
       </div>
 
@@ -966,7 +986,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
           <label>Priority</label>
           <uui-input type="number" style="width: 100%;"
                      .value=${zone.priority || 0}
-                     @input=${e => this._selectedZone = {...zone, priority: parseInt(e.target.value) || 0}}>
+                     @input=${e => this._selectedZone = {...this._selectedZone, priority: parseInt(e.target.value) || 0}}>
           </uui-input>
           <small>Higher priority zones are checked first</small>
         </div>
@@ -974,7 +994,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
           <label>Sort Order</label>
           <uui-input type="number" style="width: 100%;"
                      .value=${zone.sortOrder || 0}
-                     @input=${e => this._selectedZone = {...zone, sortOrder: parseInt(e.target.value) || 0}}>
+                     @input=${e => this._selectedZone = {...this._selectedZone, sortOrder: parseInt(e.target.value) || 0}}>
           </uui-input>
         </div>
       </div>
@@ -983,13 +1003,13 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         <label>Options</label>
         <div class="checkbox-row">
           <uui-toggle .checked=${zone.isActive}
-                      @change=${e => this._selectedZone = {...zone, isActive: e.target.checked}}>
+                      @change=${e => this._selectedZone = {...this._selectedZone, isActive: e.target.checked}}>
           </uui-toggle>
           <label>Active</label>
         </div>
         <div class="checkbox-row">
           <uui-toggle .checked=${zone.isDefault}
-                      @change=${e => this._selectedZone = {...zone, isDefault: e.target.checked}}>
+                      @change=${e => this._selectedZone = {...this._selectedZone, isDefault: e.target.checked}}>
           </uui-toggle>
           <label>Default Zone (fallback when no other zone matches)</label>
         </div>
@@ -1034,7 +1054,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         <label>Postal Code Patterns</label>
         <uui-textarea style="width: 100%;" placeholder="One pattern per line (e.g., 90*, 100-199)"
                       .value=${(zone.postalCodePatterns || []).join('\n')}
-                      @input=${e => this._selectedZone = {...zone, postalCodePatterns: e.target.value.split('\n').filter(p => p.trim())}}>
+                      @input=${e => this._selectedZone = {...this._selectedZone, postalCodePatterns: e.target.value.split('\n').filter(p => p.trim())}}>
         </uui-textarea>
         <small>Use * as wildcard, - for ranges</small>
       </div>

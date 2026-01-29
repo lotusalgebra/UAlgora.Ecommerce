@@ -1,7 +1,29 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 export class CustomerCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: block;
@@ -218,10 +240,7 @@ export class CustomerCollection extends UmbElementMixin(LitElement) {
 
       if (this._searchTerm) params.append('search', this._searchTerm);
 
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/customer?${params}`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/customer?${params}`);
 
       if (!response.ok) throw new Error('Failed to load customers');
 
@@ -306,10 +325,8 @@ export class CustomerCollection extends UmbElementMixin(LitElement) {
         ? '/umbraco/management/api/v1/ecommerce/customer'
         : `/umbraco/management/api/v1/ecommerce/customer/${this._editingCustomer.id}`;
 
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method: isNew ? 'POST' : 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(this._editingCustomer)
       });
 

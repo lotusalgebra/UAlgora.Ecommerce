@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * Invoice Template Collection with Inline Editor
  * Manages invoice and packing slip templates with customizable styling and content.
  */
 export class InvoiceTemplateCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: flex;
@@ -517,7 +539,7 @@ export class InvoiceTemplateCollection extends UmbElementMixin(LitElement) {
   async _loadTemplates() {
     this._loading = true;
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/invoice/templates');
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/invoice/templates');
       if (response.ok) {
         const data = await response.json();
         this._templates = data.items || [];
@@ -610,9 +632,8 @@ export class InvoiceTemplateCollection extends UmbElementMixin(LitElement) {
       : `/umbraco/management/api/v1/ecommerce/invoice/templates/${this._selectedTemplate.id}`;
 
     try {
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method: isNew ? 'POST' : 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._selectedTemplate)
       });
 
@@ -634,7 +655,7 @@ export class InvoiceTemplateCollection extends UmbElementMixin(LitElement) {
     if (!confirm('Are you sure you want to delete this template?')) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/invoice/templates/${this._selectedTemplate.id}`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/invoice/templates/${this._selectedTemplate.id}`, {
         method: 'DELETE'
       });
 
@@ -649,7 +670,7 @@ export class InvoiceTemplateCollection extends UmbElementMixin(LitElement) {
 
   async _seedTemplates() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/invoice/templates/seed', {
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/invoice/templates/seed', {
         method: 'POST'
       });
       if (response.ok) {

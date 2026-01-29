@@ -1,7 +1,28 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 export class ProductCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
   static styles = css`
     :host { display: block; padding: 20px; }
     .collection-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -129,22 +150,22 @@ export class ProductCollection extends UmbElementMixin(LitElement) {
       const skip = (this._page - 1) * this._pageSize;
       const params = new URLSearchParams({ skip: skip.toString(), take: this._pageSize.toString() });
       if (this._searchTerm) params.append('search', this._searchTerm);
-      const r = await fetch(`/umbraco/management/api/v1/ecommerce/product?${params}`, { credentials: 'include' });
+      const r = await this._authFetch(`/umbraco/management/api/v1/ecommerce/product?${params}`);
       if (r.ok) { const d = await r.json(); this._products = d.items || []; this._totalCount = d.total || 0; }
     } catch (e) { console.error(e); } finally { this._loading = false; }
   }
 
-  async _loadCategories() { try { const r = await fetch('/umbraco/management/api/v1/ecommerce/category', { credentials: 'include' }); if (r.ok) this._categories = (await r.json()).items || []; } catch (e) {} }
-  async _loadManufacturers() { try { const r = await fetch('/umbraco/management/api/v1/ecommerce/manufacturer', { credentials: 'include' }); if (r.ok) this._manufacturers = await r.json(); } catch (e) { this._manufacturers = []; } }
-  async _loadBrands() { try { const r = await fetch('/umbraco/management/api/v1/ecommerce/brand', { credentials: 'include' }); if (r.ok) this._brands = await r.json(); } catch (e) { this._brands = []; } }
-  async _loadCurrencies() { try { const r = await fetch('/umbraco/management/api/v1/ecommerce/currency', { credentials: 'include' }); if (r.ok) { const d = await r.json(); this._currencies = d.items || d || []; } } catch (e) { console.error('Error loading currencies:', e); } }
-  async _loadTaxCategories() { try { const r = await fetch('/umbraco/management/api/v1/ecommerce/taxcategory', { credentials: 'include' }); if (r.ok) this._taxCategories = await r.json(); } catch (e) {} }
-  async _loadWarehouses() { try { const r = await fetch('/umbraco/management/api/v1/ecommerce/warehouse', { credentials: 'include' }); if (r.ok) this._warehouses = await r.json(); } catch (e) {} }
+  async _loadCategories() { try { const r = await this._authFetch('/umbraco/management/api/v1/ecommerce/category'); if (r.ok) this._categories = (await r.json()).items || []; } catch (e) {} }
+  async _loadManufacturers() { try { const r = await this._authFetch('/umbraco/management/api/v1/ecommerce/manufacturer'); if (r.ok) this._manufacturers = await r.json(); } catch (e) { this._manufacturers = []; } }
+  async _loadBrands() { try { const r = await this._authFetch('/umbraco/management/api/v1/ecommerce/brand'); if (r.ok) this._brands = await r.json(); } catch (e) { this._brands = []; } }
+  async _loadCurrencies() { try { const r = await this._authFetch('/umbraco/management/api/v1/ecommerce/currency'); if (r.ok) { const d = await r.json(); this._currencies = d.items || d || []; } } catch (e) { console.error('Error loading currencies:', e); } }
+  async _loadTaxCategories() { try { const r = await this._authFetch('/umbraco/management/api/v1/ecommerce/taxcategory'); if (r.ok) this._taxCategories = await r.json(); } catch (e) {} }
+  async _loadWarehouses() { try { const r = await this._authFetch('/umbraco/management/api/v1/ecommerce/warehouse'); if (r.ok) this._warehouses = await r.json(); } catch (e) {} }
 
   _handleSearch(e) { this._searchTerm = e.target.value; this._page = 1; clearTimeout(this._st); this._st = setTimeout(() => this._loadProducts(), 300); }
   _handlePageChange(d) { const tp = Math.ceil(this._totalCount / this._pageSize); if (d === 'prev' && this._page > 1) { this._page--; this._loadProducts(); } else if (d === 'next' && this._page < tp) { this._page++; this._loadProducts(); } }
   _openCreateMode() { this._mode = 'create'; this._activeTab = 'product'; this._product = this._getEmptyProduct(); this._variantAttributes = []; this._showDeleteConfirm = false; }
-  async _openEditMode(p) { this._loading = true; try { const r = await fetch(`/umbraco/management/api/v1/ecommerce/product/${p.id}`, { credentials: 'include' }); if (r.ok) { this._product = await r.json(); this._mode = 'edit'; this._activeTab = 'product'; } } catch (e) {} finally { this._loading = false; } }
+  async _openEditMode(p) { this._loading = true; try { const r = await this._authFetch(`/umbraco/management/api/v1/ecommerce/product/${p.id}`); if (r.ok) { this._product = await r.json(); this._mode = 'edit'; this._activeTab = 'product'; } } catch (e) {} finally { this._loading = false; } }
   _backToList() { this._mode = 'list'; this._product = this._getEmptyProduct(); this._loadProducts(); }
   _handleInputChange(f, v) { this._product = { ...this._product, [f]: v }; }
   _toggleCategory(id) { const ids = this._product.categoryIds || []; if (ids.includes(id)) { this._product = { ...this._product, categoryIds: ids.filter(i => i !== id) }; } else { this._product = { ...this._product, categoryIds: [...ids, id] }; } }
@@ -152,14 +173,14 @@ export class ProductCollection extends UmbElementMixin(LitElement) {
   _execCommand(c, v = null) { document.execCommand(c, false, v); this._updateDescription(); }
   _updateDescription() { const e = this.shadowRoot.querySelector('.wysiwyg-editor'); if (e) this._product = { ...this._product, description: e.innerHTML }; }
 
-  async _addManufacturer() { if (!this._newManufacturerName.trim()) return; try { const r = await fetch('/umbraco/management/api/v1/ecommerce/manufacturer', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: this._newManufacturerName }) }); if (r.ok) { const m = await r.json(); await this._loadManufacturers(); this._product = { ...this._product, manufacturerId: m.id }; this._showAddManufacturer = false; this._newManufacturerName = ''; } } catch (e) {} }
-  async _addBrand() { if (!this._newBrandName.trim()) return; try { const r = await fetch('/umbraco/management/api/v1/ecommerce/brand', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: this._newBrandName }) }); if (r.ok) { const b = await r.json(); await this._loadBrands(); this._product = { ...this._product, brandId: b.id }; this._showAddBrand = false; this._newBrandName = ''; } } catch (e) {} }
+  async _addManufacturer() { if (!this._newManufacturerName.trim()) return; try { const r = await this._authFetch('/umbraco/management/api/v1/ecommerce/manufacturer', { method: 'POST', body: JSON.stringify({ name: this._newManufacturerName }) }); if (r.ok) { const m = await r.json(); await this._loadManufacturers(); this._product = { ...this._product, manufacturerId: m.id }; this._showAddManufacturer = false; this._newManufacturerName = ''; } } catch (e) {} }
+  async _addBrand() { if (!this._newBrandName.trim()) return; try { const r = await this._authFetch('/umbraco/management/api/v1/ecommerce/brand', { method: 'POST', body: JSON.stringify({ name: this._newBrandName }) }); if (r.ok) { const b = await r.json(); await this._loadBrands(); this._product = { ...this._product, brandId: b.id }; this._showAddBrand = false; this._newBrandName = ''; } } catch (e) {} }
 
   _handleFileUpload(e) { this._uploadFiles(e.target.files); }
   _handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
   _handleDragLeave(e) { e.currentTarget.classList.remove('dragover'); }
   _handleDrop(e) { e.preventDefault(); e.currentTarget.classList.remove('dragover'); this._uploadFiles(e.dataTransfer.files); }
-  async _uploadFiles(files) { for (const f of files) { if (!f.type.startsWith('image/')) continue; const fd = new FormData(); fd.append('file', f); try { const r = await fetch('/umbraco/management/api/v1/ecommerce/media/upload', { method: 'POST', credentials: 'include', body: fd }); if (r.ok) { const res = await r.json(); this._product = { ...this._product, images: [...(this._product.images || []), { url: res.url, isPrimary: !this._product.images?.length }] }; } } catch (e) {} } }
+  async _uploadFiles(files) { for (const f of files) { if (!f.type.startsWith('image/')) continue; const fd = new FormData(); fd.append('file', f); try { const headers = await this._getAuthHeaders(); delete headers['Content-Type']; const r = await fetch('/umbraco/management/api/v1/ecommerce/media/upload', { method: 'POST', headers, body: fd }); if (r.ok) { const res = await r.json(); this._product = { ...this._product, images: [...(this._product.images || []), { url: res.url, isPrimary: !this._product.images?.length }] }; } } catch (e) {} } }
   _handleBulkUrlAdd() { const t = this.shadowRoot.querySelector('#bulk-urls'); if (!t) return; const urls = t.value.split('\n').map(u => u.trim()).filter(u => u); this._product = { ...this._product, images: [...(this._product.images || []), ...urls.map((u, i) => ({ url: u, isPrimary: !this._product.images?.length && i === 0 }))] }; t.value = ''; }
   _setAsPrimary(i) { this._product = { ...this._product, images: this._product.images.map((img, idx) => ({ ...img, isPrimary: idx === i })) }; }
   _removeImage(i) { const imgs = [...this._product.images]; const wasPrimary = imgs[i].isPrimary; imgs.splice(i, 1); if (wasPrimary && imgs.length) imgs[0].isPrimary = true; this._product = { ...this._product, images: imgs }; }
@@ -179,8 +200,8 @@ export class ProductCollection extends UmbElementMixin(LitElement) {
   _calculateProfit() { return (parseFloat(this._product.price) || 0) - (parseFloat(this._product.costPrice) || 0); }
   _calculateBreakeven() { const m = parseFloat(this._calculateMargin()) || 0; return m ? Math.ceil(100 / m) : '-'; }
 
-  async _saveProduct() { if (!this._product.name || !this._product.sku) { alert('Name and SKU required'); return; } this._saving = true; try { const isNew = this._mode === 'create'; const url = isNew ? '/umbraco/management/api/v1/ecommerce/product' : `/umbraco/management/api/v1/ecommerce/product/${this._product.id}`; const r = await fetch(url, { method: isNew ? 'POST' : 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this._product) }); if (!r.ok) throw new Error('Failed'); this._backToList(); } catch (e) { alert('Failed: ' + e.message); } finally { this._saving = false; } }
-  async _deleteProduct() { this._saving = true; try { const r = await fetch(`/umbraco/management/api/v1/ecommerce/product/${this._product.id}`, { method: 'DELETE', credentials: 'include' }); if (!r.ok) throw new Error('Failed'); this._backToList(); } catch (e) { alert('Failed: ' + e.message); } finally { this._saving = false; } }
+  async _saveProduct() { if (!this._product.name || !this._product.sku) { alert('Name and SKU required'); return; } this._saving = true; try { const isNew = this._mode === 'create'; const url = isNew ? '/umbraco/management/api/v1/ecommerce/product' : `/umbraco/management/api/v1/ecommerce/product/${this._product.id}`; const r = await this._authFetch(url, { method: isNew ? 'POST' : 'PUT', body: JSON.stringify(this._product) }); if (!r.ok) throw new Error('Failed'); this._backToList(); } catch (e) { alert('Failed: ' + e.message); } finally { this._saving = false; } }
+  async _deleteProduct() { this._saving = true; try { const r = await this._authFetch(`/umbraco/management/api/v1/ecommerce/product/${this._product.id}`, { method: 'DELETE' }); if (!r.ok) throw new Error('Failed'); this._backToList(); } catch (e) { alert('Failed: ' + e.message); } finally { this._saving = false; } }
 
   render() { if (this._loading && this._mode === 'list') return html`<div class="loading"><uui-loader></uui-loader></div>`; if (this._mode !== 'list') return this._renderEditor(); return this._renderList(); }
 

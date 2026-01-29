@@ -1,7 +1,29 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host { display: block; height: 100%; }
 
@@ -149,8 +171,7 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
     _saving: { state: true },
     _payments: { state: true },
     _loadingPayments: { state: true },
-    _statistics: { state: true },
-    _currencies: { state: true }
+    _statistics: { state: true }
   };
 
   constructor() {
@@ -167,7 +188,6 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
     this._payments = [];
     this._loadingPayments = false;
     this._statistics = null;
-    this._currencies = [];
 
     this._types = [
       { value: 0, label: 'Fixed Amount', icon: 'icon-coins-dollar-alt', desc: 'Charge a specific amount' },
@@ -220,26 +240,12 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
   connectedCallback() {
     super.connectedCallback();
     this._loadPaymentLinks();
-    this._loadCurrencies();
-  }
-
-  async _loadCurrencies() {
-    try {
-      const res = await fetch('/umbraco/management/api/v1/ecommerce/currency', { credentials: 'include', headers: { 'Accept': 'application/json' } });
-      if (res.ok) {
-        const data = await res.json();
-        this._currencies = data.items || data || [];
-      }
-    } catch (e) { console.error('Error loading currencies:', e); }
   }
 
   async _loadPaymentLinks() {
     try {
       this._loading = true;
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/payment-link', {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/payment-link');
       if (response.ok) {
         this._paymentLinks = await response.json();
       }
@@ -253,10 +259,7 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
   async _loadPayments(linkId) {
     try {
       this._loadingPayments = true;
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/payment-link/${linkId}/payments`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/payment-link/${linkId}/payments`);
       if (response.ok) {
         this._payments = await response.json();
       }
@@ -270,10 +273,7 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
 
   async _loadStatistics(linkId) {
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/payment-link/${linkId}/statistics`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/payment-link/${linkId}/statistics`);
       if (response.ok) {
         this._statistics = await response.json();
       }
@@ -381,10 +381,7 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
 
   async _generateCode() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/payment-link/generate-code', {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/payment-link/generate-code');
       if (response.ok) {
         const result = await response.json();
         this._formData = { ...this._formData, code: result.code };
@@ -435,10 +432,8 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
         ? '/umbraco/management/api/v1/ecommerce/payment-link'
         : `/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}`;
 
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method: isNew ? 'POST' : 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -463,9 +458,8 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
     if (!this._selectedLink || !confirm('Are you sure you want to delete this payment link?')) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}`, {
-        method: 'DELETE',
-        credentials: 'include'
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}`, {
+        method: 'DELETE'
       });
 
       if (!response.ok) throw new Error('Failed to delete');
@@ -481,9 +475,8 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
   async _pauseLink() {
     if (!this._selectedLink) return;
     try {
-      await fetch(`/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}/pause`, {
-        method: 'POST',
-        credentials: 'include'
+      await this._authFetch(`/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}/pause`, {
+        method: 'POST'
       });
       await this._loadPaymentLinks();
       const link = this._paymentLinks.find(l => l.id === this._selectedLink.id);
@@ -496,9 +489,8 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
   async _activateLink() {
     if (!this._selectedLink) return;
     try {
-      await fetch(`/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}/activate`, {
-        method: 'POST',
-        credentials: 'include'
+      await this._authFetch(`/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}/activate`, {
+        method: 'POST'
       });
       await this._loadPaymentLinks();
       const link = this._paymentLinks.find(l => l.id === this._selectedLink.id);
@@ -511,9 +503,8 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
   async _duplicateLink() {
     if (!this._selectedLink) return;
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}/duplicate`, {
-        method: 'POST',
-        credentials: 'include'
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/payment-link/${this._selectedLink.id}/duplicate`, {
+        method: 'POST'
       });
       if (response.ok) {
         const duplicate = await response.json();
@@ -820,8 +811,11 @@ export class PaymentLinkCollection extends UmbElementMixin(LitElement) {
               @change=${(e) => this._handleInputChange('currencyCode', e.target.value)}
               ?disabled=${!isEditing}
             >
-              ${this._currencies.length === 0 ? html`<option value="USD">USD - US Dollar (Loading...)</option>` : ''}
-              ${this._currencies.map(c => html`<option value="${c.code}" ?selected=${this._formData.currencyCode === c.code}>${c.code} - ${c.name}</option>`)}
+              <option value="USD">USD - US Dollar</option>
+              <option value="EUR">EUR - Euro</option>
+              <option value="GBP">GBP - British Pound</option>
+              <option value="CAD">CAD - Canadian Dollar</option>
+              <option value="AUD">AUD - Australian Dollar</option>
             </select>
           </div>
         </div>

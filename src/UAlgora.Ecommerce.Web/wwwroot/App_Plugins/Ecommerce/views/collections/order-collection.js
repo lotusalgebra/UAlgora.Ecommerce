@@ -1,7 +1,28 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 export class OrderCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
   static styles = css`
     :host { display: block; height: 100%; }
     .container { display: flex; height: 100%; }
@@ -166,10 +187,7 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
       if (this._statusFilter) params.append('status', this._statusFilter);
       if (this._searchTerm) params.append('search', this._searchTerm);
 
-      const res = await fetch(`/umbraco/management/api/v1/ecommerce/order?${params}`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const res = await this._authFetch(`/umbraco/management/api/v1/ecommerce/order?${params}`);
       if (res.ok) {
         const data = await res.json();
         this._orders = data.items || data || [];
@@ -187,10 +205,7 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
 
     try {
       this._loadingOrder = true;
-      const res = await fetch(`/umbraco/management/api/v1/ecommerce/order/${order.id}`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const res = await this._authFetch(`/umbraco/management/api/v1/ecommerce/order/${order.id}`);
       if (res.ok) {
         this._selectedOrder = await res.json();
         this._newStatus = this._selectedOrder.status;
@@ -224,10 +239,8 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
     if (!this._newStatus || this._newStatus === this._selectedOrder.status) return;
     this._saving = true;
     try {
-      const res = await fetch(`/umbraco/management/api/v1/ecommerce/order/${this._selectedOrder.id}/status`, {
+      const res = await this._authFetch(`/umbraco/management/api/v1/ecommerce/order/${this._selectedOrder.id}/status`, {
         method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: this._newStatus, note: this._statusNote })
       });
       if (!res.ok) throw new Error('Failed to update');
@@ -259,9 +272,7 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
   async _downloadInvoice() {
     if (!this._selectedOrder) return;
     try {
-      const res = await fetch(`/umbraco/management/api/v1/ecommerce/invoice/order/${this._selectedOrder.id}/pdf`, {
-        credentials: 'include'
-      });
+      const res = await this._authFetch(`/umbraco/management/api/v1/ecommerce/invoice/order/${this._selectedOrder.id}/pdf`);
       if (!res.ok) throw new Error('Failed to generate invoice');
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
@@ -281,9 +292,7 @@ export class OrderCollection extends UmbElementMixin(LitElement) {
   async _downloadPackingSlip() {
     if (!this._selectedOrder) return;
     try {
-      const res = await fetch(`/umbraco/management/api/v1/ecommerce/invoice/order/${this._selectedOrder.id}/packing-slip/pdf`, {
-        credentials: 'include'
-      });
+      const res = await this._authFetch(`/umbraco/management/api/v1/ecommerce/invoice/order/${this._selectedOrder.id}/packing-slip/pdf`);
       if (!res.ok) throw new Error('Failed to generate packing slip');
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);

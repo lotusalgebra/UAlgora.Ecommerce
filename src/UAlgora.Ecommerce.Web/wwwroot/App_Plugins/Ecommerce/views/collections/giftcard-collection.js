@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * Gift Card Collection with Inline Editor
  * Umbraco Commerce-style gift card management with split-pane layout.
  */
 export class GiftCardCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: flex;
@@ -604,10 +626,7 @@ export class GiftCardCollection extends UmbElementMixin(LitElement) {
       if (this._statusFilter !== 'all') {
         endpoint = `/umbraco/management/api/v1/ecommerce/giftcards/by-status/${this._statusFilter}`;
       }
-      const response = await fetch(endpoint, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(endpoint);
       if (response.ok) {
         this._giftCards = await response.json();
       }
@@ -628,10 +647,7 @@ export class GiftCardCollection extends UmbElementMixin(LitElement) {
   async _loadCardDetails(cardId) {
     try {
       this._loadingCard = true;
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/giftcards/${cardId}`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/giftcards/${cardId}`);
       if (response.ok) {
         this._selectedCard = await response.json();
         this._loadTransactions(cardId);
@@ -650,10 +666,7 @@ export class GiftCardCollection extends UmbElementMixin(LitElement) {
 
   async _loadTransactions(cardId) {
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/giftcards/${cardId}/transactions`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/giftcards/${cardId}/transactions`);
       if (response.ok) {
         this._transactions = await response.json();
       }
@@ -699,10 +712,8 @@ export class GiftCardCollection extends UmbElementMixin(LitElement) {
 
     this._saving = true;
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/giftcards/generate', {
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/giftcards/generate', {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._formData)
       });
       if (!response.ok) throw new Error('Failed to create gift card');
@@ -733,10 +744,8 @@ export class GiftCardCollection extends UmbElementMixin(LitElement) {
     }
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/giftcards/${this._selectedCard.id}/adjust`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/giftcards/${this._selectedCard.id}/adjust`, {
         method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._adjustmentData)
       });
       if (!response.ok) throw new Error('Failed to adjust balance');
@@ -752,10 +761,8 @@ export class GiftCardCollection extends UmbElementMixin(LitElement) {
     if (!confirm('Are you sure you want to disable this gift card?')) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/giftcards/${this._selectedCard.id}/disable`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' }
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/giftcards/${this._selectedCard.id}/disable`, {
+        method: 'POST'
       });
       if (!response.ok) throw new Error('Failed to disable card');
       this._loadCardDetails(this._selectedCard.id);

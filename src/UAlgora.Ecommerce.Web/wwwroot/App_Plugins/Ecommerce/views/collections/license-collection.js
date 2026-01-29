@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * License Collection with Management Dashboard
  * Comprehensive license management for Algora Commerce.
  */
 export class LicenseCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: flex;
@@ -562,13 +584,13 @@ export class LicenseCollection extends UmbElementMixin(LitElement) {
     this.loading = true;
     try {
       // Get active licenses
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/license/active');
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/license/active');
       if (response.ok) {
         const licenses = await response.json();
         if (licenses.length > 0) {
           this.license = licenses[0];
           // Get features for this license
-          const featuresResponse = await fetch(`/umbraco/management/api/v1/ecommerce/license/${this.license.id}/features`);
+          const featuresResponse = await this._authFetch(`/umbraco/management/api/v1/ecommerce/license/${this.license.id}/features`);
           if (featuresResponse.ok) {
             this.features = await featuresResponse.json();
           }
@@ -588,9 +610,8 @@ export class LicenseCollection extends UmbElementMixin(LitElement) {
 
     this.validating = true;
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/license/validate', {
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/license/validate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: this.licenseKey.trim(),
           domain: window.location.hostname
@@ -618,9 +639,8 @@ export class LicenseCollection extends UmbElementMixin(LitElement) {
 
     this.validating = true;
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/license/activate', {
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/license/activate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           key: this.licenseKey.trim(),
           domain: window.location.hostname
@@ -649,9 +669,8 @@ export class LicenseCollection extends UmbElementMixin(LitElement) {
     if (!name) return;
 
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/license/trial', {
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/license/trial', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customerName: name,
           customerEmail: email,

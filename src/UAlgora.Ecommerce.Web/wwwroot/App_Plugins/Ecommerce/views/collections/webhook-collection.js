@@ -1,7 +1,29 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 export class WebhookCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host { display: block; height: 100%; }
 
@@ -287,10 +309,7 @@ export class WebhookCollection extends UmbElementMixin(LitElement) {
   async _loadWebhooks() {
     try {
       this._loading = true;
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/webhooks', {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/webhooks');
       if (response.ok) {
         this._webhooks = await response.json();
       }
@@ -304,10 +323,7 @@ export class WebhookCollection extends UmbElementMixin(LitElement) {
   async _loadDeliveries(webhookId) {
     try {
       this._loadingDeliveries = true;
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/webhooks/${webhookId}/deliveries`, {
-        credentials: 'include',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/webhooks/${webhookId}/deliveries`);
       if (response.ok) {
         this._deliveries = await response.json();
       } else {
@@ -468,10 +484,8 @@ export class WebhookCollection extends UmbElementMixin(LitElement) {
         ? '/umbraco/management/api/v1/ecommerce/webhooks'
         : `/umbraco/management/api/v1/ecommerce/webhooks/${this._selectedWebhook.id}`;
 
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method: isNew ? 'POST' : 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
 
@@ -497,9 +511,8 @@ export class WebhookCollection extends UmbElementMixin(LitElement) {
     if (!this._selectedWebhook || !confirm('Are you sure you want to delete this webhook?')) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/webhooks/${this._selectedWebhook.id}`, {
-        method: 'DELETE',
-        credentials: 'include'
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/webhooks/${this._selectedWebhook.id}`, {
+        method: 'DELETE'
       });
 
       if (!response.ok) throw new Error('Failed to delete webhook');
@@ -519,9 +532,8 @@ export class WebhookCollection extends UmbElementMixin(LitElement) {
     this._testResult = null;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/webhooks/${this._selectedWebhook.id}/test`, {
-        method: 'POST',
-        credentials: 'include'
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/webhooks/${this._selectedWebhook.id}/test`, {
+        method: 'POST'
       });
 
       const result = await response.json().catch(() => ({}));
@@ -546,9 +558,8 @@ export class WebhookCollection extends UmbElementMixin(LitElement) {
 
   async _retryDelivery(deliveryId) {
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/webhooks/${this._selectedWebhook.id}/deliveries/${deliveryId}/retry`, {
-        method: 'POST',
-        credentials: 'include'
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/webhooks/${this._selectedWebhook.id}/deliveries/${deliveryId}/retry`, {
+        method: 'POST'
       });
 
       if (response.ok) {

@@ -1,7 +1,32 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 export class CategoryCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    if (options.headers?.['Content-Type'] === undefined) {
+      delete headers['Content-Type'];
+    }
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host { display: block; height: 100%; }
     .container { display: flex; height: 100%; }
@@ -110,7 +135,7 @@ export class CategoryCollection extends UmbElementMixin(LitElement) {
   async _loadCategories() {
     try {
       this._loading = true;
-      const res = await fetch('/umbraco/management/api/v1/ecommerce/category', { credentials: 'include', headers: { 'Accept': 'application/json' } });
+      const res = await this._authFetch('/umbraco/management/api/v1/ecommerce/category');
       if (res.ok) {
         const data = await res.json();
         this._categories = data.items || data || [];
@@ -121,7 +146,7 @@ export class CategoryCollection extends UmbElementMixin(LitElement) {
 
   async _loadProductsInCategory(categoryId) {
     try {
-      const res = await fetch(`/umbraco/management/api/v1/ecommerce/product?categoryId=${categoryId}&take=10`, { credentials: 'include' });
+      const res = await this._authFetch(`/umbraco/management/api/v1/ecommerce/product?categoryId=${categoryId}&take=10`);
       if (res.ok) {
         const data = await res.json();
         this._productsInCategory = data.items || [];
@@ -199,7 +224,9 @@ export class CategoryCollection extends UmbElementMixin(LitElement) {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch('/umbraco/management/api/v1/ecommerce/media/upload', { method: 'POST', credentials: 'include', body: formData });
+      const headers = await this._getAuthHeaders();
+      delete headers['Content-Type'];
+      const res = await fetch('/umbraco/management/api/v1/ecommerce/media/upload', { method: 'POST', headers, body: formData });
       if (res.ok) {
         const data = await res.json();
         this._handleInput(field, data.url || data.path);
@@ -213,7 +240,7 @@ export class CategoryCollection extends UmbElementMixin(LitElement) {
     try {
       const isNew = !this._editingCategory.id;
       const url = isNew ? '/umbraco/management/api/v1/ecommerce/category' : `/umbraco/management/api/v1/ecommerce/category/${this._editingCategory.id}`;
-      const res = await fetch(url, { method: isNew ? 'POST' : 'PUT', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this._editingCategory) });
+      const res = await this._authFetch(url, { method: isNew ? 'POST' : 'PUT', body: JSON.stringify(this._editingCategory) });
       if (!res.ok) throw new Error('Save failed');
       await this._loadCategories();
       if (isNew) {
@@ -228,7 +255,7 @@ export class CategoryCollection extends UmbElementMixin(LitElement) {
   async _delete() {
     if (!confirm(`Delete "${this._editingCategory?.name}"?`)) return;
     try {
-      await fetch(`/umbraco/management/api/v1/ecommerce/category/${this._editingCategory.id}`, { method: 'DELETE', credentials: 'include' });
+      await this._authFetch(`/umbraco/management/api/v1/ecommerce/category/${this._editingCategory.id}`, { method: 'DELETE' });
       this._loadCategories();
       this._backToList();
     } catch (e) { alert('Delete failed'); }

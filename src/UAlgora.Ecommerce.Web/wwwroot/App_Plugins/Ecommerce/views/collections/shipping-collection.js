@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * Shipping Collection View
  * Displays overview of shipping methods and zones.
  */
 export class ShippingCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: block;
@@ -134,12 +156,8 @@ export class ShippingCollection extends UmbElementMixin(LitElement) {
       this._loading = true;
 
       const [methodsResponse, zonesResponse] = await Promise.all([
-        fetch('/umbraco/management/api/v1/ecommerce/shipping/method?includeInactive=true', {
-          headers: { 'Accept': 'application/json' }
-        }),
-        fetch('/umbraco/management/api/v1/ecommerce/shipping/zone?includeInactive=true', {
-          headers: { 'Accept': 'application/json' }
-        })
+        this._authFetch('/umbraco/management/api/v1/ecommerce/shipping/method?includeInactive=true'),
+        this._authFetch('/umbraco/management/api/v1/ecommerce/shipping/zone?includeInactive=true')
       ]);
 
       if (methodsResponse.ok) {

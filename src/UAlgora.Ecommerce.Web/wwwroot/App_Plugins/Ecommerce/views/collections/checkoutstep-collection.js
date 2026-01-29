@@ -1,7 +1,29 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 export class CheckoutStepCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host { display: block; height: 100%; }
     .container { display: flex; height: 100%; }
@@ -78,7 +100,7 @@ export class CheckoutStepCollection extends UmbElementMixin(LitElement) {
   async _loadSteps() {
     try {
       this._loading = true;
-      const res = await fetch('/umbraco/management/api/v1/ecommerce/checkoutstep', { credentials: 'include' });
+      const res = await this._authFetch('/umbraco/management/api/v1/ecommerce/checkoutstep');
       if (res.ok) {
         const data = await res.json();
         this._steps = data.items || [];
@@ -132,10 +154,8 @@ export class CheckoutStepCollection extends UmbElementMixin(LitElement) {
     try {
       const isNew = !this._editingStep.id;
       const url = isNew ? '/umbraco/management/api/v1/ecommerce/checkoutstep' : `/umbraco/management/api/v1/ecommerce/checkoutstep/${this._editingStep.id}`;
-      const res = await fetch(url, {
+      const res = await this._authFetch(url, {
         method: isNew ? 'POST' : 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._editingStep)
       });
 
@@ -161,9 +181,8 @@ export class CheckoutStepCollection extends UmbElementMixin(LitElement) {
     if (!confirm(`Delete checkout step "${this._editingStep?.name}"?`)) return;
 
     try {
-      await fetch(`/umbraco/management/api/v1/ecommerce/checkoutstep/${this._editingStep.id}`, {
-        method: 'DELETE',
-        credentials: 'include'
+      await this._authFetch(`/umbraco/management/api/v1/ecommerce/checkoutstep/${this._editingStep.id}`, {
+        method: 'DELETE'
       });
       await this._loadSteps();
       this._backToList();
@@ -175,9 +194,8 @@ export class CheckoutStepCollection extends UmbElementMixin(LitElement) {
   async _toggle(step, e) {
     e.stopPropagation();
     try {
-      await fetch(`/umbraco/management/api/v1/ecommerce/checkoutstep/${step.id}/toggle`, {
-        method: 'POST',
-        credentials: 'include'
+      await this._authFetch(`/umbraco/management/api/v1/ecommerce/checkoutstep/${step.id}/toggle`, {
+        method: 'POST'
       });
       await this._loadSteps();
     } catch (e) {
@@ -191,9 +209,8 @@ export class CheckoutStepCollection extends UmbElementMixin(LitElement) {
     }
 
     try {
-      const res = await fetch('/umbraco/management/api/v1/ecommerce/checkoutstep/seed-defaults', {
-        method: 'POST',
-        credentials: 'include'
+      const res = await this._authFetch('/umbraco/management/api/v1/ecommerce/checkoutstep/seed-defaults', {
+        method: 'POST'
       });
 
       if (!res.ok) {

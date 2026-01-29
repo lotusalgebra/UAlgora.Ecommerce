@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * Tax Collection View - Inline Split-Pane Editor
  * Manages tax categories, zones, and rates with GST support
  */
 export class TaxCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: block;
@@ -348,8 +370,8 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
     try {
       this._loading = true;
       const [categoriesResponse, zonesResponse] = await Promise.all([
-        fetch('/umbraco/management/api/v1/ecommerce/tax/category?includeInactive=true'),
-        fetch('/umbraco/management/api/v1/ecommerce/tax/zone?includeInactive=true')
+        this._authFetch('/umbraco/management/api/v1/ecommerce/tax/category?includeInactive=true'),
+        this._authFetch('/umbraco/management/api/v1/ecommerce/tax/zone?includeInactive=true')
       ]);
 
       if (categoriesResponse.ok) {
@@ -442,9 +464,8 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         ? '/umbraco/management/api/v1/ecommerce/tax/category'
         : `/umbraco/management/api/v1/ecommerce/tax/category/${this._selectedCategory.id}`;
 
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._selectedCategory)
       });
 
@@ -476,9 +497,8 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
         ? '/umbraco/management/api/v1/ecommerce/tax/zone'
         : `/umbraco/management/api/v1/ecommerce/tax/zone/${this._selectedZone.id}`;
 
-      const response = await fetch(url, {
+      const response = await this._authFetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(this._selectedZone)
       });
 
@@ -506,7 +526,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
     if (!confirm('Are you sure you want to delete this category?')) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/tax/category/${this._selectedCategory.id}`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/tax/category/${this._selectedCategory.id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -523,7 +543,7 @@ export class TaxCollection extends UmbElementMixin(LitElement) {
     if (!confirm('Are you sure you want to delete this zone?')) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/tax/zone/${this._selectedZone.id}`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/tax/zone/${this._selectedZone.id}`, {
         method: 'DELETE'
       });
       if (response.ok) {

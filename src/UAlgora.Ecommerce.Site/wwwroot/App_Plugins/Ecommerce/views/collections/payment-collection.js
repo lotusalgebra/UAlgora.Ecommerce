@@ -1,11 +1,33 @@
 import { LitElement, html, css } from "@umbraco-cms/backoffice/external/lit";
 import { UmbElementMixin } from "@umbraco-cms/backoffice/element-api";
+import { UMB_AUTH_CONTEXT } from "@umbraco-cms/backoffice/auth";
 
 /**
  * Payment Collection
  * Combined collection view for payment methods and gateways.
  */
 export class PaymentCollection extends UmbElementMixin(LitElement) {
+  #authContext;
+
+  async _getAuthHeaders() {
+    if (!this.#authContext) {
+      this.#authContext = await this.getContext(UMB_AUTH_CONTEXT);
+    }
+    const token = await this.#authContext?.getLatestToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async _authFetch(url, options = {}) {
+    const headers = await this._getAuthHeaders();
+    return fetch(url, {
+      ...options,
+      headers: { ...headers, ...options.headers }
+    });
+  }
+
   static styles = css`
     :host {
       display: block;
@@ -132,9 +154,7 @@ export class PaymentCollection extends UmbElementMixin(LitElement) {
 
   async _loadMethods() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/payment/methods', {
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/payment/methods');
       if (response.ok) {
         this._methods = await response.json();
       }
@@ -145,9 +165,7 @@ export class PaymentCollection extends UmbElementMixin(LitElement) {
 
   async _loadGateways() {
     try {
-      const response = await fetch('/umbraco/management/api/v1/ecommerce/payment/gateways', {
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await this._authFetch('/umbraco/management/api/v1/ecommerce/payment/gateways');
       if (response.ok) {
         this._gateways = await response.json();
       }
@@ -195,7 +213,7 @@ export class PaymentCollection extends UmbElementMixin(LitElement) {
     if (!confirm(`Are you sure you want to delete "${method.name}"?`)) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/payment/method/${method.id}`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/payment/method/${method.id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
@@ -211,7 +229,7 @@ export class PaymentCollection extends UmbElementMixin(LitElement) {
     if (!confirm(`Are you sure you want to delete "${gateway.name}"?`)) return;
 
     try {
-      const response = await fetch(`/umbraco/management/api/v1/ecommerce/payment/gateway/${gateway.id}`, {
+      const response = await this._authFetch(`/umbraco/management/api/v1/ecommerce/payment/gateway/${gateway.id}`, {
         method: 'DELETE'
       });
       if (response.ok) {
