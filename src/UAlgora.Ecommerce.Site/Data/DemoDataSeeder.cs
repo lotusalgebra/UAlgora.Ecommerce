@@ -542,6 +542,226 @@ public class DemoDataSeeder
         return product;
     }
 
+    public async Task<int> SeedDiscountsAsync()
+    {
+        // Remove existing discounts
+        _context.Discounts.RemoveRange(_context.Discounts);
+        await _context.SaveChangesAsync();
+
+        // Get some product IDs for product-specific discounts
+        var productIds = _context.Products.Select(p => p.Id).Take(6).ToList();
+        var categoryIds = _context.Categories.Select(c => c.Id).Take(3).ToList();
+
+        var discounts = new List<Discount>
+        {
+            // 1. BOGO - Buy One Get One Free
+            new()
+            {
+                Name = "BOGO: Buy 1 Get 1 Free",
+                Description = "Buy one product and get one of equal or lesser value for free! Great for stocking up on your favorites.",
+                Code = "BOGO2025",
+                Type = DiscountType.BuyXGetY,
+                Scope = DiscountScope.Product,
+                Value = 0,
+                BuyQuantity = 1,
+                GetQuantity = 1,
+                ApplicableProductIds = productIds.Take(3).ToList(),
+                IsActive = true,
+                StartDate = DateTime.UtcNow.AddDays(-1),
+                EndDate = DateTime.UtcNow.AddDays(30),
+                TotalUsageLimit = 500,
+                PerCustomerLimit = 2,
+                CanCombine = false,
+                Priority = 10
+            },
+            // 2. Percentage Sale
+            new()
+            {
+                Name = "Flash Sale: 25% Off Sitewide",
+                Description = "Take 25% off your entire order! Limited time offer. Percentage discount applied to all eligible items in your cart.",
+                Code = "FLASH25",
+                Type = DiscountType.Percentage,
+                Scope = DiscountScope.Order,
+                Value = 25,
+                MaxDiscountAmount = 100,
+                MinimumOrderAmount = 50,
+                IsActive = true,
+                StartDate = DateTime.UtcNow.AddDays(-1),
+                EndDate = DateTime.UtcNow.AddDays(7),
+                TotalUsageLimit = 1000,
+                PerCustomerLimit = 1,
+                CanCombine = false,
+                Priority = 8
+            },
+            // 3. Early Payment Discount
+            new()
+            {
+                Name = "Early Payment: 2% Off Net 30",
+                Description = "Pay within 10 days of invoice and receive 2% off your order total. Standard payment term is 30 days.",
+                Type = DiscountType.EarlyPayment,
+                Scope = DiscountScope.Order,
+                Value = 2,
+                EarlyPaymentDays = 10,
+                StandardPaymentDays = 30,
+                IsActive = true,
+                CanCombine = true,
+                Priority = 1
+            },
+            // 4. Overstock / Clearance Sale
+            new()
+            {
+                Name = "Clearance: Up to 40% Off Overstock",
+                Description = "We're clearing out surplus inventory! Grab these items at 40% off before they're gone. Limited quantities available.",
+                Code = "CLEARANCE40",
+                Type = DiscountType.Overstock,
+                Scope = DiscountScope.Product,
+                Value = 40,
+                IsOverstockClearance = true,
+                ApplicableProductIds = productIds.Skip(3).Take(3).ToList(),
+                IsActive = true,
+                StartDate = DateTime.UtcNow.AddDays(-5),
+                EndDate = DateTime.UtcNow.AddDays(14),
+                CanCombine = false,
+                Priority = 5
+            },
+            // 5. Free Shipping
+            new()
+            {
+                Name = "Free Shipping on Orders $75+",
+                Description = "Enjoy free standard shipping on all orders of $75 or more. No code needed — discount applied automatically at checkout.",
+                Type = DiscountType.FreeShipping,
+                Scope = DiscountScope.Shipping,
+                Value = 0,
+                MinimumOrderAmount = 75,
+                IsActive = true,
+                CanCombine = true,
+                Priority = 2
+            },
+            // 6. Price Bundle
+            new()
+            {
+                Name = "Tech Bundle: 15% Off When You Buy All 3",
+                Description = "Purchase all three featured tech products together and save 15%! Bundle includes products from our top sellers.",
+                Code = "TECHBUNDLE",
+                Type = DiscountType.Bundle,
+                Scope = DiscountScope.Product,
+                Value = 15,
+                BundleProductIds = productIds.Take(3).ToList(),
+                BundleDiscountValue = 15,
+                IsActive = true,
+                StartDate = DateTime.UtcNow.AddDays(-1),
+                EndDate = DateTime.UtcNow.AddDays(60),
+                TotalUsageLimit = 200,
+                CanCombine = false,
+                Priority = 7
+            },
+            // 7. Bulk / Volume Discount
+            new()
+            {
+                Name = "Bulk Order Volume Discounts",
+                Description = "The more you buy, the more you save! Buy 10+ items for 10% off, 25+ for 15% off, 50+ for 20% off, or 100+ for 25% off.",
+                Type = DiscountType.BulkVolume,
+                Scope = DiscountScope.Order,
+                Value = 10,
+                VolumeTiers = [
+                    new VolumeTier { MinQuantity = 10, DiscountPercent = 10 },
+                    new VolumeTier { MinQuantity = 25, DiscountPercent = 15 },
+                    new VolumeTier { MinQuantity = 50, DiscountPercent = 20 },
+                    new VolumeTier { MinQuantity = 100, DiscountPercent = 25 }
+                ],
+                IsActive = true,
+                CanCombine = false,
+                Priority = 6
+            },
+            // 8. Seasonal Discount
+            new()
+            {
+                Name = "Summer Sale: 30% Off Selected Items",
+                Description = "Beat the heat with our Summer Sale! 30% off selected seasonal items. Perfect time to stock up on summer essentials.",
+                Code = "SUMMER30",
+                Type = DiscountType.Seasonal,
+                Scope = DiscountScope.Product,
+                Value = 30,
+                SeasonLabel = "Summer Sale 2026",
+                ApplicableCategoryIds = categoryIds.Take(2).ToList(),
+                IsActive = true,
+                StartDate = DateTime.UtcNow.AddDays(-1),
+                EndDate = DateTime.UtcNow.AddDays(45),
+                TotalUsageLimit = 2000,
+                CanCombine = false,
+                Priority = 9
+            },
+            // 9. Referral Discount
+            new()
+            {
+                Name = "Refer a Friend: Both Get 15% Off",
+                Description = "Share your unique referral code with friends! Both you and your friend get 15% off your next purchase. Two-way savings!",
+                Code = "REFER15",
+                Type = DiscountType.Referral,
+                Scope = DiscountScope.Order,
+                Value = 15,
+                ReferralTwoWay = true,
+                ReferralNewCustomerValue = 15,
+                MinimumOrderAmount = 30,
+                IsActive = true,
+                PerCustomerLimit = 5,
+                CanCombine = false,
+                Priority = 4
+            },
+            // 10. Loyalty Program Discount
+            new()
+            {
+                Name = "Gold Members: 20% Off Exclusive",
+                Description = "Exclusive for Gold tier loyalty members! Earn points with every purchase and unlock 20% off when you reach 500 points.",
+                Type = DiscountType.LoyaltyProgram,
+                Scope = DiscountScope.Order,
+                Value = 20,
+                LoyaltyPointsThreshold = 500,
+                LoyaltyTierRequired = "Gold",
+                IsActive = true,
+                CanCombine = true,
+                Priority = 3
+            },
+            // 11. Email Subscription Discount
+            new()
+            {
+                Name = "Newsletter Signup: 10% Off First Order",
+                Description = "Welcome! Sign up for our newsletter and get 10% off your first order. Also used for cart abandonment recovery emails.",
+                Code = "WELCOME10",
+                Type = DiscountType.EmailSubscription,
+                Scope = DiscountScope.Order,
+                Value = 10,
+                RequiresEmailSubscription = true,
+                IsCartAbandonmentRecovery = true,
+                FirstTimeCustomerOnly = true,
+                IsActive = true,
+                PerCustomerLimit = 1,
+                CanCombine = false,
+                Priority = 3
+            },
+            // 12. Trade-In Credit
+            new()
+            {
+                Name = "Trade-In: $50 Credit Per Device",
+                Description = "Trade in your old device and receive $50 credit toward the purchase of a new one. Bring in any qualifying product.",
+                Code = "TRADEIN50",
+                Type = DiscountType.TradeInCredit,
+                Scope = DiscountScope.Product,
+                Value = 50,
+                TradeInCreditPerItem = 50,
+                TradeInProductIds = productIds.Take(2).ToList(),
+                TradeInTargetProductIds = productIds.Skip(2).Take(2).ToList(),
+                IsActive = true,
+                CanCombine = false,
+                Priority = 5
+            }
+        };
+
+        _context.Discounts.AddRange(discounts);
+        await _context.SaveChangesAsync();
+        return discounts.Count;
+    }
+
     private string GetRandomBrand()
     {
         var brands = new[] { "TechPro", "StyleLife", "HomeEssentials", "ActiveGear", "PureBeauty", "SmartLiving", "EcoChoice", "PremiumPlus" };

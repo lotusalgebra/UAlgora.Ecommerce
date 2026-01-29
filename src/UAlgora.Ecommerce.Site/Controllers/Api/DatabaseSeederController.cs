@@ -42,4 +42,28 @@ public class DatabaseSeederController : ControllerBase
             return BadRequest(new { success = false, error = ex.Message, stackTrace = ex.StackTrace });
         }
     }
+
+    /// <summary>
+    /// Seeds test discounts for all 12 discount types.
+    /// WARNING: This will delete all existing discounts!
+    /// GET /api/databaseseeder/seed-discounts
+    /// </summary>
+    [HttpGet("seed-discounts")]
+    public async Task<IActionResult> SeedDiscounts()
+    {
+        try
+        {
+            var count = await _seeder.SeedDiscountsAsync();
+            return Ok(new
+            {
+                success = true,
+                discounts = count,
+                message = $"Seeded {count} test discounts covering all 12 discount types"
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, error = ex.Message, stackTrace = ex.StackTrace });
+        }
+    }
 }
